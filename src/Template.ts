@@ -1,12 +1,14 @@
 import {whole} from 'regops'
+import { possessiveAdjectiveRegex } from './util/toPossessiveAdjective';
 
-const placeholderRegex = /@?_(?:'s)?/g;
+const placeholderRegex = /@?#?_(?:'s)?/g;
 const conjugatorRegex = /(?:<|>)\w+/g ;
 
 export class Template {
   readonly args: {
     literal:boolean;
-
+    possessive: boolean;
+    number: boolean;
   }[];
   readonly template: string;
 
@@ -19,6 +21,7 @@ export class Template {
       this.args = placeholders.map(ph => ({
         literal: /@/.test(ph),
         number: /#/.test(ph),
+        possessive: /\'s/.test(ph)
       }))
     else
       this.args = [];
@@ -40,7 +43,14 @@ export class Template {
   }
 
   regex() {
-    let argRegexs = this.args.map(arg => '([\\w ]+)')
+    let argRegexs = this.args.map(arg => {
+      if(arg.possessive)
+        return possessiveAdjectiveRegex.source;
+      else if(arg.number) 
+        return '[0-9]+'
+      else
+        return '[\\w ]+'
+    }).map(str => '('+str+')')
     let fluff = this.template.split(placeholderRegex);
     let src = fluff[0];
     for(let i=1; i<fluff.length; ++i)
@@ -50,8 +60,7 @@ export class Template {
   }
 
   parse(str:string) {
-    console.log("parsing:", str)
-    let parse = whole(this.regex()).exec(str);
+    let parse = new RegExp(whole(this.regex()).source, 'i').exec(str);
     if(parse)
       return parse.slice(1);
     else
