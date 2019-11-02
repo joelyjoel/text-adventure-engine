@@ -12,8 +12,3 @@ let mySentence = new Sentence(
 console.log(mySentence.symbol);
 
 
-console.log(
-  new Template("_'s cat has #_ friends")
-//    .regex()
-    .parse('My cat has 10 friends')
-)

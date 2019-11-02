@@ -1,0 +1,2 @@
+export {toPossessiveAdjective} from './toPossessiveAdjective';
+
