@@ -47,7 +47,7 @@ export class Template {
       if(arg.possessive)
         return possessiveAdjectiveRegex.source;
       else if(arg.number) 
-        return '[0-9]+'
+        return '-?[\\.0-9]+'
       else
         return '[\\w ]+'
     }).map(str => '('+str+')')
@@ -61,9 +61,13 @@ export class Template {
 
   parse(str:string) {
     let parse = new RegExp(whole(this.regex()).source, 'i').exec(str);
-    if(parse)
-      return parse.slice(1);
-    else
+    if(parse) {
+      let args:(string|number)[] = parse.slice(1);
+      for(let i in this.args)
+        if(this.args[i].number)
+          args[i] = parseFloat(args[i] as string);
+      return args;
+    } else
       return null;
   }
 }
