@@ -23,5 +23,8 @@
   "devDependencies": {
     "tsc": "^1.20150623.0",
     "typescript": "^3.6.4"
+  },
+  "dependencies": {
+    "regops": "^1.2.1"
   }
 }
