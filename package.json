@@ -1,0 +1,27 @@
+{
+  "name": "text-adventure-engine",
+  "version": "1.0.0",
+  "description": "An engine for hosting multiplayer text adventure games",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joelyjoel/text-adventure-engine.git"
+  },
+  "keywords": [
+    "text",
+    "adventure"
+  ],
+  "author": "Joely Joel",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/joelyjoel/text-adventure-engine/issues"
+  },
+  "homepage": "https://github.com/joelyjoel/text-adventure-engine#readme",
+  "devDependencies": {
+    "tsc": "^1.20150623.0",
+    "typescript": "^3.6.4"
+  }
+}
