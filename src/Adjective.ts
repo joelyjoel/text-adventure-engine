@@ -1,4 +1,5 @@
-export class Noun {
+/** Class for storing an adjecitve inside a `Dictionary` object. */
+export class Adjective {
   str: string;
   phrasal: boolean;
 
