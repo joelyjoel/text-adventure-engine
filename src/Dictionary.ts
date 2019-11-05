@@ -1,11 +1,15 @@
 import { Noun } from "./Noun";
 
+const articleRegex = /the|a|an/;
+
 export class Dictionary {
   nouns: Noun[];
-  nounIndex: {[key:string]:Noun}
+  phrasalNouns: Noun[];
+  nounIndex: {[key:string]:Noun[]}
 
   constructor() {
     this.nouns = [];
+    this.nounIndex = {};
   }
 
   addNoun(noun:Noun|string) {
@@ -15,21 +19,19 @@ export class Dictionary {
     } 
     else if(noun instanceof Noun) {
       this.nouns.push(noun);
-      this.nounIndex[noun.str] = noun;
+      let lastWord = noun.lastWord;
+      if(this.nounIndex[lastWord])
+        this.nounIndex[lastWord].push(noun);
+      else
+        this.nounIndex[lastWord] = [noun];
+      
       return this;
     }
   }
 
-  parseNoun(str:string) {
-    if(this.nounIndex[str])
-      return {
-        noun: this.nounIndex[str],
-        form: 'singular',
-        str
-      }
-  }
-
-  parseNounPhrase(str: string) {
-    /a|an|the/
+  addNouns(...nouns:(Noun|string)[]) {
+    for(let noun of nouns)
+      this.addNoun(noun);
+    return this;
   }
 }

@@ -2,11 +2,12 @@ import {whole, autoBracket} from 'regops'
 import { possessiveAdjectiveRegex } from './util/toPossessiveAdjective';
 import { getPerson } from './util/getPerson';
 import { conjugate, anyPersonRegex } from './util/conjugate';
+import { Syntax } from './Syntax';
 
 const placeholderRegex = /@?#?_(?:'s)?/g;
 const conjugateRegex = /(?:<|>)\w+/g
 
-export class Template {
+export class Template implements Syntax {
   readonly params: {
     literal:boolean;
     possessive: boolean;
@@ -69,7 +70,7 @@ export class Template {
       for(let i in this.params)
         if(this.params[i].number)
           args[i] = parseFloat(args[i] as string);
-      return args;
+      return {args, syntax:this};
     } else
       return null;
   }
@@ -119,12 +120,12 @@ function handleRegexConjugation(str:string, left?:string, right?:string) {
     return str;
 
   const fluff = str.split(conjugateRegex);
-  let out = fluff[0];
+  let interleaved = [fluff[0]];
   for(let i=0; i<verbs.length; ++i) {
     let verb = autoBracket(anyPersonRegex( verbs[i].slice(1)).source);
     
-    out += verb + fluff[i+1];
+    interleaved.push( verb , fluff[i+1])
   }
 
-  return out;
+  return interleaved.join('');
 }
