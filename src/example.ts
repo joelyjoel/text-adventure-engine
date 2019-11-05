@@ -2,7 +2,8 @@ import { Sentence, Predicate, Entity } from "./logic";
 import { Template } from "./Template";
 import { Dictionary } from "./Dictionary";
 import { parseNoun } from "./parsing/parseNoun";
-import { parseArticle, parsePossessive, parseDemonstrative } from "./parsing/parseArticle";
+import { parseArticle, parsePossessive, parseDemonstrative } from "./parsing/parseIdentifier";
+import { parseNounPhrase } from "./parsing/parseNounPhrase";
 
 let mySentence = new Sentence(
   new Predicate('Drinks'),
@@ -21,11 +22,7 @@ const dict = new Dictionary()
   )
 
 console.log(
-    parseNoun(dict, "my hairy buzz cut")
+    parseNoun("my hairy buzz cut", dict)
 )
 
-console.log(
-  parseArticle("the hairy mullet"),
-  parsePossessive('my hairy mullet'),
-  parseDemonstrative('that hairy mullet')
-)
+console.log(parseNounPhrase('my hairy mullet', dict))
