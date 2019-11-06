@@ -4,8 +4,15 @@ import { or } from "regops";
 export class SyntaxSet implements Syntax {
   syntaxs: Syntax[];
 
-  constructor() {
-    this.syntaxs = [];
+  constructor(...syntaxs:Syntax[]) {
+    if(syntaxs.some(syntax => syntax.numberOfArgs != syntaxs[0].numberOfArgs))
+      throw "Syntax set with inconsistent numbers of arguments.";
+
+    this.syntaxs = syntaxs.slice();    
+  }
+
+  get numberOfArgs() {
+    return this.syntaxs[0].numberOfArgs;
   }
 
   regex() {
