@@ -91,7 +91,6 @@ function handleConjugation(str:string, left?:string, right?:string) {
   for(let i=0; i<verbs.length; ++i) {
     let direction = verbs[i][0]
     let verb = verbs[i].slice(1);
-    console.log('verb:', verb);
     
     if(direction == '>' && rightPerson != null) {
       // Conjugate to the right
