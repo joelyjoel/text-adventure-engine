@@ -54,15 +54,19 @@ test('parseNounPhrase test 1', () => {
       noun: {str: 'dog'}
     }
   })
-
-
-  expect(parse).toBeTruthy()
-  if(parse) {
-    expect(parse.str).toBe(str);
-    expect(parse.from).toBe(0);
-    expect(parse.to).toBe(str.length);
-    expect(parse.identifier.identifier).toBe('the');
-    expect(parse.adjectives[0].adj.str).toBe('big');
-    expect(parse.noun.noun.str).toBe('dog');
-  }
 });
+
+test('Parsing phrasal nouns and adjectives', () => {
+  const dict = new Dictionary()
+    .addNouns('bumper car', 'buddhist monk')
+    .addAdjectives('free wheeling', 'sly')
+
+  const parse = parseNounPhrase('my sly free wheeling buddhist monk', dict);
+  expect(parse).toBeTruthy();
+  if(parse) {
+    expect(parse.identifier.identifier).toBe('my')
+    expect(parse.adjectives[0].adj.str).toBe('sly');
+    expect(parse.adjectives[1].adj.str).toBe('free wheeling');
+    expect(parse.noun.noun.str).toBe('buddhist monk');
+  }
+})

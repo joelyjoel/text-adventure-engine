@@ -2,7 +2,6 @@ import { Sentence } from "./Sentence";
 
 export class TruthTable {
   defaultTruthValue: string;
-  facts: {sentence:Sentence, truth:string}[];
   sentenceIndex: {[key:string]: {sentence:Sentence, truth:string}};
 
   constructor() {
@@ -24,5 +23,17 @@ export class TruthTable {
       return this.sentenceIndex[symbol].truth;
     else
       return this.defaultTruthValue;
+  }
+
+  get facts() {
+    return Object.values(this.sentenceIndex);
+  }
+
+  get symbol() {
+    return '{' +
+      this.facts
+        .map(({sentence, truth}) => sentence.symbol + '=' + truth)
+        .join(';') 
+      + '}'
   }
 }

@@ -4,16 +4,8 @@ import { Dictionary } from "./Dictionary";
 import { parseNoun } from "./parsing/parseNoun";
 import { parseArticle, parsePossessive, parseDemonstrative } from "./parsing/parseIdentifier";
 import { parseNounPhrase } from "./parsing/parseNounPhrase";
+import { interpretNounPhrase } from "./linking/interpretNounPhrase";
 
-let mySentence = new Sentence(
-  new Predicate('Drinks'),
-  new Entity('cat'),
-  new Entity('milk'),
-)
-
-
-
-console.log(mySentence.symbol);
 
 
 const dict = new Dictionary()
@@ -23,7 +15,18 @@ const dict = new Dictionary()
   .addAdjectives('hairy');
 
 console.log(
-    parseNoun("my hairy buzz cut", dict)
+  parseNoun("my hairy buzz cut", dict)
 )
 
-console.log(parseNounPhrase('the hairy mullet', dict))
+console.log(parseNounPhrase('the mullet', dict))
+
+
+const str = "the hairy dog";
+console.log(str)
+let interpretation = interpretNounPhrase(str, dict)
+if(interpretation)
+  console.log(
+    interpretation.symbol
+  )
+else
+    console.log('failed')
