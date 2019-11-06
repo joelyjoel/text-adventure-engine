@@ -3,7 +3,7 @@
 export const possessiveAdjectiveRegex = /my|your|his|her|its|their|(?:[\w ]*\w(?:\'s|s\'))/
 
 export function toPossessiveAdjective(nounPhrase:string) {
-  // handle special cases:
+  // handle pronouns:
   switch(nounPhrase.toLowerCase()) {
     case 'i':
     case 'me':

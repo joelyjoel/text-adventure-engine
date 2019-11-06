@@ -31,7 +31,6 @@ const irregularConjucations:{
     [key: number]: string
   }
 } = {
-  // be IS THIS EVEN A VERB?
   be: {
     1: 'am', 2:'are', 3:'is', 4:'are', 5:'are', 6:'are', 7:'being', 8:'been',
     9:'was',
@@ -47,7 +46,7 @@ const irregularConjucations:{
   know: {8: 'known', 9:'knew'},
   get: {8:'got', 9:'got'},
   run: {8:'run', 9:'ran'},
-  were: {1:'was', 3:'was'}, // this is a cludge and i know it
+  were: {1:'was', 3:'was'},
   have: {3:'has', 8:'had', 9:"had"},
   eat: {7:'eating', 8:'eaten', 9:'ate'},
   contain: {7:'containing', 8:'contained', 9:'contained'},

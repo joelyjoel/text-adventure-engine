@@ -1,5 +1,5 @@
 import {whole, autoBracket} from 'regops'
-import { possessiveAdjectiveRegex } from './util/toPossessiveAdjective';
+import { possessiveAdjectiveRegex, toPossessiveAdjective } from './util/toPossessiveAdjective';
 import { getPerson } from './util/getPerson';
 import { conjugate, anyPersonRegex } from './util/conjugate';
 import { Syntax } from './Syntax';
@@ -32,20 +32,32 @@ export class Template implements Syntax {
     
   }
 
+  /** Generate a string given some arguments. */
   str(args:string[]) {
+    // Throw an error if wrong number of arguments are given.
     if(args.length != this.params.length)
       throw "Wrong number of arguments for template."
+
+    // Prepare arguments
+    args = args.map((arg, i) => {
+      if(this.params[i].possessive)
+        return toPossessiveAdjective(arg);
+      else
+        return arg;
+    })
 
     let fluff = this.template.split(placeholderRegex);
 
     let str = handleConjugation(fluff[0], undefined, args[0]);
     for(let i=1; i<fluff.length; ++i) {
-      str += args[i-1] + handleConjugation(fluff[i], args[i-1], args[i]);
+      let arg = args[i-1];
+      str += arg + handleConjugation(fluff[i], arg, args[i]);
     }
 
     return str;
   }
 
+  /** Get a regular expression version of the template. */
   regex() {
     let argRegexs = this.params.map(arg => {
       if(arg.possessive)
@@ -63,6 +75,7 @@ export class Template implements Syntax {
     return new RegExp(src, 'i');
   }
 
+  /** Extract the arguments from a given string if it matches the template. */
   parse(str:string) {
     let parse = new RegExp(whole(this.regex()).source, 'i').exec(str);
     if(parse) {
@@ -74,9 +87,14 @@ export class Template implements Syntax {
     } else
       return null;
   }
+
+  /** Check whether the template matches a given string. */
+  test(str:string) {
+    return new RegExp(whole(this.regex()).source, 'i').test(str);
+  }
 }
 
-
+/** (Internal) handle conjugation for part of a `Template`. */
 function handleConjugation(str:string, left?:string, right?:string) {
   const leftPerson = left ? getPerson(left) : null;
   const rightPerson = right ? getPerson(right) : null;
@@ -109,6 +127,7 @@ function handleConjugation(str:string, left?:string, right?:string) {
   return out;
 }
 
+/** (Internal) Handle regexp conjugation for part of a `Template` */
 function handleRegexConjugation(str:string, left?:string, right?:string) {
   const leftPerson = typeof left == 'string' ? getPerson(left) : null;
   const rightPerson = typeof right == 'string' ? getPerson(right) : null;
