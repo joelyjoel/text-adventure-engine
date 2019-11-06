@@ -1,8 +1,8 @@
 import { Parse } from "./Parse";
 
-const articleRegex = /^(?:the|an|a)(?=\s)/i;
-const demonstrativeRegex = /^(this|that)(?=\s)/
-const possessiveRegex = /^(?:my|your|his|her|its|our|their|[\w ]+\'s)(?=\s)/i;
+const articleRegex = /^(?:the|an|a)(?=\s|$)/i;
+const demonstrativeRegex = /^(this|that)(?=\s|$)/
+const possessiveRegex = /^(?:my|your|his|her|its|our|their|[\w ]+\'s)(?=\s|$)/i;
 
 export interface IdentifierParse extends Parse {
   identifier: string;

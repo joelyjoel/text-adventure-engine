@@ -20,9 +20,10 @@ const dict = new Dictionary()
   .addNouns(
     "cat", "dog", "mullet", "buzz cut"
   )
+  .addAdjectives('hairy');
 
 console.log(
     parseNoun("my hairy buzz cut", dict)
 )
 
-console.log(parseNounPhrase('my hairy mullet', dict))
+console.log(parseNounPhrase('the hairy mullet', dict))

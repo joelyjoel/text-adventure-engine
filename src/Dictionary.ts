@@ -4,18 +4,26 @@ import { Adjective } from "./Adjective";
 const articleRegex = /the|a|an/;
 
 export class Dictionary {
+  /** List of all nouns in the dictionary. */
   nouns: Noun[];
+  /** Nouns indexed by last word. */
   nounIndex: {[key:string]:Noun[]}
 
+  /** List of all adjectives in the dictionary. */
   adjectives: Adjective[];
+  /** Adjectives indexed by last word. */
   adjectiveIndex: {[key: string]: Adjective[]}
 
   constructor() {
     this.nouns = [];
     this.nounIndex = {};
+
+    this.adjectives = [];
+    this.adjectiveIndex = {};
   }
 
-  addNoun(noun:Noun|string) {
+  /** Add a noun to the dictionary. */
+  addNoun(noun:Noun|string) : this {
     if(typeof noun == 'string') {
       this.addNoun(new Noun(noun));
     } 
@@ -32,14 +40,16 @@ export class Dictionary {
     return this;
   }
 
-  addNouns(...nouns:(Noun|string)[]) {
+  /** Add multiple nouns to the dictionary */
+  addNouns(...nouns:(Noun|string)[]) : this {
     for(let noun of nouns)
       this.addNoun(noun);
-      
+
     return this;
   }
 
-  addAdjective(adj: Adjective|string) {
+  /** Add an adjective to the dictionary. */
+  addAdjective(adj: Adjective|string) : this {
     if(typeof adj == 'string')
       this.addAdjective(new Adjective(adj));
     else if(adj instanceof Adjective) {
@@ -55,7 +65,8 @@ export class Dictionary {
     return this;
   }
 
-  addAdjectives(adjs: (Adjective|string)[]) {
+  /** Add multiple adjectives to the dictionary. */
+  addAdjectives(...adjs: (Adjective|string)[]) : this {
     for(let adj of adjs)
       this.addAdjective(adj);
 

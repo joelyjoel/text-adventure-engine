@@ -2,11 +2,13 @@ import { Dictionary } from "../Dictionary";
 import { parseNoun, NounParse } from "./parseNoun";
 import { Parse } from "./Parse";
 import { parseIdentifier, IdentifierParse } from "./parseIdentifier";
+import { parseAdjectives, AdjectiveParse } from "./parseAdjectives";
 
 interface NounPhraseParse extends Parse {
   pos: 'nounphrase';
   identifier: IdentifierParse;
   noun: NounParse;
+  adjectives: AdjectiveParse[];
 }
 
 export function parseNounPhrase(str:string, dict:Dictionary):NounPhraseParse|null {
@@ -16,10 +18,12 @@ export function parseNounPhrase(str:string, dict:Dictionary):NounPhraseParse|nul
     let preNoun = str.slice(0, noun.from).trim();
     let identifier = parseIdentifier(preNoun);
     if(identifier) {
-      let middlePart = str.slice(identifier.to, noun.from).trim();
-      if(middlePart.length == 0)
+      const middlePart = str.slice(identifier.to, noun.from).trim();
+      const adjectives = parseAdjectives(middlePart, dict);
+      if(adjectives)
         return {
           identifier: identifier,
+          adjectives,
           noun: noun,
           pos: 'nounphrase',
           from: 0,
