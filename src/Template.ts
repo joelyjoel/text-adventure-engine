@@ -1,11 +1,15 @@
 import {whole, autoBracket} from 'regops'
-import { possessiveAdjectiveRegex, toPossessiveAdjective } from './util/toPossessiveAdjective';
+import { 
+  possessiveAdjectiveRegex, 
+  toPossessiveAdjective 
+} from './util/toPossessiveAdjective';
 import { getPerson } from './util/getPerson';
 import { conjugate, anyPersonRegex } from './util/conjugate';
 import { Syntax } from './Syntax';
+import { SyntacticPredicate } from './linking/SyntacticPredicate';
 
 const placeholderRegex = /@?#?_(?:'s)?/g;
-const conjugateRegex = /(?:<|>)\w+/g
+const conjugateRegex = /(?:<|>)\w+/g;
 
 export class Template implements Syntax {
   readonly params: {
@@ -13,7 +17,10 @@ export class Template implements Syntax {
     possessive: boolean;
     number: boolean;
   }[];
+  numberOfArgs: number;
   readonly template: string;
+
+  predicate?: SyntacticPredicate;
 
   constructor(template:string) {
     this.template = template
@@ -29,6 +36,7 @@ export class Template implements Syntax {
     else
       this.params = [];
 
+    this.numberOfArgs = this.params.length;
     
   }
 
@@ -94,7 +102,7 @@ export class Template implements Syntax {
   }
 }
 
-/** (Internal) handle conjugation for part of a `Template`. */
+/** (Internal) Handle conjugation for part of a `Template`. */
 function handleConjugation(str:string, left?:string, right?:string) {
   const leftPerson = left ? getPerson(left) : null;
   const rightPerson = right ? getPerson(right) : null;
