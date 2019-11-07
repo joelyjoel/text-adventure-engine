@@ -5,13 +5,12 @@ import {
 } from './util/toPossessiveAdjective';
 import { getPerson } from './util/getPerson';
 import { conjugate, anyPersonRegex } from './util/conjugate';
-import { Syntax } from './Syntax';
 import { SyntacticPredicate } from './linking/SyntacticPredicate';
 
 const placeholderRegex = /@?#?_(?:'s)?/g;
 const conjugateRegex = /(?:<|>)\w+/g;
 
-export class Template implements Syntax {
+export class Template {
   readonly params: {
     literal:boolean;
     possessive: boolean;

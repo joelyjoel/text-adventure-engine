@@ -4,7 +4,7 @@ import { Dictionary } from "./Dictionary";
 import { parseNoun } from "./parsing/parseNoun";
 import { parseArticle, parsePossessive, parseDemonstrative } from "./parsing/parseIdentifier";
 import { parseNounPhrase } from "./parsing/parseNounPhrase";
-import { interpretNounPhrase } from "./linking/interpretNounPhrase";
+import { interpretNounPhrase } from "./interpretation/interpretNounPhrase";
 
 
 

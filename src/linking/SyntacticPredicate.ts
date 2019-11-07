@@ -1,10 +1,10 @@
 import { Predicate } from "../logic";
-import { Syntax } from "../Syntax";
+import { StatementSyntax } from "../parsing/parseStatement";
 
 export class SyntacticPredicate extends Predicate {
-  syntaxs: Syntax[];
+  syntaxs: StatementSyntax[];
 
-  constructor(numberOfArgs:number, syntaxs:Syntax[], symbol?:string) {
+  constructor(numberOfArgs:number, syntaxs:StatementSyntax[], symbol?:string) {
     super(numberOfArgs, symbol);
 
     this.syntaxs = [];
