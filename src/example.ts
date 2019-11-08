@@ -26,7 +26,7 @@ console.log(str)
 let interpretation = interpretNounPhrase(str, dict)
 if(interpretation)
   console.log(
-    interpretation.symbol
+    interpretation.table.symbol
   )
 else
     console.log('failed')

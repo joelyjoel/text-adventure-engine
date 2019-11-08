@@ -15,6 +15,7 @@ export class Template {
     literal:boolean;
     possessive: boolean;
     number: boolean;
+    entity: boolean;
   }[];
   numberOfArgs: number;
   readonly template: string;
@@ -27,11 +28,13 @@ export class Template {
     let placeholders = template.match(placeholderRegex);
     
     if(placeholders)
-      this.params = placeholders.map(ph => ({
-        literal: /@/.test(ph),
-        number: /#/.test(ph),
-        possessive: /\'s/.test(ph)
-      }))
+      this.params = placeholders.map(ph => {
+        const literal = /@/.test(ph);
+        const  number = /#/.test(ph);
+        const possessive = /\'s/.test(ph);
+        const entity = !(literal || number);
+        return { literal, number, possessive, entity}
+      })
     else
       this.params = [];
 

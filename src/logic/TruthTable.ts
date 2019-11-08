@@ -1,4 +1,5 @@
 import { Sentence } from "./Sentence";
+import { Entity } from "./Entity";
 
 export class TruthTable {
   defaultTruthValue: string;
@@ -35,5 +36,33 @@ export class TruthTable {
         .map(({sentence, truth}) => sentence.symbol + '=' + truth)
         .join(';') 
       + '}'
+  }
+
+  /** Count the number of entries in the table. */
+  get length() : number {
+    return this.facts.length;
+  }
+
+  get entities() : Entity[] {
+    const list:Entity[] = [];
+    for(let key in this.sentenceIndex) {
+      for(let arg of this.sentenceIndex[key].sentence.args)
+        if(!list.includes(arg))
+          list.push(arg);
+    }
+
+    return list;
+  }
+
+  /** Absorb another table into the table */
+  merge(...tables:TruthTable[]) {
+    for(let table of tables)
+      for(let symbol in table.sentenceIndex) {
+        let {sentence, truth} = table.sentenceIndex[symbol];
+        this.assign(sentence, truth);
+      }
+      
+    // Chainable
+    return this
   }
 }

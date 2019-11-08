@@ -1,6 +1,8 @@
 import { parseArticle } from "./parseIdentifier"
 import { Dictionary } from "../Dictionary";
 import { parseNounPhrase } from "./parseNounPhrase";
+import { shallowParseStatement, parseStatement } from "./parseStatement";
+import { Context } from "../Context";
 
 // Articles
 test('definite article test', () => {
@@ -68,5 +70,32 @@ test('Parsing phrasal nouns and adjectives', () => {
     expect(parse.adjectives[0].adj.str).toBe('sly');
     expect(parse.adjectives[1].adj.str).toBe('free wheeling');
     expect(parse.noun.noun.str).toBe('buddhist monk');
+  }
+})
+
+test("Shallow parsing a simple statement", () => {
+  const dict = new Dictionary();
+  dict.addNouns('dog', 'messiah');
+
+  let [parse] = shallowParseStatement('the messiah is a dog', dict);
+
+  expect(parse).toBeTruthy();
+  if(parse) {
+    expect(parse.args[0]).toBe('the messiah');
+    expect(parse.syntax.predicate).toBeDefined();
+    if(parse.syntax.predicate)
+      expect(parse.syntax.predicate.symbol).toBe('isADog');
+  }
+})
+
+test("Deep parsing a simple statemtn", () => {
+  const dict = new Dictionary().addNouns('dutch barge').addAdjectives('warm');
+  const ctx = new Context(dict);
+
+  let [parse] = parseStatement('the dutch barge is warm', ctx)
+
+  expect(parse).toBeTruthy();
+  if(parse) {
+    expect(typeof parse.args[0]).toBe('object');
   }
 })
