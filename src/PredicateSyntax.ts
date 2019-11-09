@@ -1,8 +1,9 @@
 import { anyPersonRegex } from "./util/conjugate";
 import { or, g, wholeWord } from "./util/regops.extended";
 import { constructSentence, Tense } from "./util/constructSentence";
+import { SyntacticPredicate } from "./linking/SyntacticPredicate";
 
-type Param = {name: string, index:number}
+type Param = {name: string, index:number, entity: true}
 
 export class PredicateSyntax {
   readonly infinitive: string;
@@ -15,6 +16,8 @@ export class PredicateSyntax {
   /** Used for making ordered lists from associative arguments. */
   readonly paramIndex: {[key:string]: Param}
   readonly numberOfArgs: number;
+
+  predicate?: SyntacticPredicate;
 
   constructor(infinitive:string, params:string[]) {
     this.infinitive = infinitive;
@@ -34,7 +37,7 @@ export class PredicateSyntax {
     this.includesSubject = params.includes('subject');
     this.includesObject = params.includes('object');
 
-    this.params = params.map((name, index) => ({name, index}))
+    this.params = params.map((name, index) => ({name, index, entity:true}))
 
     this.paramIndex = {};
     for(let i=0; i<params.length; ++i)
@@ -43,7 +46,11 @@ export class PredicateSyntax {
     this.numberOfArgs = this.params.length;
   }
 
-  parse(str:string) {
+  parse(str:string):{
+    args: (string|number)[];
+    syntax: PredicateSyntax;
+    tense: Tense;
+  }|null {
     // First locate the verb
     let verbParse = this.verbRegex.exec(str)
     if(verbParse) {

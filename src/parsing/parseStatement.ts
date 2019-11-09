@@ -3,6 +3,7 @@ import { Dictionary } from "../Dictionary";
 import { Parse } from "./Parse";
 import { Template } from "../Template";
 import { parseNounPhrase, NounPhraseParse } from "./parseNounPhrase";
+import { PredicateSyntax } from "../PredicateSyntax";
 
 export interface StatementParse extends Parse {
   args: (string|NounPhraseParse|number)[];
@@ -11,7 +12,7 @@ export interface StatementParse extends Parse {
   pos: 'statement';
 };
 
-export type StatementSyntax = (Template);
+export type StatementSyntax = (Template | PredicateSyntax);
 
 export function * shallowParseStatement(str:string, ctx:Context|Dictionary) {
   if(ctx instanceof Dictionary)
@@ -32,6 +33,16 @@ export function * shallowParseStatement(str:string, ctx:Context|Dictionary) {
           to: str.length,
           str
         };
+      else if (syntax instanceof PredicateSyntax)
+        yield {
+          args: parse.args,
+          syntax,
+          syntaxKind: 'predicate-syntax',
+          pos: 'statement',
+          from: 0,
+          to: str.length,
+          str,
+        }
     }
   }
 }
@@ -40,7 +51,7 @@ export function * parseStatement(str:string, ctx:Context)
 :Generator<StatementParse> {
   for(const {args, syntax, syntaxKind} of shallowParseStatement(str, ctx)) {
     if(syntaxKind == 'template') {
-      const parsedArgs = args.map( (arg, i) => {
+      const parsedArgs = args.map((arg, i) => {
         if(syntax.params[i].entity) {
           return parseNounPhrase(arg as string, ctx.dictionary)
         } else
