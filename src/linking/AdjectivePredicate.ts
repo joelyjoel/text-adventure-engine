@@ -7,7 +7,7 @@ export class AdjectivePredicate extends SyntacticPredicate {
   adjective: Adjective;
 
   constructor(adj:Adjective) {
-    super(1, [
+    super([
       new Template('_ <be '+adj.str),
     ], 'is'+toCamelCase(adj.str));
 

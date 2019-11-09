@@ -8,7 +8,6 @@ export class NounPredicate extends SyntacticPredicate {
 
   constructor(noun:Noun) {
     super(
-      1, // unary
       [new Template("_ <be a "+noun.str)],
       'isA' + toCamelCase(noun.str)
     );

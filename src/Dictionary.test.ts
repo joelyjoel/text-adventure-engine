@@ -1,4 +1,5 @@
 import { Dictionary } from "./Dictionary"
+
 import { Adjective } from "./Adjective";
 import { Noun } from "./Noun";
 
@@ -19,3 +20,20 @@ test('Dictionary includes adjective statements', () => {
   expect(dict.statementSyntaxs.includes(myAdj.predicate.syntaxs[0]))
     .toBe(true);
 })
+
+test('Constructing a noun', () => {
+  let noun = new Noun('cat');
+  expect(noun).toMatchObject({
+    str: 'cat',
+    phrasal: false,
+  })
+})
+
+test('Constructing an adjective', () => {
+  let adj = new Adjective('small');
+  expect(adj).toMatchObject({
+    str: 'small',
+    phrasal: false,
+  })
+})
+

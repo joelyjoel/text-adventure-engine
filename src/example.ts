@@ -6,8 +6,6 @@ import { parseArticle, parsePossessive, parseDemonstrative } from "./parsing/par
 import { parseNounPhrase } from "./parsing/parseNounPhrase";
 import { interpretNounPhrase } from "./interpretation/interpretNounPhrase";
 
-
-
 const dict = new Dictionary()
   .addNouns(
     "cat", "dog", "mullet", "buzz cut"

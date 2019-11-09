@@ -4,7 +4,8 @@ import { StatementSyntax } from "../parsing/parseStatement";
 export class SyntacticPredicate extends Predicate {
   syntaxs: StatementSyntax[];
 
-  constructor(numberOfArgs:number, syntaxs:StatementSyntax[], symbol?:string) {
+  constructor(syntaxs:StatementSyntax[], symbol?:string) {
+    let numberOfArgs = syntaxs[0].numberOfArgs;
     super(numberOfArgs, symbol);
 
     this.syntaxs = [];
