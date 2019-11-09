@@ -10,7 +10,6 @@ export function interpretParsedStatement(parse:StatementParse, ctx:Context) {
     throw "Can't interpret a statement without associated predicate."
 
   const table = new TruthTable;
-  console.log("## Args:", parse.args)
   const args = parse.args.map(arg => {
     if(typeof arg == 'object' && arg.pos == 'nounphrase') {
       let interpretation = interpretParsedNounPhrase(arg, ctx);

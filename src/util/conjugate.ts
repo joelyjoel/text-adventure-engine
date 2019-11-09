@@ -105,7 +105,7 @@ export function anyPersonRegex(infinitive:string) {
     if(!forms.includes(form))
       forms.push(form)
   }
-  return regOp.or(...forms)
+  return regOp.or(...forms.sort((a, b) => b.length-a.length))
 }
 
 
