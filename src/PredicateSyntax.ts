@@ -1,16 +1,20 @@
-import { StatementSyntax } from "./parsing/parseStatement";
 import { anyPersonRegex } from "./util/conjugate";
 import { or, g, wholeWord } from "./util/regops.extended";
+import { constructSentence, Tense } from "./util/constructSentence";
+
+type Param = {name: string, index:number}
 
 export class PredicateSyntax {
-  infinitive: string;
-  verbRegex: RegExp;
-  prepositions: string[];
-  prepositionRegex: RegExp;
-  includesObject: boolean;
-  includesSubject: boolean;
+  readonly infinitive: string;
+  readonly verbRegex: RegExp;
+  readonly prepositions: string[];
+  readonly prepositionRegex: RegExp;
+  readonly includesObject: boolean;
+  readonly includesSubject: boolean;
+  readonly params: Param[]
   /** Used for making ordered lists from associative arguments. */
-  paramIndex: {[key:string]: number}
+  readonly paramIndex: {[key:string]: Param}
+  readonly numberOfArgs: number;
 
   constructor(infinitive:string, params:string[]) {
     this.infinitive = infinitive;
@@ -30,9 +34,13 @@ export class PredicateSyntax {
     this.includesSubject = params.includes('subject');
     this.includesObject = params.includes('object');
 
+    this.params = params.map((name, index) => ({name, index}))
+
     this.paramIndex = {};
     for(let i=0; i<params.length; ++i)
-      this.paramIndex[params[i]] = i;
+      this.paramIndex[params[i]] = this.params[i];
+
+    this.numberOfArgs = this.params.length;
   }
 
   parse(str:string) {
@@ -87,19 +95,35 @@ export class PredicateSyntax {
       return {
         args: ordered,
         syntax: this,
+        tense: 'simple_present',
       }
     } else 
       // Couldn't find verb.
       return null 
   }
 
+  str(args:string[], tense:Tense='simple_present') {
+    let assoc = this.associateArgs(args);
+
+    return constructSentence({tense, infinitive:this.infinitive, ...assoc});
+  }
+
   /** Convert associative arguments into ordered argument list */
   orderArgs(assoc:{[key:string]:string}) {
     let ordered = [];
     for(let key in assoc)
-      ordered[this.paramIndex[key]] = assoc[key];
+      ordered[this.paramIndex[key].index] = assoc[key];
     
     return ordered;
+  }
+
+  /** Convert ordered argument list into an associative argument object. */
+  associateArgs(ordered: string[]) {
+    let assoc:{[key:string]:string} = {};
+    for(let i in ordered) {
+      assoc[this.params[i].name] = ordered[i];
+    }
+    return assoc;
   }
 }
 

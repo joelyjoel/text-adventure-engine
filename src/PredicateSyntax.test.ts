@@ -18,5 +18,14 @@ test('Parsing using a PredicateSyntax', () => {
   expect(parse).toStrictEqual({
     args: ['the boy', 'the dutch barge'],
     syntax: syntax,
+    tense: 'simple_present'
   })
+})
+
+test('Constructing sentences using PredicateSyntax', () => {
+  const syntax = new PredicateSyntax('live', ['subject', 'in']);
+
+  let str = syntax.str(['the boy', 'a warm dutch barge']);
+
+  expect(str).toBe('the boy lives in a warm dutch barge');
 })

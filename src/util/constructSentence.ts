@@ -1,18 +1,29 @@
 import { Template } from "../Template";
 
+export type Tense = 'simple_present';
+
+const specialNames = ['infinitive', 'tense', 'object', 'subject'];
+
 export function constructSentence(
-  verb: string,
-  tense: 'simple_present',
-  subject?: string,
-  object?: string,
-  prepositions?: {[argument:string]: string},
-) {
+  args:{
+    infinitive: string,
+    tense: Tense,
+    [key: string]: string
+  }
+):string {
+  const {infinitive, tense, subject, object} = args
+
+  let prepositions:{[key:string]:string} = {};
+  for(let name in args)
+    if(!specialNames.includes(name))
+      prepositions[name] = args[name];
+
   if(tense == 'simple_present') {
     if(!subject)
       throw "Cannot construct sentence in simple present tense without subject."
 
     // Add a conjugator to the last word of the verb.
-    verb = addConjugator(verb);
+    let verb = addConjugator(infinitive);
 
     let toConcat = [new Template("_ "+verb).str([subject])];
     if(object)
@@ -22,7 +33,8 @@ export function constructSentence(
       toConcat.push(prep, prepositions[prep])
 
     return toConcat.join(' ');
-  }
+  } else
+    throw 'Unexpected tense: ' + tense;
 }
 
 /**  Insert a conjugator symbol on the last word of a verb. */
