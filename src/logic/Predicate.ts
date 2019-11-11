@@ -5,7 +5,7 @@ export class Predicate {
   numberOfArgs: number;
   _symbol?: string;
 
-  constructor(numberOfArgs=1, symbol?:string) {
+  constructor(numberOfArgs:number, symbol?:string) {
     this.id = Predicate.predicate_counter++;
     this.numberOfArgs = numberOfArgs;
 

@@ -12,6 +12,9 @@ export interface StatementParse extends Parse {
   pos: 'statement';
 };
 
+/** Classes that can be used to parse NLP statements. 
+ * e.g. "The cat is in the room".
+*/
 export type StatementSyntax = (Template | PredicateSyntax);
 
 export function * shallowParseStatement(str:string, ctx:Context|Dictionary) {
