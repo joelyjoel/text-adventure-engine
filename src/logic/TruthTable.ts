@@ -3,7 +3,7 @@ import { Entity } from "./Entity";
 
 export class TruthTable {
   defaultTruthValue: string;
-  sentenceIndex: {[key:string]: {sentence:Sentence, truth:string}};
+  readonly sentenceIndex: {[key:string]: {sentence:Sentence, truth:string}};
   /** For redirecting identical entities to their main entity. */
   private identityMap: {[symbol:string]:Entity};
 
@@ -50,10 +50,10 @@ export class TruthTable {
   /** Generate a symbollic string version of the table. */
   get symbol() {
     return '{' +
-      this.facts
-        .map(({sentence, truth}) => sentence.symbol + '=' + truth)
-        .join(';') 
-      + '}'
+    this.facts
+      .map(({sentence, truth}) => `(${sentence.symbol}=${truth})`)
+      .join(' & ') 
+    + '}';
   }
 
   /** Count the number of truth-assignments in the table. */
@@ -73,8 +73,28 @@ export class TruthTable {
     return list;
   }
 
-  /** Absorb another table into the table */
-  merge(...tables:TruthTable[]) {
+  /** Create a copy of this truth table */
+  clone():TruthTable {
+    // Create a new, blank table.
+    let newTable = new TruthTable;
+
+    // Loop through all entries in this table
+    const facts = this.facts;
+    for(let {sentence, truth} of facts) {
+      newTable.assign(
+        new Sentence(sentence.predicate, ...sentence.args),
+        truth
+      )
+    }
+
+    // Copy identity mappings over to the new table.
+    Object.assign(newTable.identityMap, this.identityMap);
+
+    return newTable;
+  }
+
+  /** Absorb another table into the table. */
+  merge(...tables:TruthTable[]):this {
     for(let table of tables)
       for(let symbol in table.sentenceIndex) {
         let {sentence, truth} = table.sentenceIndex[symbol];
@@ -111,7 +131,7 @@ export class TruthTable {
 
     }
 
-    // Add an entry to the identity map so that both entities can be used interchangeably in future
+    // Add an entry to the identity map so that both entities can be used interchangeably.
     if(addToMap)
       this.identityMap[duplicate.symbol] = mainEntity;
   }

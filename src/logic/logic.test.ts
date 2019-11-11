@@ -1,4 +1,4 @@
-import { Sentence, Predicate, Entity, TruthTable } from ".";
+import { Sentence, Predicate, Entity, TruthTable, Variable, VariableTable } from ".";
 
 
 
@@ -57,4 +57,88 @@ test('Truth table identity', () => {
   table.makeIdentical(d, a, false);
   expect(table.lookUp(new Sentence(P,a,b))).toBe(table.defaultTruthValue);
   expect(table.lookUp(new Sentence(P,d,b))).toBe('true');
+})
+
+test('Cloning a truth table', () => {
+  const P = new Predicate(1);
+  const Q = new Predicate(2);
+  const a = new Entity;
+  const b = new Entity;
+
+  const table1 = new TruthTable;
+  table1.assign(new Sentence(P, a), 'true');
+  table1.assign(new Sentence(Q, a, b), 'true');
+
+  const table2 = table1.clone();
+  expect(table2.lookUp(new Sentence(P, a))).toBe('true');
+  expect(table2.lookUp(new Sentence(Q, a, b))).toBe('true');
+})
+
+test('VariableTable', () => {
+  // Construct a variable table
+  const P = new Predicate(1);
+  const Q = new Predicate(1);
+  const x = new Variable;
+  const y = new Variable;
+
+  const varTable = new VariableTable;
+  varTable.addVariables(x, y);
+  varTable.assign(new Sentence(P, x), 'true');
+  varTable.assign(new Sentence(Q, y), 'true');
+
+  // Make a substitution of that table.
+  const a = new Entity;
+  const b = new Entity;
+  let subbed = varTable.substitute(a, b);
+
+  // Assert that the subsitution worked
+  expect(subbed.lookUp(new Sentence(P, x))).toBe(subbed.defaultTruthValue);
+  expect(subbed.lookUp(new Sentence(Q, y))).toBe(subbed.defaultTruthValue);
+  expect(subbed.lookUp(new Sentence(P, a))).toBe('true');
+  expect(subbed.lookUp(new Sentence(P, b))).toBe(subbed.defaultTruthValue);
+  expect(subbed.lookUp(new Sentence(Q, a))).toBe(subbed.defaultTruthValue);
+  expect(subbed.lookUp(new Sentence(Q, b))).toBe('true');
+  
+  // Assert that the var table was uneffected.
+  expect(varTable.lookUp(new Sentence(P, x))).toBe('true');
+  expect(varTable.lookUp(new Sentence(Q, y))).toBe('true');
+  expect(varTable.lookUp(new Sentence(P, a))).toBe(varTable.defaultTruthValue);
+  expect(varTable.lookUp(new Sentence(Q, b))).toBe(varTable.defaultTruthValue);
+})
+
+test('VariableTable::findMappingErrors', () => {
+  const P = new Predicate(1);
+  const Q = new Predicate(2);
+  const a = new Entity;
+  const b = new Entity;
+
+  let theTruth = new TruthTable;
+  theTruth.assign(new Sentence(P, a), 'true');
+  theTruth.assign(new Sentence(Q, a, b), 'maybe');
+
+  let hypothesis = new VariableTable;
+  hypothesis.addVariables(new Variable, new Variable);
+  const [x, y] = hypothesis.variables;
+  hypothesis.assign(new Sentence(Q, x, y), 'maybe');
+
+  expect(hypothesis.findMappingErrors(theTruth, [a, b]))
+    .toBe(null);
+  expect(hypothesis.testMapping(theTruth, [a, b])).toBe(true);
+
+  // Add another sentence to my hypothesis
+  hypothesis.assign(new Sentence(P, x), 'true');
+
+  expect(hypothesis.findMappingErrors(theTruth, [a, b]))
+    .toBe(null);
+  expect(hypothesis.testMapping(theTruth, [a, b])).toBe(true);
+
+
+  // Add a sentence that shouldn't match theTruth
+  hypothesis.assign(new Sentence(P, y), 'true');
+  expect(hypothesis.findMappingErrors(theTruth, [a, b]))
+    .toStrictEqual([new Sentence(P, b)]);
+  expect(hypothesis.testMapping(theTruth, [a, b])).toBe(false);
+  expect(hypothesis.findMappingErrors(theTruth, [b, a]))
+    .toHaveLength(2);
+  expect(hypothesis.testMapping(theTruth, [b, a])).toBe(false);
 })
