@@ -10,4 +10,10 @@ export class Variable extends Entity {
 
     super(symbol);
   }
+
+  /** Generate an unlimited quantity of new variables. */
+  static * bulk() {
+    while(true)
+      yield new Variable;
+  }
 }

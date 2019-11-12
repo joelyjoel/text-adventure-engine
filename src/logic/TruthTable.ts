@@ -128,7 +128,6 @@ export class TruthTable {
         this.sentenceIndex[newSymbol] = this.sentenceIndex[originalSymbol]
         delete this.sentenceIndex[originalSymbol];
       }
-
     }
 
     // Add an entry to the identity map so that both entities can be used interchangeably.
@@ -136,7 +135,7 @@ export class TruthTable {
       this.identityMap[duplicate.symbol] = mainEntity;
   }
 
-  /** Convert any duplicate arguments into the main entity of the identity group */
+  /** Create a new sentence, converting any duplicate arguments into the main entity of its identity group */
   idMapSentence({predicate, args}: Sentence) {
     return new Sentence(predicate, ...args.map(arg => {
       if(arg instanceof Entity) {
@@ -146,5 +145,14 @@ export class TruthTable {
       } else
         return arg;
     }))
+  }
+
+  /** Check that another table could be merged into this table without changing any existing assignements. */
+  checkCompatible(table: TruthTable) {
+    return table.facts.every(({sentence, truth}) => {
+      const symbol = this.idMapSentence(sentence).symbol;
+      return (!this.sentenceIndex[symbol]) 
+        || this.sentenceIndex[symbol].truth == truth
+    })
   }
 }

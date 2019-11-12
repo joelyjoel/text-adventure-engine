@@ -1,6 +1,6 @@
 import { parseNounPhrase } from "../parsing";
 import { Dictionary } from "../Dictionary";
-import { Entity, Sentence } from "../logic";
+import { Entity, Sentence, Variable, VariableTable } from "../logic";
 import { TruthTable } from "../logic/TruthTable";
 import { Context } from "../Context";
 import { NounPhraseParse } from "../parsing/parseNounPhrase";
@@ -23,13 +23,14 @@ export function interpretParsedNounPhrase(parse:NounPhraseParse, ctx:Context) {
     .map(adjparse => adjparse.adj.predicate);
 
   // Create a stand in entity variable
-  const x = new Entity;
+  const x = new Variable;
 
-  const table = new TruthTable;
+  // Create variable table to express the interpretation
+  const table = new VariableTable(x);
   table.assign(new Sentence(nounPredicate, x), 'true')
   for(let predicate of adjPredicates)
     table.assign(new Sentence(predicate, x), 'true');
 
-  return {x, table};
+  return table;
 }
 

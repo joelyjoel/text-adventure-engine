@@ -6,7 +6,7 @@ import { parseStatement } from "../parsing/parseStatement";
 import { TruthTable } from "../logic/TruthTable";
 import { Noun } from "../Noun";
 import { Adjective } from "../Adjective";
-import { Sentence } from "../logic";
+import { Sentence, VariableTable } from "../logic";
 
 test('Interpretting a noun phrase', () => {
   const dict = new Dictionary().addNouns('dog').addAdjective('hairy');
@@ -14,8 +14,7 @@ test('Interpretting a noun phrase', () => {
   let interpretation = interpretNounPhrase('the hairy dog', dict);
 
   expect(interpretation).toBeTruthy();
-  expect(interpretation).toHaveProperty('x')
-  expect(interpretation).toHaveProperty('table');
+  expect(interpretation).toBeInstanceOf(VariableTable)
   // This test could use some elaboration.
 })
 
@@ -31,7 +30,7 @@ test("Interpretting a statement", () => {
   let interpretation = interpretParsedStatement(parse, ctx);
 
   expect(interpretation).toBeTruthy();
-  expect(interpretation).toBeInstanceOf(TruthTable)
+  expect(interpretation).toBeInstanceOf(VariableTable)
 
   if(interpretation instanceof TruthTable) {
     expect(interpretation.length).toBeGreaterThan(1);

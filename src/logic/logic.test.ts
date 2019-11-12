@@ -142,3 +142,21 @@ test('VariableTable::findMappingErrors', () => {
     .toHaveLength(2);
   expect(hypothesis.testMapping(theTruth, [b, a])).toBe(false);
 })
+
+test('Merging VariableTables', () => { 
+
+  // Create two variable tables
+  let [x, y, z] = Variable.bulk();
+  let P = new Predicate(2);
+  let table1 = new VariableTable(x, y);
+  table1.assign(new Sentence(P, x, y), 'true');
+  let table2 = new VariableTable(y, z);
+  table2.assign(new Sentence(P, y, z), 'true');
+
+  table1.merge(table2);
+  expect(table1.variables).toStrictEqual([x,y,z]);
+  expect(table1.lookUp(new Sentence(P, x, y))).toBe('true');
+  expect(table1.lookUp(new Sentence(P, y, z))).toBe('true');
+  expect(table2.lookUp(new Sentence(P, x, y)))
+    .toBe(table2.defaultTruthValue);
+})

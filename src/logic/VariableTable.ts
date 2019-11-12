@@ -5,13 +5,16 @@ import { Entity } from "./Entity";
 export class VariableTable extends TruthTable {
   readonly variables: Variable[];
 
-  constructor() {
+  constructor(...variables:Variable[]) {
     super();
     this.variables = [];
+    if(variables.length)
+      this.addVariables(...variables)
   }
 
   addVariable(v:Variable) {
-    this.variables.push(v);
+    if(!this.variables.includes(v))
+      this.variables.push(v);
   }
 
   addVariables(...vars:Variable[]) {
@@ -67,5 +70,14 @@ export class VariableTable extends TruthTable {
         .map(({sentence, truth}) => `(${sentence.symbol}=${truth})`)
         .join(' & ') 
       + '}';
+  }
+
+  merge(...tables:(TruthTable|VariableTable)[]) {
+    for(let table of tables)
+      if(table instanceof VariableTable)
+        this.addVariables(...table.variables);
+    
+    TruthTable.prototype.merge.call(this, ...tables);
+    return this;
   }
 }
