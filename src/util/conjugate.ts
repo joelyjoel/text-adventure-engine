@@ -24,16 +24,16 @@ const endsWithShortConsonant = /[aeiou][tpdn]$/
 const endsWithE = /e$/
 const endsWithOOrX = /[oxzs]$/
 
-const FIRST_PERSON_SINGULAR = 1   // I
-const SECOND_PERSON_SINGULAR = 2  // you
-const THIRD_PERSON_SINGULAR = 3   // he/she/it
-const FIRST_PERSON_PLURAL = 4     // we
-const SECOND_PERSON_PLURAL = 5    // you
-const THIRD_PERSON_PLURAL = 6     // they
-const GERUND = 7
-const PAST_PARTICIPLE = 8
-const PAST_TENSE = 9
-const ALL_PERSON_REGEX = 10
+export const FIRST_PERSON_SINGULAR = 1   // I
+export const SECOND_PERSON_SINGULAR = 2  // you
+export const THIRD_PERSON_SINGULAR = 3   // he/she/it
+export const FIRST_PERSON_PLURAL = 4     // we
+export const SECOND_PERSON_PLURAL = 5    // you
+export const THIRD_PERSON_PLURAL = 6     // they
+export const GERUND = 7
+export const PAST_PARTICIPLE = 8
+export const PAST_TENSE = 9
+export const ALL_PERSON_REGEX = 10
 
 declare type VerbForm = 1|2|3|4|5|6|7|8|9|10;
 
