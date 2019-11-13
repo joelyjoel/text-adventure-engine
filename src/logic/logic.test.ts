@@ -35,7 +35,7 @@ test('Truth table identity', () => {
   expect(table.idMapSentence(new Sentence(P, a, b)).symbol)
     .toBe(new Sentence(P,a,c).symbol);
 
-  expect(table.sentenceIndex[new Sentence(P, a, c).symbol].truth)
+  expect(table.lookUp(new Sentence(P, a, c)))
     .toBe('true');
 
   expect(table.lookUp(new Sentence(P, a, b))).toBe('true');

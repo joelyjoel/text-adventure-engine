@@ -1,50 +1,70 @@
 import { Sentence } from "./Sentence";
 import { Entity } from "./Entity";
 
+type TruthAssignment = {sentence:Sentence, truth:string};
+
 export class TruthTable {
   defaultTruthValue: string;
-  readonly sentenceIndex: {[key:string]: {sentence:Sentence, truth:string}};
+  private index: {
+    [predicate_symbol:string]: {
+      [argsSymbol:string]: {sentence:Sentence, truth:string}
+    };
+  };
   /** For redirecting identical entities to their main entity. */
   private identityMap: {[symbol:string]:Entity};
 
   constructor() {
-    this.defaultTruthValue = 'false';
-    this.sentenceIndex = {};
+    this.defaultTruthValue = '?';
+    this.index = {};
     this.identityMap = {};
   }
 
   /** Assign a truth value to a sentence */
-  assign(sentence:Sentence, truth:string) {
+  assign(sentence:Sentence, truth:string):this {
     sentence = this.idMapSentence(sentence);
-    let symbol = sentence.symbol;
-    if(this.sentenceIndex[symbol])
-      this.sentenceIndex[symbol].truth = truth;
-    else
-      this.sentenceIndex[symbol] = {sentence, truth}
+
+    const {predicateSymbol, argsSymbol} = sentence;
+
+    if(!this.index[predicateSymbol])
+      this.index[predicateSymbol] = {[argsSymbol]: {sentence, truth}};
+    else {
+      if(this.index[predicateSymbol][argsSymbol])
+        this.index[predicateSymbol][argsSymbol].truth = truth;
+      else
+        this.index[predicateSymbol][argsSymbol] = {sentence, truth};
+    }
+
+    return this; 
   }
 
   /** Remove a truth assignment from the table */
   remove(sentence: Sentence) {
-    sentence = this.idMapSentence(sentence)
-
-    let symbol = sentence.symbol;
-    delete this.sentenceIndex[symbol];
+    const {predicateSymbol, argsSymbol} = this.idMapSentence(sentence);
+    
+    if(this.index[predicateSymbol])
+      delete this.index[predicateSymbol][argsSymbol];
   }
 
   /** Look up the truth value of a sentence */
   lookUp(sentence:Sentence) {
-    sentence = this.idMapSentence(sentence);
+    const {predicateSymbol, argsSymbol} = this.idMapSentence(sentence);
 
-    let symbol = sentence.symbol;
-    if(this.sentenceIndex[symbol])
-      return this.sentenceIndex[symbol].truth;
+    if(this.index[predicateSymbol] && this.index[predicateSymbol][argsSymbol])
+      return this.index[predicateSymbol][argsSymbol].truth;
     else
       return this.defaultTruthValue;
   }
 
   /** Get a list of all truth-assignments in the table */
-  get facts() {
-    return Object.values(this.sentenceIndex);
+  get facts():TruthAssignment[] {
+    return [...this.iterate()]
+  }
+
+  /** Iterate through every truth-assignement in the table */
+  *iterate() {
+    for(let i in this.index)
+      for(let j in this.index[i])
+        yield this.index[i][j];
   }
 
   /** Generate a symbollic string version of the table. */
@@ -64,12 +84,11 @@ export class TruthTable {
   /** Get a list of all unique entities involved in the table. */
   get entities() : Entity[] {
     const list:Entity[] = [];
-    for(let key in this.sentenceIndex) {
-      for(let arg of this.sentenceIndex[key].sentence.args)
+    for(let {sentence} of this.iterate())
+      for(let arg of sentence.args)
         if(!list.includes(arg))
           list.push(arg);
-    }
-
+    
     return list;
   }
 
@@ -96,10 +115,8 @@ export class TruthTable {
   /** Absorb another table into the table. */
   merge(...tables:TruthTable[]):this {
     for(let table of tables)
-      for(let symbol in table.sentenceIndex) {
-        let {sentence, truth} = table.sentenceIndex[symbol];
+      for(let {sentence, truth} of table.iterate())
         this.assign(sentence, truth);
-      }
       
     // Chainable
     return this
@@ -115,18 +132,22 @@ export class TruthTable {
     while(this.identityMap[mainEntity.symbol])
       mainEntity = this.identityMap[mainEntity.symbol];
 
-    for(let symbol in this.sentenceIndex) {
-      let {sentence} = this.sentenceIndex[symbol];
-      let originalSymbol = sentence.symbol;
+    for(let {sentence} of this.iterate()) {
+      let originalSymbol = sentence.argsSymbol;
+
       for(let i in sentence.args)
         if(sentence.args[i] == duplicate)
           sentence.args[i] = mainEntity;
 
-      // If the arguments have been changes, change the sentence's key in `sentenceIndex` 
-      let newSymbol = sentence.symbol;
-      if(newSymbol!= originalSymbol) {
-        this.sentenceIndex[newSymbol] = this.sentenceIndex[originalSymbol]
-        delete this.sentenceIndex[originalSymbol];
+      // If the arguments have been changes, change the sentence's key in the index
+      let newSymbol = sentence.argsSymbol;
+      if(newSymbol != originalSymbol) {
+        let subIndex = this.index[sentence.predicateSymbol];
+        if(!subIndex)
+          throw 'Indexing fault: ' + sentence.predicateSymbol;
+
+        subIndex[newSymbol] = subIndex[originalSymbol]
+        delete subIndex[originalSymbol];
       }
     }
 
@@ -150,9 +171,8 @@ export class TruthTable {
   /** Check that another table could be merged into this table without changing any existing assignements. */
   checkCompatible(table: TruthTable) {
     return table.facts.every(({sentence, truth}) => {
-      const symbol = this.idMapSentence(sentence).symbol;
-      return (!this.sentenceIndex[symbol]) 
-        || this.sentenceIndex[symbol].truth == truth
+      let internalTruth = this.lookUp(sentence);
+      return truth == internalTruth || internalTruth == '?'
     })
   }
 }

@@ -17,4 +17,13 @@ export class Sentence {
     return this.predicate.symbol 
       + '(' + this.args.map(e => e.symbol).join(',') + ')';
   }
+
+
+  get predicateSymbol() {
+    return this.predicate.symbol;
+  }
+
+  get argsSymbol(){
+    return this.args.map(arg=>arg.symbol).join(',')
+  }
 }

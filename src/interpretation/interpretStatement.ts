@@ -18,8 +18,6 @@ export function interpretParsedStatement(parse:StatementParse, ctx:Context) {
     } else
       throw 'Can only interpret statements with entity arguments';
   });
-
-  console.log('##', args)
     
 
   let sentence = new Sentence(predicate, ...args);
