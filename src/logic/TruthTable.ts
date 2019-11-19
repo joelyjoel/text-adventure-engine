@@ -1,8 +1,10 @@
 import { Sentence } from "./Sentence";
 import { Entity } from "./Entity";
+import { Predicate } from "./Predicate";
 
 type TruthAssignment = {sentence:Sentence, truth:string};
 
+/** A collection of sentences with corresponding truth assignments */
 export class TruthTable {
   defaultTruthValue: string;
   private index: {
@@ -65,6 +67,14 @@ export class TruthTable {
     for(let i in this.index)
       for(let j in this.index[i])
         yield this.index[i][j];
+  }
+
+  /** Iterate through each truth assignment with a given predicate. */
+  *byPredicate(P:Predicate) {
+    let symbol = P.symbol;
+    let subIndex = this.index[symbol];
+    for(let i in subIndex)
+      yield subIndex[i];
   }
 
   /** Generate a symbollic string version of the table. */

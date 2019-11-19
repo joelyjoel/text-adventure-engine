@@ -1,6 +1,7 @@
 import { TruthTable } from "./TruthTable";
 import { Variable } from "./Variable";
 import { Entity } from "./Entity";
+import { findMappings } from "./mapping";
 
 export class VariableTable extends TruthTable {
   readonly variables: Variable[];
@@ -61,6 +62,10 @@ export class VariableTable extends TruthTable {
         return false;
 
     return true;
+  }
+
+  findMappings(onto:TruthTable) {
+    return findMappings(this, onto);
   }
 
   /** Represents the table as a string of logical symbols. */
