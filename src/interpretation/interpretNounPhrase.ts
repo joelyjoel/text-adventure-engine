@@ -5,6 +5,7 @@ import { TruthTable } from "../logic/TruthTable";
 import { Context } from "../Context";
 import { NounPhraseParse } from "../parsing/parseNounPhrase";
 
+/** Interpret a string noun-phrase as an existential claim. */
 export function interpretNounPhrase(nounPhrase:string, ctx:Context|Dictionary) {
   if(ctx instanceof Dictionary)
     ctx = new Context(ctx);
@@ -16,6 +17,7 @@ export function interpretNounPhrase(nounPhrase:string, ctx:Context|Dictionary) {
     return null;
 }
 
+/** Interpret a parsed noun-phrase as an existential claim. */
 export function interpretParsedNounPhrase(parse:NounPhraseParse, ctx:Context) {
   // Destructure the parse
   const nounPredicate = parse.noun.noun.predicate;

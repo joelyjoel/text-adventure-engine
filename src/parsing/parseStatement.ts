@@ -50,6 +50,7 @@ export function * shallowParseStatement(str:string, ctx:Context|Dictionary) {
   }
 }
 
+/** Parse a statement (including noun-phrase arguments). */
 export function * parseStatement(str:string, ctx:Context)
 :Generator<StatementParse> {
   for(const {args, syntax, syntaxKind} of shallowParseStatement(str, ctx)) {

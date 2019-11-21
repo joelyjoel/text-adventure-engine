@@ -88,7 +88,7 @@ test("Shallow parsing a simple statement", () => {
   }
 })
 
-test("Deep parsing a simple statemtn", () => {
+test("Deep parsing a simple statement", () => {
   const dict = new Dictionary().addNouns('dutch barge').addAdjectives('warm');
   const ctx = new Context(dict);
 

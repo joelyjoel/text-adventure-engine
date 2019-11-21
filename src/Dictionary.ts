@@ -2,7 +2,6 @@ import { Noun } from "./Noun";
 import { Adjective } from "./Adjective";
 import {StatementSyntax} from './parsing/parseStatement'
 
-
 export class Dictionary {
   /** List of all nouns in the dictionary. */
   nouns: Noun[];
@@ -90,11 +89,17 @@ export class Dictionary {
       console.warn("Adding non-logical syntax to the dictionary");
 
     this.statementSyntaxs.push(syntax);
+
+    // Chainable
+    return this;
   }
 
   /** Add multiple present tense statement syntaxs to the dictionary. */
   addStatementSyntaxs(...syntaxs: StatementSyntax[]) {
     for(let syntax of syntaxs)
       this.addStatementSyntax(syntax);
+
+    // Chainable
+    return this;
   }
 }
