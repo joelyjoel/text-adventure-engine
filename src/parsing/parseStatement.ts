@@ -51,8 +51,7 @@ export function * shallowParseStatement(str:string, ctx:Context|Dictionary) {
 }
 
 /** Parse a statement (including noun-phrase arguments). */
-export function * parseStatement(str:string, ctx:Context)
-:Generator<StatementParse> {
+export function * parseStatement(str:string, ctx:Context) {
   for(const {args, syntax, syntaxKind} of shallowParseStatement(str, ctx)) {
     if(syntaxKind == 'template') {
       const parsedArgs = args.map((arg, i) => {
@@ -71,7 +70,7 @@ export function * parseStatement(str:string, ctx:Context)
           from: 0,
           to: str.length,
           str
-        }
+        } as StatementParse
     } else
       throw "Unrecognised syntaxKind: " + syntaxKind;
   }
