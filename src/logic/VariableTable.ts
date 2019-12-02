@@ -1,7 +1,8 @@
 import { TruthTable } from "./TruthTable";
 import { Variable } from "./Variable";
 import { Entity } from "./Entity";
-import { findMappings } from "./mapping";
+import { findMappings, PartialMapping } from "./mapping";
+import { Sentence } from "./Sentence";
 
 export class VariableTable extends TruthTable {
   readonly variables: Variable[];
@@ -84,5 +85,37 @@ export class VariableTable extends TruthTable {
     
     TruthTable.prototype.merge.call(this, ...tables);
     return this;
+  }
+
+  /** Replace the variables using the given mapping. */
+  implement(...mapping:Entity[]) {
+    if(mapping.length != this.numberOfVariables)
+      throw `Expected ${this.numberOfVariables} substitutions.`;
+
+    let table = new TruthTable;
+    for(let {sentence, truth} of this.iterate()) {
+      let args = sentence.args.map(arg => {
+        let i = this.variables.indexOf(arg);
+        if(i == -1)
+          return arg;
+        else
+          return mapping[i];
+      })
+
+      table.assign(new Sentence(sentence.predicate, ...args), truth);
+    }
+
+    return table
+  }
+
+  /** Replace the variables with new entities */
+  spawn() {
+    let mapping = this.variables.map(x => new Entity)
+    return this.implement(...mapping)
+  }
+
+  implementPartialMapping(mapping:PartialMapping) {
+    let complete = mapping.map(x => x ? x : new Entity)
+    return this.implement(...complete);
   }
 }
