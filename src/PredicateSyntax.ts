@@ -9,10 +9,10 @@ export class PredicateSyntax {
   readonly infinitive: string;
   readonly verbRegex: RegExp;
   readonly prepositions: string[];
-  readonly prepositionRegex: RegExp;
+  readonly prepositionRegex: RegExp|null;
   readonly includesObject: boolean;
   readonly includesSubject: boolean;
-  readonly params: Param[]
+  readonly params: Param[];
   /** Used for making ordered lists from associative arguments. */
   readonly paramIndex: {[key:string]: Param}
   readonly numberOfArgs: number;
@@ -30,9 +30,9 @@ export class PredicateSyntax {
       param => !/subject|object/.test(param));
 
     // Create a regex for parsing prepositional arguments
-    this.prepositionRegex = g(wholeWord(
+    this.prepositionRegex = this.prepositions.length ? g(wholeWord(
       or(...this.prepositions).source
-    ))
+    )) : null
 
     this.includesSubject = params.includes('subject');
     this.includesObject = params.includes('object');
@@ -65,20 +65,21 @@ export class PredicateSyntax {
       let i = 0;
 
       // Parse the prepositional arguments
-      while((prepParse = this.prepositionRegex.exec(afterVerb))) {
-        argList[i] = afterVerb.slice(strIdx, prepParse.index).trim();
-        argNames[i+1] = prepParse[0];
-        // Exit early if parse finds a rogue direct object or absence thereof.
-        if(i == 0) {
-          if(!this.includesObject && argList[i].length != 0)
-            return null;
-          else if(this.includesObject && argList[i].length == 0)
-            return null;
-        }
+      if(this.prepositionRegex)
+        while((prepParse = this.prepositionRegex.exec(afterVerb))) {
+          argList[i] = afterVerb.slice(strIdx, prepParse.index).trim();
+          argNames[i+1] = prepParse[0];
+          // Exit early if parse finds a rogue direct object or absence thereof.
+          if(i == 0) {
+            if(!this.includesObject && argList[i].length != 0)
+              return null;
+            else if(this.includesObject && argList[i].length == 0)
+              return null;
+          }
 
-        strIdx = prepParse.index + prepParse[0].length;
-        ++i;
-      }
+          strIdx = prepParse.index + prepParse[0].length;
+          ++i;
+        }
 
       argList.push(afterVerb.slice(strIdx).trim());
       

@@ -7,8 +7,11 @@ test('Constructing a predicate syntax', () => {
   expect(syntax.verbRegex.source)
     .toBe(wholeWord('goes|go').source);
   expect(syntax.prepositions).toStrictEqual(['to']);
-  expect(syntax.prepositionRegex.source)
-  .toBe(wholeWord('to').source);
+  if(!syntax.prepositionRegex)
+    fail();
+  else
+    expect(syntax.prepositionRegex.source)
+    .toBe(wholeWord('to').source);
 })
 
 test('Parsing using a PredicateSyntax', () => {
@@ -29,3 +32,12 @@ test('Constructing sentences using PredicateSyntax', () => {
 
   expect(str).toBe('the boy lives in a warm dutch barge');
 })
+
+/*test('Parsing using an unary PredicateSyntax', () => {
+  const syntax = new PredicateSyntax('float', ['subject'])
+  syntax.parse('the boat floats')
+  console.log(syntax)
+  expect(syntax).toMatchObject({
+    args: ['the boat']
+  })
+})*/
