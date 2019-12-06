@@ -26,7 +26,7 @@ const PAST_PARTICIPLE = 8
 const PAST_TENSE = 9
 const ALL_PERSON_REGEX = 10
 
-const irregularConjucations:{
+const irregularConjugations:{
   [key: string]: {
     [key: number]: string
   }
@@ -101,10 +101,28 @@ const irregularConjucations:{
 
 }
 
-function getIrregularConjugation(verb:string, form:number) {
-  if(irregularConjucations[verb] && irregularConjucations[verb][form])
-    return irregularConjucations[verb][form]
+// Construct a reverse index
+const reverseIndex:{[key:string]: {infinitive:string, form:number}[]} = {};
+for(let infinitive in irregularConjugations) {
+  for(let form in irregularConjugations[infinitive]) {
+    let verb = irregularConjugations[infinitive][form];
+    if(!reverseIndex[verb])
+      reverseIndex[verb] = [];
+
+    reverseIndex[verb].push({infinitive, form: parseInt(form)}) 
+  }
+}
+
+export function getIrregularConjugation(verb:string, form:number) {
+  if(irregularConjugations[verb] && irregularConjugations[verb][form])
+    return irregularConjugations[verb][form]
   else
     return null
 }
-export {getIrregularConjugation}
+
+export function deconjugateIrregular(verb: string) {
+  if(reverseIndex[verb])
+    return reverseIndex[verb];
+  else
+    return null;
+}
