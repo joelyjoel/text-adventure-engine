@@ -6,6 +6,7 @@ import {
 import { getPerson } from './util/getPerson';
 import { conjugate, anyPersonRegex } from './util/conjugate';
 import { SyntacticPredicate } from './linking/SyntacticPredicate';
+import { Tense } from './util/constructSentence';
 
 const placeholderRegex = /@?#?_(?:'s)?/g;
 const conjugateRegex = /(?:<|>)\w+/g;
@@ -18,12 +19,15 @@ export class Template {
     entity: boolean;
   }[];
   numberOfArgs: number;
+  tense: Tense;
   readonly template: string;
 
   predicate?: SyntacticPredicate;
 
-  constructor(template:string) {
+  constructor(template:string, tense:Tense='simple_present') {
     this.template = template
+
+    this.tense = tense;
 
     let placeholders = template.match(placeholderRegex);
     
@@ -93,8 +97,9 @@ export class Template {
       for(let i in this.params)
         if(this.params[i].number)
           args[i] = parseFloat(args[i] as string);
-      return {args, syntax:this};
+      return {args, syntax:this, tense:this.tense};
     } else
+      // No parse found.
       return null;
   }
 

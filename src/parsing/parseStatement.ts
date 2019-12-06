@@ -40,7 +40,7 @@ export function * shallowParseStatement(str:string, ctx:Context|Dictionary) {
         yield {
           args: parse.args,
           syntax,
-          syntaxKind: 'predicate-syntax',
+          syntaxKind: 'predicate',
           pos: 'statement',
           from: 0,
           to: str.length,
@@ -53,7 +53,7 @@ export function * shallowParseStatement(str:string, ctx:Context|Dictionary) {
 /** Parse a statement (including noun-phrase arguments). */
 export function * parseStatement(str:string, ctx:Context) {
   for(const {args, syntax, syntaxKind} of shallowParseStatement(str, ctx)) {
-    if(syntaxKind == 'template') {
+    if(syntaxKind == 'template' || syntaxKind == 'predicate') {
       const parsedArgs = args.map((arg, i) => {
         if(syntax.params[i].entity) {
           return parseNounPhrase(arg as string, ctx.dictionary)

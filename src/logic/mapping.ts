@@ -3,7 +3,7 @@ import { Variable } from "./Variable";
 import { TruthTable } from "./TruthTable";
 import { VariableTable } from "./VariableTable";
 
-type PartialMapping = (Entity|null)[]
+export type PartialMapping = (Entity|null)[]
 type CompleteMapping = Entity[];
 
 export function findMappings(claim:VariableTable, onto:TruthTable) {
@@ -30,7 +30,7 @@ export function findMappings(claim:VariableTable, onto:TruthTable) {
   return accumulatedMappings
 }
 
-/** Combine two partial mappings, returns `null` if they are incompatible */
+/** Combine two partial mappings, returns `null` if they are incompatible. Order of arguments doesn't matter. This operation is associative. */
 export function combinePartialMappings(
   a:PartialMapping, 
   b:PartialMapping
@@ -49,11 +49,97 @@ export function combinePartialMappings(
     return null
 }
 
+
+
+/** Check for equality between two partial mappings */
+export function compareMappings(
+  a: PartialMapping,
+  b: PartialMapping
+) {
+  return a.length == b.length && a.every((x, i) => x == b[i])
+}
+
+
+
+
+/** Get a symbol for a partial mapping. */
+export function mappingSymbol(mapping: PartialMapping) {
+  return mapping.map(x => x ? x.symbol : '?').join(' ')
+}
+
+
+
+
+type ScoredMappings = {
+  [key:string]:{mapping: PartialMapping, score:number}
+}
+
+
+export function findImperfectMappings(
+  claim:VariableTable, onto:TruthTable
+) {
+  let accumulation:ScoredMappings = {};
+
+  /** Update the score of a mapping in a scored mappings set if it is greater than the existing score */
+  const update = (
+    set:ScoredMappings, 
+    mapping:PartialMapping, 
+    score = 1, 
+    /** Use to avoid re-calculating the symbol  */
+    symbol = mappingSymbol(mapping)
+  ) => {
+    if(!set[symbol])
+      set[symbol] = {mapping, score}
+    else
+      set[symbol].score = score > set[symbol].score ? score : set[symbol].score
+  }
+
+  // For each statement in the claim
+  for(let statement_mappings of generatePartialMappings(claim, onto)) {
+    let matches:ScoredMappings = {}
+    for(let statement_mapping of statement_mappings) {
+      update(matches, statement_mapping)
+
+      for(let i in accumulation) {
+        let combined_mapping = combinePartialMappings(
+          statement_mapping,
+          accumulation[i].mapping
+        )
+
+        if(combined_mapping)
+          update(matches, combined_mapping, accumulation[i].score + 1)
+      }
+    }
+  
+    // Merge matches back into accumulation
+    for(let symbol in matches)
+      update(
+        accumulation, 
+        matches[symbol].mapping, 
+        matches[symbol].score, 
+        symbol
+      )
+  }
+
+  return Object.values(accumulation)
+    .sort((a, b) => b.score - a.score)
+}
+
+
+
+export function *generatePartialMappings(claim:VariableTable, onto:TruthTable) {
+  for(let statement of claim.iterate())
+    yield [...mapFromSingleSentence(claim.variables, statement, onto)]
+}
+
+
+
+/** Generate the partial mappings from a single sentence (with varaibles) onto a truth table */
 export function *mapFromSingleSentence(
   variables: Variable[], 
   from: {sentence:Sentence, truth:string}, 
   onto: TruthTable
-):Generator<PartialMapping> {
+) {
   const {sentence, truth} = from
   
   // Identify the position of variables in the sentence args
@@ -88,6 +174,8 @@ export function *mapFromSingleSentence(
     }
   }
 }
+
+
 
 /* Identify the position of variables in the sentence args. */
 export function identifyVarPositions(

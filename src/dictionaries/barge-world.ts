@@ -3,6 +3,7 @@ import { PredicateSyntax } from '../PredicateSyntax'
 
 export const barge_world_dict = new Dictionary()
   .addNouns(
+    'boat',
     'barge', 
     'dutch barge', 
     'cabin cruiser',
@@ -20,7 +21,11 @@ export const barge_world_dict = new Dictionary()
     'grp', 
     'steel', 
     'wooden', 
-    'peanut butter'
+    'peanut butter',
+    'warm',
+    'cold',
+    'damp',
+    'wet',
   )
   .addStatementSyntaxs(
     new PredicateSyntax('float', ['subject']),

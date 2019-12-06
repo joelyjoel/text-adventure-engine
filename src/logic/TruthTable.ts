@@ -4,6 +4,8 @@ import { Predicate } from "./Predicate";
 
 type TruthAssignment = {sentence:Sentence, truth:string};
 
+const INDIFFERENT = '?'
+
 /** A collection of sentences with corresponding truth assignments */
 export class TruthTable {
   defaultTruthValue: string;
@@ -16,7 +18,7 @@ export class TruthTable {
   private identityMap: {[symbol:string]:Entity};
 
   constructor() {
-    this.defaultTruthValue = '?';
+    this.defaultTruthValue = INDIFFERENT;
     this.index = {};
     this.identityMap = {};
   }
@@ -184,5 +186,36 @@ export class TruthTable {
       let internalTruth = this.lookUp(sentence);
       return truth == internalTruth || internalTruth == '?'
     })
+  }
+
+  mergeConsequences( b:TruthTable) {
+    let overlap = 0;
+    let contradictions = 0;
+    let introductions = 0;
+    for(let {sentence, truth} of b.iterate()) {
+      let truth2 = this.lookUp(sentence)
+      if(truth2 == INDIFFERENT)
+        ++introductions;
+      else if(truth2 == truth)
+        ++overlap;
+      else
+        ++contradictions
+    }
+
+    return {overlap, contradictions,introductions}
+  }
+
+  hasContradictionsWith(table:TruthTable) {
+    const [larger, smaller] = this.length > table.length ? 
+      [this, table] : [table, this]
+
+    for(let {sentence, truth} of smaller.iterate()) {
+      let truth2 = larger.lookUp(sentence)
+      if(truth2 != INDIFFERENT && truth2 != truth)
+        return true;
+    }
+    
+    // otherwise
+    return false;
   }
 }

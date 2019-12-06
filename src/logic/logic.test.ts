@@ -160,3 +160,18 @@ test('Merging VariableTables', () => {
   expect(table2.lookUp(new Sentence(P, x, y)))
     .toBe(table2.defaultTruthValue);
 })
+
+test('Implementing a VariableTable', () => {
+  let P = new Predicate(2);
+  let [a, b, c, d] = Entity.bulk();
+  let [x, y] = Variable.bulk();
+  let vt = new VariableTable(x, y)
+    .assign(new Sentence(P, a, x), 'true')
+    .assign(new Sentence(P, y, d), 'true')
+
+  let table = vt.implement(b, c)
+})
+
+test('Spawning a variable table', () => {
+  
+})

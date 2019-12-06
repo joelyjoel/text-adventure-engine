@@ -35,4 +35,3 @@ export function interpretParsedNounPhrase(parse:NounPhraseParse, ctx:Context) {
 
   return table;
 }
-
