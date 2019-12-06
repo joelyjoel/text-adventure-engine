@@ -46,10 +46,24 @@ export class PredicateSyntax {
     this.numberOfArgs = this.params.length;
   }
 
-  parse(str:string):{
+  parse(str:string, tense:Tense):{
     args: (string|number)[];
     syntax: PredicateSyntax;
     tense: Tense;
+  }|null  {
+    switch(tense) {
+      case 'simple_present':
+        return this.parse_simple_present(str);
+
+      default:
+        throw `Unexpected tense: ${tense}`
+    }
+  }
+
+  parse_simple_present(str:string):{
+    args: (string|number)[];
+    syntax: PredicateSyntax;
+    tense: 'simple_present';
   }|null {
     // First locate the verb
     let verbParse = this.verbRegex.exec(str)
