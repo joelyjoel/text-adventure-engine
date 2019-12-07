@@ -24,7 +24,7 @@ export function * shallowParseStatement(str:string, ctx:Context|Dictionary) {
   const {dictionary} = ctx;
   
   for(let syntax of dictionary.statementSyntaxs) {
-    let parse = syntax.parse(str);
+    let parse = syntax.parse(str, "simple_present");
     if(parse) {
       if(syntax instanceof Template)
         yield {

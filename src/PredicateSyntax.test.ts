@@ -16,7 +16,7 @@ test('Constructing a predicate syntax', () => {
 
 test('Parsing using a PredicateSyntax', () => {
   const syntax = new PredicateSyntax('live', ['subject', 'in'])
-  let parse = syntax.parse('the boy lives in the dutch barge');
+  let parse = syntax.parse('the boy lives in the dutch barge', 'simple_present');
 
   expect(parse).toStrictEqual({
     args: ['the boy', 'the dutch barge'],
@@ -31,6 +31,26 @@ test('Constructing sentences using PredicateSyntax', () => {
   let str = syntax.str(['the boy', 'a warm dutch barge']);
 
   expect(str).toBe('the boy lives in a warm dutch barge');
+})
+
+test('Composing questions using PredicateSyntax', () => {
+  const syntax = new PredicateSyntax('live', ['subject', 'in']);
+
+  let str = syntax.str(['the moose', 'this hoose'], 'simple_question');
+
+  expect(str).toBe('does the moose live in this hoose')
+})
+
+test('Parsing questions using PredicateSyntax', () => {
+  const syntax = new PredicateSyntax('live', ['subject', 'in']);
+
+  console.log(syntax.questionRegex)
+
+  let parse = syntax.parse(
+    'does a moose live in this hoose', 'simple_question'
+  );
+
+  expect(parse).toBeTruthy()
 })
 
 /*test('Parsing using an unary PredicateSyntax', () => {
