@@ -4,24 +4,48 @@ import { constructSentence, Tense } from "./util/constructSentence";
 import { SyntacticPredicate } from "./linking/SyntacticPredicate";
 import { getAuxiliaryVerb } from "./util/getAuxiliaryVerb";
 import { Template } from "./Template";
+import { Predicate } from "./logic";
 
 type Param = {name: string, index:number, entity: true}
 
+const ALL_TENSES:Tense[] = [
+  'simple_present',
+  'simple_question'
+]
+
 export class PredicateSyntax {
+  /** The infinitive form of the verb. */
   readonly infinitive: string;
+
+  /** A regex used for parsing the verb. */
   readonly verbRegex: RegExp;
+
   /** A regex which matches the subject and conjugated verb (with auxiliary before the known). E.g./ "do you see" */
   readonly questionRegex: RegExp;
-  readonly prepositions: string[];
+
+  /** A regex that matches any of the prepositions in this syntax. */
   readonly prepositionRegex: RegExp|null;
+
+  /** A list of prepositions in this regex */
+  readonly prepositions: string[];
+
+  /** Does the regex have an object parameter? */
   readonly includesObject: boolean;
+
+  /** Does the syntax have subject parameter? */
   readonly includesSubject: boolean;
+
+  /** Ordered list of syntax parameters. */
   readonly params: Param[];
+
   /** Used for making ordered lists from associative arguments. */
   readonly paramIndex: {[key:string]: Param}
+
+  /** How many arguments does the syntax take? */
   readonly numberOfArgs: number;
 
-  predicate?: SyntacticPredicate;
+  /** The linked logical predicate. */
+  private _predicate?: SyntacticPredicate;
 
   constructor(infinitive:string, params:string[]) {
     this.infinitive = infinitive;
@@ -56,20 +80,41 @@ export class PredicateSyntax {
     this.numberOfArgs = this.params.length;
   }
 
+  /** Link this syntax to a syntactic predicate */
+  assign(P:SyntacticPredicate):this {
+    this._predicate = P;
+    return this;
+  }
+
+  get predicate() {
+    return this._predicate;
+  }
+
   parse(str:string, tense:Tense):{
     args: (string|number)[];
     syntax: PredicateSyntax;
     tense: Tense;
   }|null  {
-    switch(tense) {
-      case 'simple_present':
-        return this.parse_simple_present(str);
+    if(tense)
+      switch(tense) {
+        case 'simple_present':
+          return this.parse_simple_present(str);
 
-      case 'simple_question':
-        return this.parse_simple_question(str);
+        case 'simple_question':
+          return this.parse_simple_question(str);
 
-      default:
-        throw `Unexpected tense: ${tense}`
+        default:
+          throw `Unexpected tense: ${tense}`
+      }
+    else {
+      for(let tense of ALL_TENSES) {
+        let parse = this.parse(str, tense)
+        if(parse)
+          return parse;
+      }
+
+      // Otherwise:
+      return null;
     }
   }
 
@@ -106,14 +151,10 @@ export class PredicateSyntax {
     tense: 'simple_question';
   }|null {
     let regexResult = this.questionRegex.exec(str);
-    console.log(regexResult)
     if(!regexResult)
       return null;
 
     let [verbPhrase, subject] = regexResult
-
-    console.log(`verbPhrase: ${verbPhrase}`)
-    console.log(`subject: ${subject}`)
 
     let afterVerb = str.slice(verbPhrase.length).trim()
     let assoc = this.parsePrepositions(afterVerb);

@@ -43,21 +43,23 @@ test('Composing questions using PredicateSyntax', () => {
 
 test('Parsing questions using PredicateSyntax', () => {
   const syntax = new PredicateSyntax('live', ['subject', 'in']);
-
-  console.log(syntax.questionRegex)
-
   let parse = syntax.parse(
     'does a moose live in this hoose', 'simple_question'
   );
-
   expect(parse).toBeTruthy()
-})
-
-/*test('Parsing using an unary PredicateSyntax', () => {
-  const syntax = new PredicateSyntax('float', ['subject'])
-  syntax.parse('the boat floats')
-  console.log(syntax)
-  expect(syntax).toMatchObject({
-    args: ['the boat']
+  expect(parse).toStrictEqual({
+    args: ['a moose', 'this hoose'],
+    syntax: syntax,
+    tense: 'simple_question'
   })
-})*/
+
+  const syntax2 = new PredicateSyntax('be aloose aboot', ['subject', 'object'])
+  expect(syntax2.parse(
+    'is a moose aloose aboot this hoose',
+    'simple_question'
+  )).toStrictEqual({
+    args: ['a moose', 'this hoose'],
+    syntax: syntax2,
+    tense: 'simple_question'
+  })
+})
