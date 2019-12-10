@@ -81,13 +81,21 @@ export class PredicateSyntax {
   }
 
   /** Link this syntax to a syntactic predicate */
-  assign(P:SyntacticPredicate):this {
-    this._predicate = P;
+  assign(P?:SyntacticPredicate):this {
+    if(!this._predicate)
+      throw "Cannot assign multiple predicates to one syntax";
+
+    if(P && !this._predicate)
+      this._predicate = P;
     return this;
   }
 
-  get predicate() {
+  get predicate():SyntacticPredicate|undefined {
     return this._predicate;
+  }
+
+  set predicate(P:SyntacticPredicate|undefined) {
+    this.assign(P)
   }
 
   parse(str:string, tense:Tense):{
