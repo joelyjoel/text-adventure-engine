@@ -15,8 +15,8 @@ export function constructSentence(args:SentenceArguments):string {
     case 'simple_present':
       return compose_simple_present(args);
 
-    case 'simple_question':
-      return compose_simple_question(args);
+    case 'simple_present_question':
+      return compose_simple_present_question(args);
 
     default:
       throw `Unexpected tense ${args.tense}`;
@@ -43,12 +43,12 @@ function compose_simple_present(args:SentenceArguments) {
   return toConcat.join(' ');
 }
 
-function compose_simple_question(args:SentenceArguments):string {
+function compose_simple_present_question(args:SentenceArguments):string {
   const {infinitive, subject, object} = args
   const prepositions = destructurePrepositions(args);
 
   if(!subject)
-    throw "Cannot construct a sentence in simple_question tense without a subject.";
+    throw "Cannot construct a sentence in simple_present_question tense without a subject.";
   
   // Find or choose the auxilliar verb.
   let {aux, remainder} = getAuxiliaryVerb(infinitive);
@@ -87,6 +87,7 @@ function destructurePrepositions(args:SentenceArguments) {
 
 /**  Insert a look-behind conjugator symbol on the last word of a verb. */
 export function addConjugator(infinitive: string) {
+  //// OLD VERSION
   // let verbWords = infinitive.split(/\s/);  
   // return verbWords.slice(0, -1).map(str => str + ' ') + '<' + verbWords.pop();
   return `<${infinitive}`

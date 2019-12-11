@@ -31,7 +31,7 @@ import { gerundify, pastify, participly } from "./verbOperations";
 
 export const allTenses:Tense[] = [
   'simple_present',
-  'simple_question',
+  'simple_present_question',
   'present_continuous',
   'simple_past',
   'past_continuous',
@@ -46,7 +46,7 @@ export const allTenses:Tense[] = [
 ]
 
 export type Tense = (
-  'simple_present' | 'simple_question' | 'present_continuous' 
+  'simple_present' | 'simple_present_question' | 'present_continuous' 
   | 'present_perfect' | 'present_perfect_continous' 
   | 'simple_past' | 'past_continuous' | 'past_perfect'
   | 'past_perfect_continuous'
@@ -98,7 +98,7 @@ export function verbToTense(
     case 'future_continuous':
       return `will be ${gerundify(inf)}`;
 
-    case 'simple_question':
+    case 'simple_present_question':
       throw `verbToTense does not support tense: ${tense}`;
 
     default: 

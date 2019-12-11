@@ -104,8 +104,8 @@ export class PredicateSyntax {
         case 'simple_present':
           return this.parse_simple_present(str);
 
-        case 'simple_question':
-          return this.parse_simple_question(str);
+        case 'simple_present_question':
+          return this.parse_simple_present_question(str);
 
         default:
           throw `Unexpected tense: ${tense}`
@@ -149,10 +149,10 @@ export class PredicateSyntax {
       return null 
   }
 
-  parse_simple_question(str:string):{
+  parse_simple_present_question(str:string):{
     args: (string|number)[];
     syntax: PredicateSyntax;
-    tense: 'simple_question';
+    tense: 'simple_present_question';
   }|null {
     let regexResult = this.questionRegex.exec(str);
     if(!regexResult)
@@ -171,7 +171,7 @@ export class PredicateSyntax {
     return {
       args: this.orderArgs(assoc),
       syntax: this,
-      tense: 'simple_question'
+      tense: 'simple_present_question'
     }
   }
 

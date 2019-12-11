@@ -28,18 +28,18 @@ test('Constructing questions', () => {
   expect(constructSentence({
     infinitive: 'be amazing',
     subject: 'I',
-    tense: 'simple_question'
+    tense: 'simple_present_question'
   })).toBe('am I amazing');
 
   expect(constructSentence({
     infinitive: 'be amazing',
     subject: 'you',
-    tense: 'simple_question'
+    tense: 'simple_present_question'
   })).toBe('are you amazing');
 
   expect(constructSentence({
     infinitive: 'take',
-    tense: 'simple_question',
+    tense: 'simple_present_question',
     subject: 'Polly',
     object: 'her grandma',
     to: 'the shops'
@@ -67,7 +67,7 @@ test('Negatives', () => {
       infinitive: makeNegative('be'),
       subject: 'polly',
       object:'amazing',
-      tense: 'simple_question',
+      tense: 'simple_present_question',
     })
   ).toBe('is polly not amazing')
 })
