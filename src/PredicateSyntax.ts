@@ -1,11 +1,12 @@
 import { anyPersonRegex } from "./util/conjugate";
-import { or, g, wholeWord, initial } from "./util/regops.extended";
-import { constructSentence } from "./util/constructSentence";
+import { or, g, wholeWord, initial, initialAndWholeWord } from "./util/regops.extended";
+import { compose, makeNegative } from "./util/compose";
 import { SyntacticPredicate } from "./linking/SyntacticPredicate";
 import { getAuxiliaryVerb } from "./util/getAuxiliaryVerb";
 import { Template } from "./Template";
 import { Predicate } from "./logic";
-import { Tense, allTenses } from "./util/tense";
+import { Tense, allTenses, verbToTense } from "./util/tense";
+import { questionRegex } from "./util/verbOperations";
 
 type Param = {name: string, index:number, entity: true}
 
@@ -94,32 +95,47 @@ export class PredicateSyntax {
     this.assign(P)
   }
 
-  parse(str:string, tense:Tense):{
+  parse(
+    str:string, 
+    options:Tense|{tense:Tense, question?:boolean, negative?: 'not'} = 'simple_present'
+  ):{
     args: (string|number)[];
     syntax: PredicateSyntax;
     tense: Tense;
+    question: boolean,
+    negative?: 'not'
   }|null  {
-    if(tense)
-      switch(tense) {
-        case 'simple_present':
-          return this.parse_simple_present(str);
+    // De-structure arguments
+    if(typeof options == 'string')
+      options = {tense:options as Tense}
+    const {tense, question=false, negative=undefined} = options;
 
-        case 'simple_present_question':
-          return this.parse_simple_present_question(str);
+    // First parse verb-phrase, getting the subject.
+    // TODO: Add indexing here to make more efficient
+    let reg = initialAndWholeWord(this.composeVerbPhraseRegex({
+      tense, question, negative
+    }))
+    let verbPhraseParse = reg.exec(str);
+    if(verbPhraseParse) {
+      let [verbPhrase, subject] = verbPhraseParse;
+      let afterVerb = str.slice(verbPhrase.length).trim();
 
-        default:
-          throw `Unexpected tense: ${tense}`
+      let assoc = this.parsePrepositions(afterVerb);
+      if(!assoc)
+        return null;
+
+      if(this.includesSubject)
+        assoc.subject = subject;
+
+      return {
+        args: this.orderArgs(assoc),
+        syntax:this,
+        tense, question, negative
       }
-    else {
-      for(let tense of allTenses) {
-        let parse = this.parse(str, tense)
-        if(parse)
-          return parse;
-      }
-
-      // Otherwise:
-      return null;
     }
+    
+
+    throw "function not finished"
   }
 
   parse_simple_present(str:string):{
@@ -219,10 +235,34 @@ export class PredicateSyntax {
     return assoc
   }
 
-  str(args:string[], tense:Tense='simple_present') {
+  composeVerbPhraseRegex(
+    options:{tense:Tense, question:boolean, negative?:'not'}
+  ) {
+    // De-structure options.
+    const {tense, question, negative} = options;
+
+    let verb = verbToTense(this.infinitive, tense);
+    if(negative == 'not') 
+      verb = makeNegative(verb);
+
+
+    return question 
+      ? questionRegex(verb) 
+      : new Template(`_ <${verb}`).regex()
+  }
+
+  str(
+    args:string[], 
+    options:Tense|{tense?:Tense, question?:boolean, negative?:'not'}={}
+  ) {
+    if(typeof options == 'string')
+      options = {tense: options};
+    const {tense='simple_present', question=false, negative} = options
     let assoc = this.associateArgs(args);
 
-    return constructSentence({tense, infinitive:this.infinitive, ...assoc});
+    return compose({
+      tense, infinitive:this.infinitive, ...assoc, question, negative
+    });
   }
 
   /** Convert associative arguments into ordered argument list */

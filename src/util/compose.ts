@@ -1,13 +1,14 @@
 import { Tense, verbToTense } from "./tense";
 import { Template } from "../Template";
 import { getAuxiliaryVerb } from "./getAuxiliaryVerb";
+import { questionTemplate } from "./verbOperations";
 
 /** Extra keys with string values interpretted as prepositional phrases. */
 type SentenceArguments = {
   infinitive: string;
   tense?: Tense;
-  subject: string;
-  object: string;
+  subject?: string;
+  object?: string;
   negative?: 'not';
   question?: true|false;
   [key: string]: string|boolean|undefined;
@@ -52,12 +53,9 @@ export function compose(args:SentenceArguments):string {
     verb = makeNegative(verb);
 
   let verbPhrase 
-  if(question) {
-    let {aux, remainder} = getAuxiliaryVerb(verb);
-    verbPhrase = new Template(
-      `>${aux} _${remainder ? ' '+remainder : ''}`
-    ).str([subject]);
-  } else 
+  if(question)
+    verbPhrase = questionTemplate(verb).str([subject]);
+  else 
     verbPhrase = new Template(`_ <${verb}`).str([subject]);
 
   let toConcat = [verbPhrase];

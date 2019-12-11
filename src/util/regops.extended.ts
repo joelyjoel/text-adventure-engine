@@ -13,3 +13,10 @@ export function g(operand:RegExp|string) {
 
   return new RegExp(source, 'g');
 }
+
+export function initialAndWholeWord(operand: RegExp|string) {
+  let source = operand instanceof RegExp ?
+    operand.source : operand;
+
+  return new RegExp(`^(?:${source})(?=\\s|$)`, 'g')
+}

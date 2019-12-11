@@ -18,7 +18,7 @@ test('Parsing using a PredicateSyntax', () => {
   const syntax = new PredicateSyntax('live', ['subject', 'in'])
   let parse = syntax.parse('the boy lives in the dutch barge', 'simple_present');
 
-  expect(parse).toStrictEqual({
+  expect(parse).toMatchObject({
     args: ['the boy', 'the dutch barge'],
     syntax: syntax,
     tense: 'simple_present'
@@ -36,7 +36,10 @@ test('Constructing sentences using PredicateSyntax', () => {
 test('Composing questions using PredicateSyntax', () => {
   const syntax = new PredicateSyntax('live', ['subject', 'in']);
 
-  let str = syntax.str(['the moose', 'this hoose'], 'simple_present_question');
+  let str = syntax.str(
+    ['the moose', 'this hoose'], 
+    {tense: 'simple_present', question:true}
+  );
 
   expect(str).toBe('does the moose live in this hoose')
 })
@@ -44,22 +47,24 @@ test('Composing questions using PredicateSyntax', () => {
 test('Parsing questions using PredicateSyntax', () => {
   const syntax = new PredicateSyntax('live', ['subject', 'in']);
   let parse = syntax.parse(
-    'does a moose live in this hoose', 'simple_present_question'
+    'does a moose live in this hoose', {tense: 'simple_present', question:true}
   );
   expect(parse).toBeTruthy()
-  expect(parse).toStrictEqual({
+  expect(parse).toMatchObject({
     args: ['a moose', 'this hoose'],
-    syntax: syntax,
-    tense: 'simple_present_question'
+    syntax,
+    tense: 'simple_present',
+    question:true,
   })
 
-  const syntax2 = new PredicateSyntax('be aloose aboot', ['subject', 'object'])
+  const syntax2 = new PredicateSyntax('be aloose', ['subject', 'aboot'])
   expect(syntax2.parse(
     'is a moose aloose aboot this hoose',
-    'simple_present_question'
-  )).toStrictEqual({
+    {tense: 'simple_present', question:true}
+  )).toMatchObject({
     args: ['a moose', 'this hoose'],
     syntax: syntax2,
-    tense: 'simple_present_question'
+    tense: 'simple_present',
+    question: true,
   })
 })
