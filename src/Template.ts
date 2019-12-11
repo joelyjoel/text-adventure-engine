@@ -1,34 +1,48 @@
 import {whole, autoBracket} from 'regops'
-import { possessiveAdjectiveRegex, toPossessiveAdjective } from './util/toPossessiveAdjective';
+import { 
+  possessiveAdjectiveRegex, 
+  toPossessiveAdjective 
+} from './util/toPossessiveAdjective';
 import { getPerson } from './util/getPerson';
 import { conjugate, anyPersonRegex } from './util/conjugate';
-import { Syntax } from './Syntax';
+import { SyntacticPredicate } from './linking/SyntacticPredicate';
+import { Tense } from './util/tense';
 
 const placeholderRegex = /@?#?_(?:'s)?/g;
-const conjugateRegex = /(?:<|>)\w+/g
+const conjugateRegex = /(?:<|>)\w+/g;
 
-export class Template implements Syntax {
+export class Template {
   readonly params: {
     literal:boolean;
     possessive: boolean;
     number: boolean;
+    entity: boolean;
   }[];
+  numberOfArgs: number;
+  tense: Tense;
   readonly template: string;
 
-  constructor(template:string) {
+  predicate?: SyntacticPredicate;
+
+  constructor(template:string, tense:Tense='simple_present') {
     this.template = template
+
+    this.tense = tense;
 
     let placeholders = template.match(placeholderRegex);
     
     if(placeholders)
-      this.params = placeholders.map(ph => ({
-        literal: /@/.test(ph),
-        number: /#/.test(ph),
-        possessive: /\'s/.test(ph)
-      }))
+      this.params = placeholders.map(ph => {
+        const literal = /@/.test(ph);
+        const  number = /#/.test(ph);
+        const possessive = /\'s/.test(ph);
+        const entity = !(literal || number);
+        return { literal, number, possessive, entity}
+      })
     else
       this.params = [];
 
+    this.numberOfArgs = this.params.length;
     
   }
 
@@ -83,8 +97,9 @@ export class Template implements Syntax {
       for(let i in this.params)
         if(this.params[i].number)
           args[i] = parseFloat(args[i] as string);
-      return {args, syntax:this};
+      return {args, syntax:this, tense:this.tense};
     } else
+      // No parse found.
       return null;
   }
 
@@ -94,7 +109,7 @@ export class Template implements Syntax {
   }
 }
 
-/** (Internal) handle conjugation for part of a `Template`. */
+/** (Internal) Handle conjugation for part of a `Template`. */
 function handleConjugation(str:string, left?:string, right?:string) {
   const leftPerson = left ? getPerson(left) : null;
   const rightPerson = right ? getPerson(right) : null;
@@ -119,7 +134,7 @@ function handleConjugation(str:string, left?:string, right?:string) {
       verb = conjugate(verb, leftPerson);
 
     } else
-      throw 'Something bad happened';
+      throw `Couldn't handle conjugation: (${left})${str}(${right})`;
 
     out += verb + fluff[i+1];
   }

@@ -26,7 +26,7 @@ const PAST_PARTICIPLE = 8
 const PAST_TENSE = 9
 const ALL_PERSON_REGEX = 10
 
-const irregularConjucations:{
+const irregularConjugations:{
   [key: string]: {
     [key: number]: string
   }
@@ -56,12 +56,12 @@ const irregularConjucations:{
   steal: {7:'stealing', 8:'stolen', 9:'stole'},
   lead: {7:'leading', 8:'lead', 9:'lead'},
   lie: {7:'lying', 8:'lay', 9:'lay'},
-  sleep: {7:'sleeping', 8:'slept', 9:'slept'}
-  // give
-  // find
-  // think
-  // tell
-  // become
+  sleep: {7:'sleeping', 8:'slept', 9:'slept'},
+  // give,
+  // find,
+  // think,
+  // tell,
+  become: {8:'become', 9:'became'},
   // show
   // leave
   // feel
@@ -80,7 +80,7 @@ const irregularConjucations:{
   // speak
   // lie
   // lead
-  // read
+  read: {7: 'reading', 8:'read', 9:'read'},
   // grow
   // lose
   // fall
@@ -101,10 +101,28 @@ const irregularConjucations:{
 
 }
 
-function getIrregularConjugation(verb:string, form:number) {
-  if(irregularConjucations[verb] && irregularConjucations[verb][form])
-    return irregularConjucations[verb][form]
+// Construct a reverse index
+const reverseIndex:{[key:string]: {infinitive:string, form:number}[]} = {};
+for(let infinitive in irregularConjugations) {
+  for(let form in irregularConjugations[infinitive]) {
+    let verb = irregularConjugations[infinitive][form];
+    if(!reverseIndex[verb])
+      reverseIndex[verb] = [];
+
+    reverseIndex[verb].push({infinitive, form: parseInt(form)}) 
+  }
+}
+
+export function getIrregularConjugation(verb:string, form:number) {
+  if(irregularConjugations[verb] && irregularConjugations[verb][form])
+    return irregularConjugations[verb][form]
   else
     return null
 }
-export {getIrregularConjugation}
+
+export function deconjugateIrregular(verb: string) {
+  if(reverseIndex[verb])
+    return reverseIndex[verb];
+  else
+    return null;
+}

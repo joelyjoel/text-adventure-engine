@@ -23,4 +23,10 @@ export class Entity {
     else
       return 'abc'[this.id%3] + (Math.floor(this.id/3) || '');
   }
+
+  /** Generate an unlimited quantity of new Entities */
+  static * bulk() {
+    while(true)
+      yield new Entity;
+  }
 }

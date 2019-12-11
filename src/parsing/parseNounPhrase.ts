@@ -4,7 +4,7 @@ import { Parse } from "./Parse";
 import { parseIdentifier, IdentifierParse } from "./parseIdentifier";
 import { parseAdjectives, AdjectiveParse } from "./parseAdjectives";
 
-interface NounPhraseParse extends Parse {
+export interface NounPhraseParse extends Parse {
   pos: 'nounphrase';
   identifier: IdentifierParse;
   noun: NounParse;
