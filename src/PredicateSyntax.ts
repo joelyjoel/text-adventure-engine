@@ -97,18 +97,18 @@ export class PredicateSyntax {
 
   parse(
     str:string, 
-    options:Tense|{tense:Tense, question?:boolean, negative?: 'not'} = 'simple_present'
+    options:Tense|{tense:Tense, question?:boolean, negative?: false|'not'} = 'simple_present'
   ):{
     args: (string|number)[];
     syntax: PredicateSyntax;
     tense: Tense;
     question: boolean,
-    negative?: 'not'
+    negative: false | 'not'
   }|null  {
     // De-structure arguments
     if(typeof options == 'string')
       options = {tense:options as Tense}
-    const {tense, question=false, negative=undefined} = options;
+    const {tense, question=false, negative=false} = options;
 
     // First parse verb-phrase, getting the subject.
     // TODO: Add indexing here to make more efficient
@@ -236,7 +236,7 @@ export class PredicateSyntax {
   }
 
   composeVerbPhraseRegex(
-    options:{tense:Tense, question:boolean, negative?:'not'}
+    options:{tense:Tense, question:boolean, negative?:false | 'not'}
   ) {
     // De-structure options.
     const {tense, question, negative} = options;
@@ -253,11 +253,11 @@ export class PredicateSyntax {
 
   str(
     args:string[], 
-    options:Tense|{tense?:Tense, question?:boolean, negative?:'not'}={}
+    options:Tense|{tense?:Tense, question?:boolean, negative?: false|'not'}={}
   ) {
     if(typeof options == 'string')
       options = {tense: options};
-    const {tense='simple_present', question=false, negative} = options
+    const {tense='simple_present', question=false, negative=false} = options
     let assoc = this.associateArgs(args);
 
     return compose({
