@@ -80,7 +80,7 @@ const irregularConjugations:{
   // speak
   // lie
   // lead
-  // read
+  read: {7: 'reading', 8:'read', 9:'read'},
   // grow
   // lose
   // fall

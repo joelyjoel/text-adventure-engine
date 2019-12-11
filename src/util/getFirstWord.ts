@@ -5,3 +5,12 @@ export function getFirstWord(str:string) {
   else
     return str;
 }
+
+export function shiftWord(str:string):[string, string|null] {
+  let firstWord = getFirstWord(str);
+
+  return [
+    firstWord,
+    str.slice(firstWord.length).trim() || null,
+  ]
+}

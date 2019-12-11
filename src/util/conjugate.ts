@@ -20,7 +20,7 @@ VERB FORMS DENOTED AS NUMBERS:
 import * as regOp from "regops"
 import {getIrregularConjugation} from './irregularConjugations'
 
-const endsWithShortConsonant = /[aeiou][tpdn]$/
+const endsWithShortConsonant = /[aeiou][tpdnl]$/
 const endsWithE = /e$/
 const endsWithOOrX = /[oxzs]$/
 

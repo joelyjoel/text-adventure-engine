@@ -1,17 +1,13 @@
 import { anyPersonRegex } from "./util/conjugate";
 import { or, g, wholeWord, initial } from "./util/regops.extended";
-import { constructSentence, Tense } from "./util/constructSentence";
+import { constructSentence } from "./util/constructSentence";
 import { SyntacticPredicate } from "./linking/SyntacticPredicate";
 import { getAuxiliaryVerb } from "./util/getAuxiliaryVerb";
 import { Template } from "./Template";
 import { Predicate } from "./logic";
+import { Tense, allTenses } from "./util/tense";
 
 type Param = {name: string, index:number, entity: true}
-
-const ALL_TENSES:Tense[] = [
-  'simple_present',
-  'simple_question'
-]
 
 export class PredicateSyntax {
   /** The infinitive form of the verb. */
@@ -115,7 +111,7 @@ export class PredicateSyntax {
           throw `Unexpected tense: ${tense}`
       }
     else {
-      for(let tense of ALL_TENSES) {
+      for(let tense of allTenses) {
         let parse = this.parse(str, tense)
         if(parse)
           return parse;

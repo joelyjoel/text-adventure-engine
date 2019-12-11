@@ -1,4 +1,4 @@
-import { constructSentence, addConjugator } from "./constructSentence"
+import { constructSentence, addConjugator, makeNegative } from "./constructSentence"
 
 test('Constructing sentences', () => {
   expect(constructSentence({
@@ -8,10 +8,19 @@ test('Constructing sentences', () => {
     object: 'her grandma',
     to: 'the shops'
   })).toBe('Polly takes her grandma to the shops')
+
+  expect(constructSentence({
+    infinitive: 'be',
+    subject: 'I',
+    object: 'amazing',
+    tense: 'simple_present'
+  })).toBe('I am amazing');
 })
 
 test('Adding conjugator', () => {
   expect(addConjugator('take')).toBe('<take')
+  expect(addConjugator('take part')).toBe('<take part')
+  expect(addConjugator('be not amazing')).toBe('<be not amazing')
 })
 
 test('Constructing questions', () => {
@@ -36,6 +45,29 @@ test('Constructing questions', () => {
     to: 'the shops'
   }))
   .toBe('does Polly take her grandma to the shops')
-
-
 }) 
+
+test('Negatives', () => {
+  expect(makeNegative('play')).toBe('do not play');
+  expect(makeNegative('have played')).toBe('have not played');
+  expect(makeNegative('be amazing')).toBe('be not amazing')
+  expect(makeNegative('might not be amazing')).toBe('might not not be amazing')
+  expect(makeNegative('be')).toBe('be not');
+  expect(
+    constructSentence({
+      infinitive: makeNegative('be'),
+      subject: 'polly',
+      object:'amazing',
+      tense: 'simple_present',
+    })
+  ).toBe('polly is not amazing')
+
+  expect(
+    constructSentence({
+      infinitive: makeNegative('be'),
+      subject: 'polly',
+      object:'amazing',
+      tense: 'simple_question',
+    })
+  ).toBe('is polly not amazing')
+})

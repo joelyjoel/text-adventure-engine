@@ -1,7 +1,6 @@
 import { Template } from "../Template";
 import { getAuxiliaryVerb } from "./getAuxiliaryVerb";
-
-export type Tense = 'simple_present' | 'simple_question';
+import { Tense } from "./tense";
 
 const specialNames = ['infinitive', 'tense', 'object', 'subject'];
 
@@ -71,6 +70,12 @@ function compose_simple_question(args:SentenceArguments):string {
   return toConcat.join(' ')
 }
 
+export function makeNegative(infinitive:string) {
+  let {aux, remainder} = getAuxiliaryVerb(infinitive);
+
+  return remainder ? `${aux} not ${remainder}` : `${aux} not`;
+}
+
 /** De-structrue the prepositions from associative sentence arguments */
 function destructurePrepositions(args:SentenceArguments) {
   let prepositions:{[key:string]:string} = {};
@@ -82,8 +87,9 @@ function destructurePrepositions(args:SentenceArguments) {
 
 /**  Insert a look-behind conjugator symbol on the last word of a verb. */
 export function addConjugator(infinitive: string) {
-  let verbWords = infinitive.split(/\s/);  
-  return verbWords.slice(0, -1).map(str => str + ' ') + '<' + verbWords.pop();
+  // let verbWords = infinitive.split(/\s/);  
+  // return verbWords.slice(0, -1).map(str => str + ' ') + '<' + verbWords.pop();
+  return `<${infinitive}`
 }
 
 /**  Insert a look-ahead conjugator symbol on the last word of a verb. */
