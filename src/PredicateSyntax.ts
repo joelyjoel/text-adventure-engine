@@ -132,10 +132,8 @@ export class PredicateSyntax {
         syntax:this,
         tense, question, negative
       }
-    }
-    
-
-    throw "function not finished"
+    } else 
+      return null;
   }
 
   parse_simple_present(str:string):{
