@@ -6,7 +6,7 @@ import {
 import { getPerson } from './util/getPerson';
 import { conjugate, anyPersonRegex } from './util/conjugate';
 import { SyntacticPredicate } from './linking/SyntacticPredicate';
-import { Tense } from './util/constructSentence';
+import { Tense } from './util/tense';
 
 const placeholderRegex = /@?#?_(?:'s)?/g;
 const conjugateRegex = /(?:<|>)\w+/g;
@@ -134,7 +134,7 @@ function handleConjugation(str:string, left?:string, right?:string) {
       verb = conjugate(verb, leftPerson);
 
     } else
-      throw 'Something bad happened';
+      throw `Couldn't handle conjugation: (${left})${str}(${right})`;
 
     out += verb + fluff[i+1];
   }
