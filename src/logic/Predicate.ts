@@ -1,5 +1,5 @@
 export class Predicate {
-  static predicate_counter = 0;
+  protected static predicate_counter = 0;
 
   id: number;
   numberOfArgs: number;
@@ -21,7 +21,7 @@ export class Predicate {
     if(this._symbol)
       return this._symbol;
     else
-      return 'PQR'[this.id%3] + (Math.floor(this.id/3) || '');
+      return Predicate.getSymbol(this.id);
   }
 
   get unary() {
@@ -30,5 +30,13 @@ export class Predicate {
 
   get binary() {
     return this.numberOfArgs == 2;
+  }
+
+  static getSymbol(id:number) {
+    return 'PQR'[id%3] + (Math.floor(id/3) || '')
+  }
+
+  static getNextSymbol() {
+    return Predicate.getSymbol(Predicate.predicate_counter)
   }
 }

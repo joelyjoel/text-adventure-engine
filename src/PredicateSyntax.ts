@@ -1,4 +1,4 @@
-import { anyPersonRegex } from "./util/conjugate";
+import { anyPersonRegex, conjugate, THIRD_PERSON_SINGULAR } from "./util/conjugate";
 import { or, g, wholeWord, initial, initialAndWholeWord } from "./util/regops.extended";
 import { compose, makeNegative } from "./util/compose";
 import { LPredicate } from "./linking/LPredicate";
@@ -7,6 +7,7 @@ import { Template } from "./Template";
 import { Predicate } from "./logic";
 import { Tense, allTenses, verbToTense } from "./util/tense";
 import { questionRegex } from "./util/verbOperations";
+import { toCamelCase } from "./util/toCamelCase";
 
 type Param = {name: string, index:number, entity: true}
 
@@ -44,6 +45,8 @@ export class PredicateSyntax {
   /** The linked logical predicate. */
   private _predicate?: LPredicate;
 
+  readonly name: string;
+
   constructor(infinitive:string, params:string[]) {
     this.infinitive = infinitive;
 
@@ -75,11 +78,14 @@ export class PredicateSyntax {
       this.paramIndex[params[i]] = this.params[i];
 
     this.numberOfArgs = this.params.length;
+
+    // Choose a name
+    this.name = toCamelCase(conjugate(this.infinitive, THIRD_PERSON_SINGULAR), ...this.prepositions)
   }
 
   /** Link this syntax to a syntactic predicate */
   assign(P?:LPredicate):this {
-    if(!this._predicate)
+    if(this._predicate)
       throw "Cannot assign multiple predicates to one syntax";
 
     if(P && !this._predicate)

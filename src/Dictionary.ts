@@ -1,6 +1,8 @@
 import { Noun } from "./Noun";
 import { Adjective } from "./Adjective";
 import {StatementSyntax} from './parsing/parseStatement'
+import { LPredicate } from "./linking/LPredicate";
+import { PredicateSyntax } from "./PredicateSyntax";
 
 export class Dictionary {
   /** List of all nouns in the dictionary. */
@@ -98,6 +100,24 @@ export class Dictionary {
   addStatementSyntaxs(...syntaxs: StatementSyntax[]) {
     for(let syntax of syntaxs)
       this.addStatementSyntax(syntax);
+
+    // Chainable
+    return this;
+  }
+
+  addPredicate(P:LPredicate|StatementSyntax) {
+    if(!(P instanceof LPredicate))
+      P = new LPredicate([P]);
+    for(let syntax of P.syntaxs)
+      this.addStatementSyntax(syntax);
+
+    // Chainable
+    return this;
+  }
+
+  addPredicates(...predicates:(LPredicate|StatementSyntax)[]) {
+    for(let P of predicates)
+      this.addPredicate(P);
 
     // Chainable
     return this;

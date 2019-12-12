@@ -81,11 +81,11 @@ export class TruthTable {
 
   /** Generate a symbollic string version of the table. */
   get symbol() {
-    return '{' +
+    return '{\n' +
     this.facts
-      .map(({sentence, truth}) => `(${sentence.symbol}=${truth})`)
-      .join(' & ') 
-    + '}';
+      .map(({sentence, truth}) => `\t(${sentence.symbol}=${truth})`)
+      .join('\t&\n') 
+    + '\n}';
   }
 
   /** Count the number of truth-assignments in the table. */

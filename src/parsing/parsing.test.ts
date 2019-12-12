@@ -84,7 +84,7 @@ test("Shallow parsing a simple statement", () => {
     expect(parse.args[0]).toBe('the messiah');
     expect(parse.syntax.predicate).toBeDefined();
     if(parse.syntax.predicate)
-      expect(parse.syntax.predicate.symbol).toBe('isADog');
+      expect(parse.syntax.predicate.symbol).toMatch(/isADog$/);
   }
 })
 

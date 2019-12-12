@@ -13,11 +13,14 @@ export class Sentence {
     this.args = args;
   }
 
+  involves(e:Entity) {
+    return this.args.includes(e);
+  }
+
   get symbol() {
     return this.predicate.symbol 
       + '(' + this.args.map(e => e.symbol).join(',') + ')';
   }
-
 
   get predicateSymbol() {
     return this.predicate.symbol;

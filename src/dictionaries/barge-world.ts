@@ -27,8 +27,9 @@ export const barge_world_dict = new Dictionary()
     'damp',
     'wet',
   )
-  .addStatementSyntaxs(
+  .addPredicates(
     new PredicateSyntax('float', ['subject']),
     new PredicateSyntax('sink', ['subject']),
-    new PredicateSyntax('be moored', ['subject', 'against'])
+    new PredicateSyntax('be moored', ['subject', 'beside']),
+    new PredicateSyntax('be', ['subject', 'inside'])
   )

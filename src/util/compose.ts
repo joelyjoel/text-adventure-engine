@@ -9,7 +9,7 @@ type SentenceArguments = {
   tense?: Tense;
   subject?: string;
   object?: string;
-  negative: false | 'not';
+  negative?: false | 'not';
   question?: true|false;
   [key: string]: string|boolean|undefined;
 }
