@@ -1,9 +1,9 @@
-import { SyntacticPredicate } from "./SyntacticPredicate";
+import { LPredicate } from "./LPredicate";
 import { Adjective } from "../Adjective";
 import { Template } from "../Template";
 import { toCamelCase } from "../util/toCamelCase";
 
-export class AdjectivePredicate extends SyntacticPredicate {
+export class AdjectivePredicate extends LPredicate {
   adjective: Adjective;
 
   constructor(adj:Adjective) {

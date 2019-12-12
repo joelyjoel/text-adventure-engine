@@ -1,7 +1,7 @@
 import { anyPersonRegex } from "./util/conjugate";
 import { or, g, wholeWord, initial, initialAndWholeWord } from "./util/regops.extended";
 import { compose, makeNegative } from "./util/compose";
-import { SyntacticPredicate } from "./linking/SyntacticPredicate";
+import { LPredicate } from "./linking/LPredicate";
 import { getAuxiliaryVerb } from "./util/getAuxiliaryVerb";
 import { Template } from "./Template";
 import { Predicate } from "./logic";
@@ -42,7 +42,7 @@ export class PredicateSyntax {
   readonly numberOfArgs: number;
 
   /** The linked logical predicate. */
-  private _predicate?: SyntacticPredicate;
+  private _predicate?: LPredicate;
 
   constructor(infinitive:string, params:string[]) {
     this.infinitive = infinitive;
@@ -78,7 +78,7 @@ export class PredicateSyntax {
   }
 
   /** Link this syntax to a syntactic predicate */
-  assign(P?:SyntacticPredicate):this {
+  assign(P?:LPredicate):this {
     if(!this._predicate)
       throw "Cannot assign multiple predicates to one syntax";
 
@@ -87,11 +87,11 @@ export class PredicateSyntax {
     return this;
   }
 
-  get predicate():SyntacticPredicate|undefined {
+  get predicate():LPredicate|undefined {
     return this._predicate;
   }
 
-  set predicate(P:SyntacticPredicate|undefined) {
+  set predicate(P:LPredicate|undefined) {
     this.assign(P)
   }
 

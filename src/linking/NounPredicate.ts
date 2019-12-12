@@ -1,9 +1,9 @@
 import { Noun } from "../Noun";
-import { SyntacticPredicate } from "./SyntacticPredicate";
+import { LPredicate } from "./LPredicate";
 import { Template } from "../Template";
 import { toCamelCase } from "../util/toCamelCase";
 
-export class NounPredicate extends SyntacticPredicate {
+export class NounPredicate extends LPredicate {
   noun: Noun;
 
   constructor(noun:Noun) {

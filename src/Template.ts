@@ -5,7 +5,7 @@ import {
 } from './util/toPossessiveAdjective';
 import { getPerson } from './util/getPerson';
 import { conjugate, anyPersonRegex } from './util/conjugate';
-import { SyntacticPredicate } from './linking/SyntacticPredicate';
+import { LPredicate } from './linking/LPredicate';
 import { Tense } from './util/tense';
 
 const placeholderRegex = /@?#?_(?:'s)?/g;
@@ -22,7 +22,7 @@ export class Template {
   tense: Tense;
   readonly template: string;
 
-  predicate?: SyntacticPredicate;
+  predicate?: LPredicate;
 
   constructor(template:string, tense:Tense='simple_present') {
     this.template = template

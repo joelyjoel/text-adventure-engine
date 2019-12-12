@@ -1,7 +1,7 @@
 import { Predicate } from "../logic";
 import { StatementSyntax } from "../parsing/parseStatement";
 
-export class SyntacticPredicate extends Predicate {
+export class LPredicate extends Predicate {
   syntaxs: StatementSyntax[];
 
   constructor(syntaxs:StatementSyntax[], symbol?:string) {
