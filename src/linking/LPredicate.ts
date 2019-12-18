@@ -9,9 +9,11 @@ export class LPredicate extends Predicate {
   dictionary?:Dictionary
 
   constructor(syntaxs:StatementSyntax[], symbol?:string) {
-    let numberOfArgs = syntaxs[0].numberOfArgs;
-    if(!symbol && syntaxs[0] instanceof PredicateSyntax)
-      symbol = `${Predicate.getNextSymbol()}_${syntaxs[0].name}`;
+    let mainSyntax = syntaxs[0]
+    let numberOfArgs = mainSyntax.numberOfArgs;
+
+    if(!symbol && mainSyntax instanceof PredicateSyntax)
+      symbol = `${Predicate.getNextSymbol()}_${mainSyntax.name}`;
     super(numberOfArgs, symbol);
 
     this.syntaxs = [];

@@ -68,7 +68,7 @@ export function verbToTense(
       return pastify(inf);
 
     case 'past_continuous':
-      return `was ${gerundify(inf)}`;
+      return `were ${gerundify(inf)}`;
 
     case 'present_continuous':
       return `have ${participly(inf)}`;
