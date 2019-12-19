@@ -11,8 +11,8 @@ type SentenceArguments = {
   object?: string;
   negative?: false | 'not';
   question?: true|false;
-  nounPhraseFor?: string,
-  [key: string]: string|boolean|undefined;
+  nounPhraseFor?: string|null,
+  [key: string]: string|boolean|undefined|null;
 }
 
 /** Special argument names, not to be treated as prepositional arguments */
@@ -49,7 +49,7 @@ export function compose(args:SentenceArguments):string {
   if(!subject)
     throw "Cannot construct sentence without subject.";
   if(nounPhraseFor && typeof args[nounPhraseFor] != 'string')
-    throw `Cannot compose a nounphrase for an arguemnt which does not exist (${nounPhraseFor})`
+    throw `Cannot compose a nounphrase for an argument which does not exist (${nounPhraseFor})`
   if(nounPhraseFor && question)
     throw 'arguments `nounPhraseFor` and `question` are incompatible.'
 

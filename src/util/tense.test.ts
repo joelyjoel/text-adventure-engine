@@ -15,7 +15,7 @@ test('verbToTense', () => {
   expect(verbToTense('live here', 'present_perfect'))
   .toBe('have lived here')
 
-  expect(verbToTense('live here', 'present_perfect_continous'))
+  expect(verbToTense('live here', 'present_perfect_continuous'))
   .toBe('have been living here')
 
   expect(verbToTense('watch her', 'past_perfect_continuous'))

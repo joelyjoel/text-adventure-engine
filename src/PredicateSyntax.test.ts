@@ -1,6 +1,7 @@
 import { PredicateSyntax } from "./PredicateSyntax"
 import { wholeWord } from "./util/regops.extended";
 import { allTenses } from "./util/tense";
+import { sentenceFormSymbol } from "./util/sentenceFormSymbol";
 
 test('Constructing a predicate syntax', () => {
   const syntax = new PredicateSyntax('go', ['subject', 'to']);
@@ -144,6 +145,21 @@ test('Parsing/compose bijection', () => {
       expect(qnParse).toMatchObject({
         args, syntax, tense, question:true, negative:'not'
       })
+
+      for(let param of syntax.params) {
+        let nounPhraseFor = param.name;
+        let np = syntax.str(args, {tense, nounPhraseFor});
+        let npParse = syntax.parse(np, {tense, nounPhraseFor});
+        if(!npParse)
+          console.log(
+            `String to parse: "${np}"`,
+            'regex:', syntax.composeVerbPhraseRegex({
+              tense, question:false, negative: false, nounPhraseFor
+          }))
+        expect(npParse).toMatchObject({
+          args, syntax, tense, question: false, negative: false, nounPhraseFor
+        })
+      }
     }
 })
 
@@ -171,4 +187,13 @@ test('Parsing noun phrase sentences', () => {
     tense: 'simple_present',
     args: ['the moose', 'this hoose'],
   })
+})
+
+test('PredicateSyntax: Re-using indexed regular expressions', () => {
+  let syntax = new PredicateSyntax('be aloose', ['subject', 'aboot']);
+  
+  let reg1 = syntax.composeVerbPhraseRegex({tense: 'simple_present', negative:'not', question: true, nounPhraseFor:null})
+  let reg2 = syntax.composeVerbPhraseRegex({tense: 'simple_present', negative:'not', question: true, nounPhraseFor:null})
+
+  expect(reg1).toBe(reg2)
 })

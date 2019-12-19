@@ -8,7 +8,7 @@ import { conjugate, anyPersonRegex } from './util/conjugate';
 import { LPredicate } from './linking/LPredicate';
 import { Tense } from './util/tense';
 
-const placeholderRegex = /@?#?_(?:'s)?/g;
+export const placeholderRegex = /@?#?_(?:'s)?/g;
 const conjugateRegex = /(?:<|>)\w+/g;
 
 export class Template {

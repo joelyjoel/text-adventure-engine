@@ -37,7 +37,7 @@ export const allTenses:Tense[] = [
   'past_perfect',
   'past_perfect_continuous',
   'present_perfect',
-  'present_perfect_continous',
+  'present_perfect_continuous',
   'future_perfect',
   'future_perfect_continuous',
   'simple_future',
@@ -46,7 +46,7 @@ export const allTenses:Tense[] = [
 
 export type Tense = (
   'simple_present' | 'present_continuous' 
-  | 'present_perfect' | 'present_perfect_continous' 
+  | 'present_perfect' | 'present_perfect_continuous' 
   | 'simple_past' | 'past_continuous' | 'past_perfect'
   | 'past_perfect_continuous'
   | 'future_perfect' | 'future_perfect_continuous' | 'simple_future' 
@@ -76,7 +76,7 @@ export function verbToTense(
     case 'present_perfect':
       return `have ${participly(inf)}`;
 
-    case 'present_perfect_continous':
+    case 'present_perfect_continuous':
       return `have been ${gerundify(inf)}`;
 
     case 'past_perfect':
