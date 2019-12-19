@@ -1,10 +1,9 @@
 import { anyPersonRegex, conjugate, THIRD_PERSON_SINGULAR } from "./util/conjugate";
-import { or, g, wholeWord, initial, initialAndWholeWord } from "./util/regops.extended";
+import { or, g, wholeWord, initial, initialAndWholeWord, optionalConcatSpaced, concatSpaced, concat, optional } from "./util/regops.extended";
 import { compose, makeNegative } from "./util/compose";
 import { LPredicate } from "./linking/LPredicate";
 import { getAuxiliaryVerb } from "./util/getAuxiliaryVerb";
-import { Template } from "./Template";
-import { Predicate } from "./logic";
+import { Template, placeholderRegex } from "./Template";
 import { Tense, allTenses, verbToTense } from "./util/tense";
 import { questionRegex } from "./util/verbOperations";
 import { toCamelCase } from "./util/toCamelCase";
@@ -103,25 +102,32 @@ export class PredicateSyntax {
 
   parse(
     str:string, 
-    options:Tense|{tense:Tense, question?:boolean, negative?: false|'not'} = 'simple_present'
+    options:{tense:Tense, question?:boolean, negative?: false|'not', nounPhraseFor?:string}|Tense = 'simple_present'
   ):{
     args: (string|number)[];
     syntax: PredicateSyntax;
     tense: Tense;
-    question: boolean,
-    negative: false | 'not'
+    question: boolean;
+    negative: false | 'not';
+    nounPhraseFor: string | null
   }|null  {
     // De-structure arguments
     if(typeof options == 'string')
       options = {tense:options as Tense}
-    const {tense, question=false, negative=false} = options;
+    const {tense, question=false, negative=false, nounPhraseFor=null} = options;
 
     // First parse verb-phrase, getting the subject.
     // TODO: Add indexing here to make more efficient
-    let reg = initialAndWholeWord(this.composeVerbPhraseRegex({
-      tense, question, negative
-    }))
+    let reg = this.composeVerbPhraseRegex({
+      tense, question, negative, nounPhraseFor,
+    })
+    if(!nounPhraseFor || nounPhraseFor == 'subject')
+      reg = initialAndWholeWord(reg);
+    else
+      reg = wholeWord(reg);
+
     let verbPhraseParse = reg.exec(str);
+
     if(verbPhraseParse) {
       let [verbPhrase, subject] = verbPhraseParse;
       let afterVerb = str.slice(verbPhrase.length).trim();
@@ -130,69 +136,31 @@ export class PredicateSyntax {
       if(!assoc)
         return null;
 
+      // If parsing for a noun phrase form, read thet part in front of the verb phrase
+      if(nounPhraseFor && nounPhraseFor != 'subject') {
+        let preVerb = str.slice(0, verbPhraseParse.index).trim()
+        // Exit early if preverb is missing.
+        if(!preVerb)
+          return null
+        else
+          assoc[nounPhraseFor] = preVerb;
+      }
+
+      // Get the subject argument
       if(this.includesSubject)
         assoc.subject = subject;
+
+      // Check there is the correct number of arguments
+      if(Object.keys(assoc).length != this.numberOfArgs)
+        return null;
 
       return {
         args: this.orderArgs(assoc),
         syntax:this,
-        tense, question, negative
+        tense, question, negative, nounPhraseFor
       }
     } else 
       return null;
-  }
-
-  parse_simple_present(str:string):{
-    args: (string|number)[];
-    syntax: PredicateSyntax;
-    tense: 'simple_present';
-  }|null {
-    // First locate the verb
-    let verbParse = this.verbRegex.exec(str)
-    if(verbParse) {
-      let afterVerb = str.slice(verbParse.index+verbParse[0].length).trim();
-
-      let assoc = this.parsePrepositions(afterVerb);
-      if(!assoc)
-        return null
-
-      if(this.includesSubject)
-        assoc.subject = str.slice(0, verbParse.index).trim();
-
-      return {
-        args: this.orderArgs(assoc),
-        syntax: this,
-        tense: 'simple_present',
-      }
-    } else 
-      // Couldn't find verb.
-      return null 
-  }
-
-  parse_simple_present_question(str:string):{
-    args: (string|number)[];
-    syntax: PredicateSyntax;
-    tense: 'simple_present_question';
-  }|null {
-    let regexResult = this.questionRegex.exec(str);
-    if(!regexResult)
-      return null;
-
-    let [verbPhrase, subject] = regexResult
-
-    let afterVerb = str.slice(verbPhrase.length).trim()
-    let assoc = this.parsePrepositions(afterVerb);
-    if(!assoc)
-      return null;
-
-    if(this.includesSubject)
-      assoc.subject = subject;
-
-    return {
-      args: this.orderArgs(assoc),
-      syntax: this,
-      tense: 'simple_present_question'
-    }
   }
 
   parsePrepositions(afterVerb:string) {
@@ -240,24 +208,34 @@ export class PredicateSyntax {
   }
 
   composeVerbPhraseRegex(
-    options:{tense:Tense, question:boolean, negative?:false | 'not'}
+    options:{tense:Tense, question:boolean, negative?:false | 'not', nounPhraseFor?: string|null}
   ) {
     // De-structure options.
-    const {tense, question, negative} = options;
+    const {tense, question, negative, nounPhraseFor=null} = options;
+
+    if(nounPhraseFor && question)
+      throw "Arguments `question` & `nounPhraseFor` are incompatible."
 
     let verb = verbToTense(this.infinitive, tense);
     if(negative == 'not') 
       verb = makeNegative(verb);
+    
 
-
-    return question 
-      ? questionRegex(verb) 
-      : new Template(`_ <${verb}`).regex()
+    if(question)
+      return questionRegex(verb)
+    else if(nounPhraseFor == 'subject')
+      return new Template(`_ which <${verb}`).regex();
+    else if(nounPhraseFor == 'object')
+      return new Template(`which _ <${verb}`).regex();
+    else if(nounPhraseFor)
+      return new Template(`${nounPhraseFor} which _ <${verb}`).regex()
+    else
+      return new Template(`_ <${verb}`).regex()
   }
 
   str(
     args:string[], 
-    options:Tense|{tense?:Tense, question?:boolean, negative?: false|'not'}={}
+    options:{tense?:Tense, question?:boolean, negative?: false|'not'}|Tense={}
   ) {
     if(typeof options == 'string')
       options = {tense: options};
@@ -287,5 +265,4 @@ export class PredicateSyntax {
     return assoc;
   }
 }
-
 

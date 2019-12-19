@@ -10,7 +10,7 @@ test('verbToTense', () => {
   .toBe('lived in china');
 
   expect(verbToTense('read', 'past_continuous'))
-  .toBe('was reading')
+  .toBe('were reading')
 
   expect(verbToTense('live here', 'present_perfect'))
   .toBe('have lived here')

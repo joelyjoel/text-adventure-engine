@@ -78,7 +78,7 @@ test('Parsing questions & negatives using PredicateSyntax', () => {
     {tense:'simple_present', question:false, negative:'not'}
   )
 
-  expect(parse).toStrictEqual({
+  expect(parse).toMatchObject({
     args: ['a moose', 'this hoose'],
     syntax,
     tense: 'simple_present',
@@ -145,4 +145,30 @@ test('Parsing/compose bijection', () => {
         args, syntax, tense, question:true, negative:'not'
       })
     }
+})
+
+test('Parsing noun phrase sentences', () => {
+  let syntax = new PredicateSyntax('be aloose', ['subject', 'aboot']);
+
+  expect(
+    syntax.parse('the moose which is aloose aboot this hoose', {
+      tense: 'simple_present',
+      nounPhraseFor: 'subject'
+    })
+  )
+  .toMatchObject({
+    tense: 'simple_present',
+    args: ['the moose', 'this hoose'],
+  })
+
+  expect(
+    syntax.parse('this hoose aboot which the moose is aloose', {
+      tense: 'simple_present',
+      nounPhraseFor: 'aboot'
+    })
+  )
+  .toMatchObject({
+    tense: 'simple_present',
+    args: ['the moose', 'this hoose'],
+  })
 })

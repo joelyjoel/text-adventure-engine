@@ -30,7 +30,7 @@ export class Template {
     this.tense = tense;
 
     let placeholders = template.match(placeholderRegex);
-    
+
     if(placeholders)
       this.params = placeholders.map(ph => {
         const literal = /@/.test(ph);

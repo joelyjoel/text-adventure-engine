@@ -11,6 +11,6 @@ test('Participly', () => {
 })
 
 test('pastify', () => {
-  expect(pastify('be')).toBe('was');
+  expect(pastify('be')).toBe('were');
   expect(pastify('become stronger')).toBe('became stronger')
 })
