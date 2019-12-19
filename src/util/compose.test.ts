@@ -107,4 +107,14 @@ test('Composing noun phrase sentences', () => {
     tense: 'simple_past',
     nounPhraseFor: 'aboot',
   })).toBe('this hoose aboot which a moose was aloose')
+
+  // Negatives
+  expect(compose({
+    infinitive: 'be aloose',
+    subject: 'a moose',
+    aboot: 'this hoose',
+    tense: 'simple_present',
+    nounPhraseFor: 'aboot',
+    negative: 'not'
+  })).toBe('this hoose aboot which a moose is not aloose')
 })

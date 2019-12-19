@@ -147,6 +147,7 @@ test('Parsing/compose bijection', () => {
       })
 
       for(let param of syntax.params) {
+        // Noun phrase form
         let nounPhraseFor = param.name;
         let np = syntax.str(args, {tense, nounPhraseFor});
         let npParse = syntax.parse(np, {tense, nounPhraseFor});
@@ -158,6 +159,21 @@ test('Parsing/compose bijection', () => {
           }))
         expect(npParse).toMatchObject({
           args, syntax, tense, question: false, negative: false, nounPhraseFor
+        })
+
+        // Noun phrase negative form
+        let npn = syntax.str(args, {tense, nounPhraseFor, negative:'not'});
+        let npnParse = syntax.parse(npn, {tense, nounPhraseFor, negative:'not'});
+        if(!npnParse) {
+          console.log(
+            `String to parse: "${npn}"`,
+            'regex:', syntax.composeVerbPhraseRegex({
+              tense, question:false, negative: 'not', nounPhraseFor
+          }))
+          fail(`${syntax.name} failed to parse: "${npn}"`)
+        }
+        expect(npnParse).toMatchObject({
+          args, syntax, tense, question: false, negative: 'not', nounPhraseFor
         })
       }
     }
