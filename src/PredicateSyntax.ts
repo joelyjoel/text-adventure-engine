@@ -1,13 +1,14 @@
-import { anyPersonRegex, conjugate, THIRD_PERSON_SINGULAR } from "./util/conjugate";
+import { anyPersonRegex, anyConjugationRegex, conjugate, THIRD_PERSON_SINGULAR } from "./util/conjugate";
 import { or, g, wholeWord, initial, initialAndWholeWord, optionalConcatSpaced, concatSpaced, concat, optional } from "./util/regops.extended";
 import { compose, makeNegative } from "./util/compose";
 import { LPredicate } from "./linking/LPredicate";
 import { getAuxiliaryVerb } from "./util/getAuxiliaryVerb";
 import { Template, placeholderRegex } from "./Template";
 import { Tense, allTenses, verbToTense } from "./util/tense";
-import { questionRegex } from "./util/verbOperations";
+import { questionRegex, simplePastQuestionTemplate } from "./util/verbOperations";
 import { toCamelCase } from "./util/toCamelCase";
 import { sentenceFormSymbol } from "./util/sentenceFormSymbol";
+import { shiftWord } from "./util/getFirstWord";
 
 type Param = {name: string, index:number, entity: true}
 
@@ -17,6 +18,8 @@ export class PredicateSyntax {
 
   /** A regex used for parsing the verb. */
   readonly verbRegex: RegExp;
+
+  readonly quickCheckRegex: RegExp;
 
   /** A regex which matches the subject and conjugated verb (with auxiliary before the known). E.g./ "do you see" */
   readonly questionRegex: RegExp;
@@ -57,6 +60,7 @@ export class PredicateSyntax {
 
     // Create a regex for parsing verbs
     this.verbRegex = wholeWord(anyPersonRegex(infinitive));
+    this.quickCheckRegex = composeQuickCheckRegex(infinitive);
 
     // Create a question regex
     let {aux, remainder} = getAuxiliaryVerb(this.infinitive);
@@ -161,7 +165,6 @@ export class PredicateSyntax {
       if(Object.keys(assoc).length != this.numberOfArgs)
         return null;
 
-
       return {
         args: this.orderArgs(assoc),
         syntax:this,
@@ -234,9 +237,12 @@ export class PredicateSyntax {
       verb = makeNegative(verb);
 
     let result;
-    if(question)
-      result = questionRegex(verb)
-    else if(nounPhraseFor == 'subject')
+    if(question) {
+      if(tense == 'simple_past')
+        result = simplePastQuestionTemplate(this.infinitive, negative).regex()
+      else
+        result = questionRegex(verb)
+    } else if(nounPhraseFor == 'subject')
       result = new Template(`_ which <${verb}`).regex();
     else if(nounPhraseFor == 'object')
       result = new Template(`which _ <${verb}`).regex();
@@ -285,5 +291,21 @@ export class PredicateSyntax {
     }
     return assoc;
   }
+
+  /** Check to see if a string includes the verb in any conjugation. */
+  quickCheck(str:string) {
+    return this.quickCheckRegex.test(str);
+  }
 }
 
+function composeQuickCheckRegex(infinitive:string) {
+  const [firstWord, remainder] = shiftWord(infinitive)
+  
+  return wholeWord(remainder ? 
+    concat(
+      anyConjugationRegex(firstWord),
+      /(?: [\w\s]+)?/,
+      ` ${remainder}`
+    )
+    : anyConjugationRegex(firstWord));
+}

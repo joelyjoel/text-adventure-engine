@@ -123,25 +123,41 @@ test('Parsing/compose bijection', () => {
   for(let {syntax, args} of sentences)
     for(let tense of allTenses) {
       let statement = syntax.str(args, tense)
+      if(!syntax.quickCheck(statement))
+        console.log('Quick check failed:', statement, syntax.quickCheckRegex, `tense: ${tense};`)
+      expect(syntax.quickCheck(statement)).toBe(true);
       let statementParse = syntax.parse(statement, {tense})
       expect(statementParse).toMatchObject({
         args, syntax, tense, question: false, negative: false,
       });
 
       let q = syntax.str(args, {tense, question:true});
+      expect(syntax.quickCheck(q)).toBe(true);
       let qParse = syntax.parse(q, {tense, question:true})
+      if(!qParse) {
+        console.log(`${tense}: ${q}`)
+        console.log(syntax.composeVerbPhraseRegex({tense, question:true}))
+        fail(`Couldn't parse '${q}'`)
+      }
       expect(qParse).toMatchObject({
         args, syntax, tense, question:true, negative: false
       })
 
       let n = syntax.str(args, {tense, negative: 'not'})
+      expect(syntax.quickCheck(n)).toBe(true);
       let nParse = syntax.parse(n, {tense, negative: 'not'})
       expect(nParse).toMatchObject({
         args, syntax, tense, question:false, negative:'not',
       })
 
       let qn = syntax.str(args, {tense, negative:'not', question:true})
+      expect(syntax.quickCheck(qn)).toBe(true);
       let qnParse = syntax.parse(qn, {tense, negative:'not', question:true});
+      if(!qnParse) {
+        console.log(`${tense}: ${qn}`)
+        console.log(syntax.composeVerbPhraseRegex({tense, question: true, negative:'not'}))
+        fail(`Could not parse: "${qn}"`)
+      }
       expect(qnParse).toMatchObject({
         args, syntax, tense, question:true, negative:'not'
       })
@@ -150,6 +166,7 @@ test('Parsing/compose bijection', () => {
         // Noun phrase form
         let nounPhraseFor = param.name;
         let np = syntax.str(args, {tense, nounPhraseFor});
+        expect(syntax.quickCheck(np)).toBe(true);
         let npParse = syntax.parse(np, {tense, nounPhraseFor});
         if(!npParse)
           console.log(
@@ -163,6 +180,7 @@ test('Parsing/compose bijection', () => {
 
         // Noun phrase negative form
         let npn = syntax.str(args, {tense, nounPhraseFor, negative:'not'});
+        expect(syntax.quickCheck(npn)).toBe(true);
         let npnParse = syntax.parse(npn, {tense, nounPhraseFor, negative:'not'});
         if(!npnParse) {
           console.log(

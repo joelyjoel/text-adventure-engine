@@ -32,9 +32,23 @@ const irregularConjugations:{
   }
 } = {
   be: {
-    1: 'am', 2:'are', 3:'is', 4:'are', 5:'are', 6:'are', 7:'being', 8:'been',
-    9:'were',
+    1: 'am', 2:'are', 3:'is', 4:'are', 5:'are', 6:'are',
+    7:'being', 8:'been', 9:'were',
   },
+
+  can: {9:'could'},
+  could: {9:'could'},
+  do: {9:'did'},
+  may: {9: 'may'},
+  might: {9:'might'},
+  must: {9:'must'},
+  need: {9:'needed'},
+  ought: {9:'ought'},
+  shall: {9:'shall'},
+  should: {9: 'should'},
+  will: {3: 'will', 9:'will'},
+  would: {9:'would'},
+  
 
   say: {8:'said', 9:'said'},
 

@@ -70,9 +70,6 @@ export function verbToTense(
     case 'past_continuous':
       return `were ${gerundify(inf)}`;
 
-    case 'present_continuous':
-      return `have ${participly(inf)}`;
-
     case 'present_perfect':
       return `have ${participly(inf)}`;
 

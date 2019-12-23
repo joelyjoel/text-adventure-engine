@@ -1,7 +1,8 @@
 import { Tense, verbToTense } from "./tense";
 import { Template } from "../Template";
 import { getAuxiliaryVerb } from "./getAuxiliaryVerb";
-import { questionTemplate } from "./verbOperations";
+import { questionTemplate, simplePastQuestionTemplate } from "./verbOperations";
+import { getFirstWord } from "./getFirstWord";
 
 /** Extra keys with string values interpretted as prepositional phrases. */
 type SentenceArguments = {
@@ -38,7 +39,7 @@ export function compose(args:SentenceArguments):string {
     subject, 
     object, 
     tense = 'simple_present', 
-    negative,
+    negative = false,
     question = false,
     /** Name of argument for which to compose a noun phrase */
     nounPhraseFor = null,
@@ -62,9 +63,24 @@ export function compose(args:SentenceArguments):string {
 
   // Attach the subject to the verb
   let verbPhrase 
-  if(question)
+  if(question && tense == 'simple_past') {
+    verbPhrase = simplePastQuestionTemplate(infinitive, negative)
+      .str([subject])
+  } else if(tense == 'simple_past' && getFirstWord(verb) != 'were') {
+    // Simple past is a special case because it doesn't require conjugation.
+    if(nounPhraseFor == 'subject')
+      verbPhrase = `${subject} which ${verb}`;
+    else if(nounPhraseFor == 'object' && object)
+      verbPhrase = `${object} which ${subject} ${verb}`;
+    else if(nounPhraseFor)
+      verbPhrase = `${args[nounPhraseFor]} ${nounPhraseFor} which ${subject} ${verb}`
+    else
+      verbPhrase = `${subject} ${verb}`;
+  } 
+  
+  else if(question)
     verbPhrase = questionTemplate(verb).str([subject]);
-
+  
   else if(nounPhraseFor == 'subject')
     verbPhrase = new Template(`_ which <${verb}`).str([subject]);
 

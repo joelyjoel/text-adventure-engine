@@ -15,6 +15,30 @@ test('Composing sentences', () => {
     object: 'amazing',
     tense: 'simple_present'
   })).toBe('I am amazing');
+
+  expect(compose({
+    infinitive: 'play',
+    subject: 'you',
+    tense: 'simple_past'
+  })).toBe('you played')
+
+  expect(compose({
+    infinitive: 'play',
+    subject: 'I',
+    tense: 'simple_past'
+  })).toBe('I played')
+
+  expect(compose({
+    infinitive: 'play',
+    subject: 'he',
+    tense: 'simple_past'
+  })).toBe('he played')
+
+  expect(compose({
+    infinitive: 'play',
+    subject: 'she',
+    tense: 'simple_past'
+  })).toBe('she played')
 })
 
 test('Composing negatives', () => {
@@ -72,6 +96,13 @@ test('Composing questions', () => {
     negative: 'not',
     question: true,
   })).toBe('am I not amazing');
+
+  expect(compose({
+    infinitive: 'play',
+    subject: 'he',
+    tense: 'simple_past',
+    question: true,
+  })).toBe('did he play')
 })
 
 test('Composing noun phrase sentences', () => {

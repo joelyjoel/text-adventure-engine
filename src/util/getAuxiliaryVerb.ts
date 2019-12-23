@@ -1,10 +1,14 @@
 import { getFirstWord } from "./getFirstWord";
-import { conjugate } from "./conjugate";
+import { conjugate, PAST_TENSE } from "./conjugate";
 import { isPastParticiple } from "./isPastParticiple";
 
 const auxiliaryInfitinitives = [
-  'be', 'can', 'could', 'dare', 'do', 'have', 'may', 'might', 'must', 'need', 'ought', 'shall', 'should', 'will', 'would'
+  'be', 'can', 'could', 'dare', 'do', 'have', 'may', 'might', 'must', 'need', 'ought', 'shall', 'should', 'will', 'would', 
 ]
+
+export const auxilliaryPasts = auxiliaryInfitinitives.map(
+  ing => conjugate(ing, PAST_TENSE))
+
 
 const auxiliaryVerbs:string[] = [];
 for(let infinitive of auxiliaryInfitinitives) {
@@ -13,7 +17,7 @@ for(let infinitive of auxiliaryInfitinitives) {
 
   for(let form of [1,2,3,4,5,6,9]) {
     let verb = conjugate(infinitive, form)
-    if(auxiliaryVerbs.includes(verb))
+    if(!auxiliaryVerbs.includes(verb))
       auxiliaryVerbs.push(verb);
   }
 }

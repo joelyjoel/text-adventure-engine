@@ -19,6 +19,7 @@ VERB FORMS DENOTED AS NUMBERS:
 
 import * as regOp from "regops"
 import {getIrregularConjugation} from './irregularConjugations'
+import { shiftWord } from "./getFirstWord"
 
 const endsWithShortConsonant = /[aeiou][tpdnl]$/
 const endsWithE = /e$/
@@ -98,14 +99,38 @@ function conjugateRegular(infinitive:string, form:number) {
   }
 }
 
+/** Get a regular expression matching any conjugation of the verb (Except infinitive, past participle or gerund). */
 export function anyPersonRegex(infinitive:string) {
+  const [firstWord, remainder] = shiftWord(infinitive);
+
   let forms:string[] = []
   for(let person=1; person<=6; ++person) {
-    let form = conjugate(infinitive, person)
+    let form = conjugate(firstWord, person)
     if(!forms.includes(form))
       forms.push(form)
   }
-  return regOp.or(...forms.sort((a, b) => b.length-a.length))
+  let result = regOp.or(...forms.sort((a, b) => b.length-a.length))
+  if(remainder)
+    result = regOp.concatSpaced(remainder)
+  return result
 }
 
+export function anyConjugationRegex(infinitive:string) {
+  const [firstWord, remainder] = shiftWord(infinitive);
 
+  let forms:string[] = []
+  for(let person=0; person<=9; ++person) {
+    let form = conjugate(firstWord, person)
+    if(!forms.includes(form))
+      forms.push(form)
+  }
+
+  if(firstWord == 'be')
+    forms.push('was')
+    
+  let result = regOp.or(...forms.sort((a, b) => b.length-a.length))
+  if(remainder)
+    result = regOp.concatSpaced(result, remainder)
+
+  return result;
+}
