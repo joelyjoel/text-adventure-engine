@@ -110,9 +110,73 @@ export class PredicateSyntax {
     this.assign(P)
   }
 
-  parse(
+  *parse(
     str:string, 
-    options:{tense:Tense, question?:boolean, negative?: false|'not', nounPhraseFor?:string}|Tense = 'simple_present'
+    options:{
+      tenses?: Tense[];
+      asStatement?:boolean;
+      asNegative?:boolean;
+      asQuestion?:boolean;
+      asNounPhrase?:boolean;
+    }={}
+  ) {
+
+    // Dismiss immediately if it doesn't pass the quick check.
+    if(!this.quickCheck(str))
+      return null;
+
+    // De-structure options
+    const {
+      tenses=allTenses,
+      asStatement=true, 
+      asNegative=true, 
+      asQuestion=true, 
+      asNounPhrase=true
+    } = options;
+
+    let nounPhraseFors = asNounPhrase 
+      ? [null, ...this.params.map(p=>p.name)] 
+      : [null];
+
+    for(let tense of tenses) {
+      for(let nounPhraseFor of nounPhraseFors){
+        if(asStatement) {
+          let parse = this.parseSpecific(str, {tense, nounPhraseFor})
+          if(parse)
+            yield parse;
+        }
+
+        if(asNegative) {
+          let parse = this.parseSpecific(
+            str, {tense, negative:'not', nounPhraseFor});
+          if(parse)
+            yield parse;
+        }
+      }
+
+      if(asQuestion) {
+        let parse = this.parseSpecific(str, {tense, question:true});
+        if(parse)
+          yield parse;
+
+        if(asNegative) {
+          let parse = this.parseSpecific(str, {
+            tense,
+            question:true,
+            negative:'not',
+          })
+          if(parse)
+            yield parse;
+        }
+      }
+    }
+
+    
+  }
+
+  parseSpecific(
+    str:string, 
+    options:{tense:Tense, question?:boolean, negative?: false|'not', nounPhraseFor?:string|null}|Tense = 'simple_present'
   ):{
     args: (string|number)[];
     syntax: PredicateSyntax;

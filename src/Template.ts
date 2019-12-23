@@ -23,11 +23,26 @@ export class Template {
   readonly template: string;
 
   predicate?: LPredicate;
+  readonly question: boolean;
+  readonly negative: 'not' | false;
+  readonly pos: 'statement';
 
-  constructor(template:string, tense:Tense='simple_present') {
+  constructor(
+    template:string, 
+    options:{
+      tense?:Tense;
+      question?:boolean;
+      negative?:'not'|false;
+      pos?: 'statement';
+    }={}
+  ) {
     this.template = template
 
-    this.tense = tense;
+    this.tense = options.tense || 'simple_present';
+    this.question = options.question || false;
+    this.negative = options.negative || false;
+    this.pos = options.pos || 'statement';
+
 
     let placeholders = template.match(placeholderRegex);
 
@@ -97,7 +112,14 @@ export class Template {
       for(let i in this.params)
         if(this.params[i].number)
           args[i] = parseFloat(args[i] as string);
-      return {args, syntax:this, tense:this.tense};
+      return {
+        args, 
+        syntax:this, 
+        tense:this.tense,
+        pos: this.pos,
+        question: this.question,
+        negative: this.negative,
+      };
     } else
       // No parse found.
       return null;

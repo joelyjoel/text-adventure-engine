@@ -4,12 +4,17 @@ import { Parse } from "./Parse";
 import { Template } from "../Template";
 import { parseNounPhrase, NounPhraseParse } from "./parseNounPhrase";
 import { PredicateSyntax } from "../PredicateSyntax";
+import { Tense, allTenses } from "../util/tense";
+import { getPossibleTenses } from "../util/detectTense";
 
 export interface StatementParse extends Parse {
   args: (string|NounPhraseParse|number)[];
   syntax: StatementSyntax
-  syntaxKind: 'template'; // add more
-  pos: 'statement';
+  syntaxKind: 'template' | 'predicate'
+  pos: 'statement'|'question';
+  tense: Tense;
+  question: boolean;
+  negative: 'not' | false;
 };
 
 /** Classes that can be used to parse NLP statements. 
@@ -17,35 +22,47 @@ export interface StatementParse extends Parse {
 */
 export type StatementSyntax = (Template | PredicateSyntax);
 
-export function * shallowParseStatement(str:string, ctx:Context|Dictionary) {
+export function * shallowParseStatement(str:string, ctx:Context|Dictionary):Generator<StatementParse> {
   if(ctx instanceof Dictionary)
     ctx = new Context(ctx);
 
   const {dictionary} = ctx;
+
+  const tenses = allTenses;//getPossibleTenses(str);
+  const asQuestion = true;
+  const asNegative = true;
   
   for(let syntax of dictionary.statementSyntaxs) {
-    let parse = syntax.parse(str, "simple_present");
-    if(parse) {
-      if(syntax instanceof Template)
+    if(syntax instanceof PredicateSyntax) {
+      // Skip if it doesn't fit the quick check.
+      if(!syntax.quickCheck(str))
+        continue;
+
+      let parses = syntax.parse(str, {
+        tenses, asQuestion, asNegative, 
+        asNounPhrase: false
+      })
+
+      for(let parse of parses)
         yield {
-          args: parse.args,
-          syntax,
-          syntaxKind: 'template',
-          pos: 'statement',
+          ...parse,
+          pos: parse.question ? 'question' : 'statement',
           from: 0,
           to: str.length,
-          str
-        };
-      else if (syntax instanceof PredicateSyntax)
-        yield {
-          args: parse.args,
-          syntax,
           syntaxKind: 'predicate',
-          pos: 'statement',
+          str,
+        };
+
+    } else if(syntax instanceof Template) {
+      let parse = syntax.parse(str);
+      if(parse)
+        yield {
+          ...parse,
           from: 0,
           to: str.length,
+          syntaxKind: 'template',
           str,
-        }
+        };
     }
   }
 }

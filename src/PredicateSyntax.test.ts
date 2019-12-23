@@ -18,7 +18,7 @@ test('Constructing a predicate syntax', () => {
 
 test('Parsing using a PredicateSyntax', () => {
   const syntax = new PredicateSyntax('live', ['subject', 'in'])
-  let parse = syntax.parse('the boy lives in the dutch barge', 'simple_present');
+  let parse = syntax.parseSpecific('the boy lives in the dutch barge', 'simple_present');
 
   expect(parse).toMatchObject({
     args: ['the boy', 'the dutch barge'],
@@ -48,7 +48,7 @@ test('Composing questions using PredicateSyntax', () => {
 
 test('Parsing questions using PredicateSyntax', () => {
   const syntax = new PredicateSyntax('live', ['subject', 'in']);
-  let parse = syntax.parse(
+  let parse = syntax.parseSpecific(
     'does a moose live in this hoose', {tense: 'simple_present', question:true}
   );
   expect(parse).toBeTruthy()
@@ -60,7 +60,7 @@ test('Parsing questions using PredicateSyntax', () => {
   })
 
   const syntax2 = new PredicateSyntax('be aloose', ['subject', 'aboot'])
-  expect(syntax2.parse(
+  expect(syntax2.parseSpecific(
     'is a moose aloose aboot this hoose',
     {tense: 'simple_present', question:true}
   )).toMatchObject({
@@ -74,7 +74,7 @@ test('Parsing questions using PredicateSyntax', () => {
 
 test('Parsing questions & negatives using PredicateSyntax', () => {
   const syntax = new PredicateSyntax('live', ['subject', 'in']);
-  let parse = syntax.parse(
+  let parse = syntax.parseSpecific(
     'a moose does not live in this hoose',
     {tense:'simple_present', question:false, negative:'not'}
   )
@@ -89,7 +89,7 @@ test('Parsing questions & negatives using PredicateSyntax', () => {
 
   const syntax2 = new PredicateSyntax('be aloose', ['subject', 'aboot'])
   expect(
-    syntax2.parse(
+    syntax2.parseSpecific(
       'will a moose not be aloose aboot this hoose',
       {tense:'simple_future', question:true, negative:'not'}
     )
@@ -126,14 +126,14 @@ test('Parsing/compose bijection', () => {
       if(!syntax.quickCheck(statement))
         console.log('Quick check failed:', statement, syntax.quickCheckRegex, `tense: ${tense};`)
       expect(syntax.quickCheck(statement)).toBe(true);
-      let statementParse = syntax.parse(statement, {tense})
+      let statementParse = syntax.parseSpecific(statement, {tense})
       expect(statementParse).toMatchObject({
         args, syntax, tense, question: false, negative: false,
       });
 
       let q = syntax.str(args, {tense, question:true});
       expect(syntax.quickCheck(q)).toBe(true);
-      let qParse = syntax.parse(q, {tense, question:true})
+      let qParse = syntax.parseSpecific(q, {tense, question:true})
       if(!qParse) {
         console.log(`${tense}: ${q}`)
         console.log(syntax.composeVerbPhraseRegex({tense, question:true}))
@@ -145,14 +145,14 @@ test('Parsing/compose bijection', () => {
 
       let n = syntax.str(args, {tense, negative: 'not'})
       expect(syntax.quickCheck(n)).toBe(true);
-      let nParse = syntax.parse(n, {tense, negative: 'not'})
+      let nParse = syntax.parseSpecific(n, {tense, negative: 'not'})
       expect(nParse).toMatchObject({
         args, syntax, tense, question:false, negative:'not',
       })
 
       let qn = syntax.str(args, {tense, negative:'not', question:true})
       expect(syntax.quickCheck(qn)).toBe(true);
-      let qnParse = syntax.parse(qn, {tense, negative:'not', question:true});
+      let qnParse = syntax.parseSpecific(qn, {tense, negative:'not', question:true});
       if(!qnParse) {
         console.log(`${tense}: ${qn}`)
         console.log(syntax.composeVerbPhraseRegex({tense, question: true, negative:'not'}))
@@ -167,7 +167,7 @@ test('Parsing/compose bijection', () => {
         let nounPhraseFor = param.name;
         let np = syntax.str(args, {tense, nounPhraseFor});
         expect(syntax.quickCheck(np)).toBe(true);
-        let npParse = syntax.parse(np, {tense, nounPhraseFor});
+        let npParse = syntax.parseSpecific(np, {tense, nounPhraseFor});
         if(!npParse)
           console.log(
             `String to parse: "${np}"`,
@@ -181,7 +181,7 @@ test('Parsing/compose bijection', () => {
         // Noun phrase negative form
         let npn = syntax.str(args, {tense, nounPhraseFor, negative:'not'});
         expect(syntax.quickCheck(npn)).toBe(true);
-        let npnParse = syntax.parse(npn, {tense, nounPhraseFor, negative:'not'});
+        let npnParse = syntax.parseSpecific(npn, {tense, nounPhraseFor, negative:'not'});
         if(!npnParse) {
           console.log(
             `String to parse: "${npn}"`,
@@ -201,7 +201,7 @@ test('Parsing noun phrase sentences', () => {
   let syntax = new PredicateSyntax('be aloose', ['subject', 'aboot']);
 
   expect(
-    syntax.parse('the moose which is aloose aboot this hoose', {
+    syntax.parseSpecific('the moose which is aloose aboot this hoose', {
       tense: 'simple_present',
       nounPhraseFor: 'subject'
     })
@@ -212,7 +212,7 @@ test('Parsing noun phrase sentences', () => {
   })
 
   expect(
-    syntax.parse('this hoose aboot which the moose is aloose', {
+    syntax.parseSpecific('this hoose aboot which the moose is aloose', {
       tense: 'simple_present',
       nounPhraseFor: 'aboot'
     })
