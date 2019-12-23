@@ -231,3 +231,22 @@ test('PredicateSyntax: Re-using indexed regular expressions', () => {
 
   expect(reg1).toBe(reg2)
 })
+
+test('PredicateSyntax: parsing with unknown tense', () => {
+  let syntax = new PredicateSyntax('be aloose', ['subject', 'aboot']);
+
+  let [parse1] = syntax.parse('the moose is aloose aboot this hoose')
+  expect(parse1).toMatchObject({tense: 'simple_present'});
+
+  let [parse2] = syntax.parse('the hoose aboot which a moose was aloose')
+  expect(parse2).toMatchObject({
+    tense: 'simple_past',
+    nounPhraseFor:'aboot',
+  })
+
+  let [parse3] = syntax.parse('has a moose been aloose aboot this hoose')
+  expect(parse3).toMatchObject({
+    tense: 'present_perfect',
+    question: true,
+  })
+})
