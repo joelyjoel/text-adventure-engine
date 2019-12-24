@@ -14,6 +14,8 @@ export const barge_world_dict = new Dictionary()
     'nauticus 27',
     'solid fuel stove',
     'bank',
+    'river',
+    'canal',
   )
   .addAdjectives(
     'narrowbeam', 
