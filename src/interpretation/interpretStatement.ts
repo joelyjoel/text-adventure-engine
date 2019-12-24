@@ -5,6 +5,9 @@ import { TruthTable } from "../logic/TruthTable";
 import { Sentence, Entity, VariableTable } from "../logic";
 
 export function interpretParsedStatement(parse:StatementParse, ctx:Context) {
+  if(parse.question)
+    throw "Cannot interpet a question as a statement."
+
   const predicate = parse.syntax.predicate;
   if(!predicate)
     throw "Can't interpret a statement without associated predicate."
@@ -21,7 +24,13 @@ export function interpretParsedStatement(parse:StatementParse, ctx:Context) {
     
 
   let sentence = new Sentence(predicate, ...args);
-  table.assign(sentence, 'true');
+  if(parse.tense == 'simple_present') {
+    if(parse.negative)
+      table.assign(sentence, 'false');
+    else
+      table.assign(sentence, 'true');
+  } else
+    throw `Unable to interpret sentence with tense: ${parse.tense}`
 
   return table;
 }
