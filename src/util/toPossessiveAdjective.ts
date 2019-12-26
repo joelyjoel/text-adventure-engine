@@ -7,13 +7,16 @@ export function toPossessiveAdjective(nounPhrase:string) {
   switch(nounPhrase.toLowerCase()) {
     case 'i':
     case 'me':
+    case 'my':
       return 'my';
 
     case 'you':
+    case 'your':
       return 'your';
 
     case 'he':
     case 'him':
+    case 'his':
       return 'his';
 
     case 'she':
@@ -21,13 +24,17 @@ export function toPossessiveAdjective(nounPhrase:string) {
       return 'her';
 
     case 'it':
+    case 'its':
       return 'its'
 
     case 'we':
+    case 'us':
+    case 'our':
       return 'our';
 
     case 'they':
     case 'them':
+    case 'their':
       return 'their';
   }
 
