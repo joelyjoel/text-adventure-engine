@@ -175,7 +175,8 @@ test('Parsing/compose bijection', () => {
               tense, question:false, negative: false, nounPhraseFor
           }))
         expect(npParse).toMatchObject({
-          args, syntax, tense, question: false, negative: false, nounPhraseFor
+          args, syntax, tense, question: false, negative: false, 
+          nounPhraseFor: param.index,
         })
 
         // Noun phrase negative form
@@ -191,7 +192,8 @@ test('Parsing/compose bijection', () => {
           fail(`${syntax.name} failed to parse: "${npn}"`)
         }
         expect(npnParse).toMatchObject({
-          args, syntax, tense, question: false, negative: 'not', nounPhraseFor
+          args, syntax, tense, question: false, negative: 'not', 
+          nounPhraseFor: param.index,
         })
       }
     }
@@ -241,7 +243,7 @@ test('PredicateSyntax: parsing with unknown tense', () => {
   let [parse2] = syntax.parse('the hoose aboot which a moose was aloose')
   expect(parse2).toMatchObject({
     tense: 'simple_past',
-    nounPhraseFor:'aboot',
+    nounPhraseFor:1,
   })
 
   let [parse3] = syntax.parse('has a moose been aloose aboot this hoose')

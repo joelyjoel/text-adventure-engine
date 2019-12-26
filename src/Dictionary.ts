@@ -16,6 +16,7 @@ export class Dictionary {
   adjectiveIndex: {[key: string]: Adjective[]}
 
   statementSyntaxs: StatementSyntax[];
+  predicateSyntaxs: PredicateSyntax[];
 
   constructor() {
     this.nouns = [];
@@ -25,6 +26,7 @@ export class Dictionary {
     this.adjectiveIndex = {};
 
     this.statementSyntaxs = [];
+    this.predicateSyntaxs = [];
   }
 
   /** Add a noun to the dictionary. */
@@ -91,6 +93,9 @@ export class Dictionary {
       console.warn("Adding non-logical syntax to the dictionary");
 
     this.statementSyntaxs.push(syntax);
+
+    if(syntax instanceof PredicateSyntax)
+      this.predicateSyntaxs.push(syntax);
 
     // Chainable
     return this;

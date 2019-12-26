@@ -4,6 +4,7 @@ import { Entity, Sentence, Variable, VariableTable } from "../logic";
 import { TruthTable } from "../logic/TruthTable";
 import { Context } from "../Context";
 import { NounPhraseParse } from "../parsing/parseNounPhrase";
+import { PredicateSyntaxParse, PredicateSyntax } from "../PredicateSyntax";
 
 /** Interpret a string noun-phrase as an existential claim. */
 export function interpretNounPhrase(nounPhrase:string, ctx:Context|Dictionary) {
@@ -18,20 +19,25 @@ export function interpretNounPhrase(nounPhrase:string, ctx:Context|Dictionary) {
 }
 
 /** Interpret a parsed noun-phrase as an existential claim. */
-export function interpretParsedNounPhrase(parse:NounPhraseParse, ctx:Context) {
-  // Destructure the parse
-  const nounPredicate = parse.noun.noun.predicate;
-  const adjPredicates = parse.adjectives
-    .map(adjparse => adjparse.adj.predicate);
+export function interpretParsedNounPhrase(parse:NounPhraseParse|PredicateSyntaxParse, ctx:Context) {
+  if(parse.syntax instanceof PredicateSyntax) {
+    throw 'Unable to interpret PredicateSyntaxParse'
+  } else {
+    let npParse = parse as NounPhraseParse;
+    // Destructure the parse
+    const nounPredicate = npParse.noun.noun.predicate;
+    const adjPredicates = npParse.adjectives
+      .map(adjparse => adjparse.adj.predicate);
 
-  // Create a stand in entity variable
-  const x = new Variable;
+    // Create a stand in entity variable
+    const x = new Variable;
 
-  // Create variable table to express the interpretation
-  const table = new VariableTable(x);
-  table.assign(new Sentence(nounPredicate, x), 'true')
-  for(let predicate of adjPredicates)
-    table.assign(new Sentence(predicate, x), 'true');
+    // Create variable table to express the interpretation
+    const table = new VariableTable(x);
+    table.assign(new Sentence(nounPredicate, x), 'true')
+    for(let predicate of adjPredicates)
+      table.assign(new Sentence(predicate, x), 'true');
 
-  return table;
+    return table;
+  }
 }

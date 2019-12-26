@@ -65,12 +65,19 @@ test('Parsing phrasal nouns and adjectives', () => {
 
   const parse = parseNounPhrase('my sly free wheeling buddhist monk', dict);
   expect(parse).toBeTruthy();
-  if(parse) {
-    expect(parse.identifier.identifier).toBe('my')
-    expect(parse.adjectives[0].adj.str).toBe('sly');
-    expect(parse.adjectives[1].adj.str).toBe('free wheeling');
-    expect(parse.noun.noun.str).toBe('buddhist monk');
-  }
+  expect(parse).toMatchObject({
+    identifier: {
+      identifier: 'my',
+    },
+    adjectives: [{adj:{str:'sly'}}, {adj:{str:'free wheeling'}}],
+    noun: {noun: {str:'buddhist monk'}}
+  })
+  // if(parse && parse.syntaxKind == 'basic') {
+  //   expect(parse.identifier.identifier).toBe('my')
+  //   expect(parse.adjectives[0].adj.str).toBe('sly');
+  //   expect(parse.adjectives[1].adj.str).toBe('free wheeling');
+  //   expect(parse.noun.noun.str).toBe('buddhist monk');
+  // }
 })
 
 test("Shallow parsing a simple statement", () => {
@@ -99,3 +106,14 @@ test("Deep parsing a simple statement", () => {
     expect(typeof parse.args[0]).toBe('object');
   }
 })
+
+// test('Parsing a complex nounphrases.', () => {
+//   const dict = new Dictionary().addNouns('boy').addAdjectives('fat', 'round');
+//   const ctx = new Context(dict);
+
+//   let parse = parseNounPhrase('the boy which is fat', dict);
+//   expect(parse).toBeTruthy();
+//   expect(parse).toMatchObject({
+//     nounPhraseFor: 0,
+//   })
+// })

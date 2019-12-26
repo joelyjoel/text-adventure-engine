@@ -5,7 +5,7 @@ import { questionTemplate, simplePastQuestionTemplate } from "./verbOperations";
 import { getFirstWord } from "./getFirstWord";
 
 /** Extra keys with string values interpretted as prepositional phrases. */
-type SentenceArguments = {
+type Composable = {
   infinitive: string;
   tense?: Tense;
   subject?: string;
@@ -22,7 +22,7 @@ const specialNames = [
 ];
 
 /** Destructure the arguments passed to compose. */
-function destructurePrepositions(args:SentenceArguments) {
+function destructurePrepositions(args:Composable) {
   let prepositions:{[key:string]:string} = {};
   for(let name in args) {
     let val = args[name]
@@ -32,7 +32,7 @@ function destructurePrepositions(args:SentenceArguments) {
   return prepositions
 }
 
-export function compose(args:SentenceArguments):string {
+export function compose(args:Composable):string {
   // Destructure the arguments
   const {
     infinitive, 

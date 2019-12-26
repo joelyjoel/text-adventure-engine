@@ -12,6 +12,16 @@ import { shiftWord } from "./util/getFirstWord";
 
 type Param = {name: string, index:number, entity: true}
 
+export interface PredicateSyntaxParse<T=string> {
+  /** The arguments of the parsed string */
+  args: T[];
+  tense: Tense;
+  negative: 'not'|false;
+  question: boolean;
+  nounPhraseFor: number|null;
+  syntax: PredicateSyntax;
+}
+
 export class PredicateSyntax {
   /** The infinitive form of the verb. */
   readonly infinitive: string;
@@ -119,7 +129,7 @@ export class PredicateSyntax {
       asQuestion?:boolean;
       asNounPhrase?:boolean;
     }={}
-  ) {
+  ):Generator<PredicateSyntaxParse> {
 
     // Dismiss immediately if it doesn't pass the quick check.
     if(!this.quickCheck(str))
@@ -134,17 +144,19 @@ export class PredicateSyntax {
       asNounPhrase=true
     } = options;
 
-    let nounPhraseFors = asNounPhrase 
-      ? [null, ...this.params.map(p=>p.name)] 
-      : [null];
+    let nounPhraseFors = [];
+    if(asStatement)
+      nounPhraseFors.push(null);
+    if(asNounPhrase)
+      nounPhraseFors.push(...this.params.map(p=>p.name))
+
+    
 
     for(let tense of tenses) {
       for(let nounPhraseFor of nounPhraseFors){
-        if(asStatement) {
-          let parse = this.parseSpecific(str, {tense, nounPhraseFor})
-          if(parse)
-            yield parse;
-        }
+        let parse = this.parseSpecific(str, {tense, nounPhraseFor})
+        if(parse)
+          yield parse;
 
         if(asNegative) {
           let parse = this.parseSpecific(
@@ -177,14 +189,7 @@ export class PredicateSyntax {
   parseSpecific(
     str:string, 
     options:{tense:Tense, question?:boolean, negative?: false|'not', nounPhraseFor?:string|null}|Tense = 'simple_present'
-  ):{
-    args: (string|number)[];
-    syntax: PredicateSyntax;
-    tense: Tense;
-    question: boolean;
-    negative: false | 'not';
-    nounPhraseFor: string | null
-  }|null  {
+  ):PredicateSyntaxParse|null  {
     // De-structure arguments
     if(typeof options == 'string')
       options = {tense:options as Tense}
@@ -232,7 +237,12 @@ export class PredicateSyntax {
       return {
         args: this.orderArgs(assoc),
         syntax:this,
-        tense, question, negative, nounPhraseFor
+        tense, 
+        question,
+        negative, 
+        nounPhraseFor: nounPhraseFor 
+          ? this.paramIndex[nounPhraseFor].index
+          : null,
       }
     } else
       return null;
