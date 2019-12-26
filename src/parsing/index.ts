@@ -1,7 +1,7 @@
  
 export {parseAdjectives, parseLastAdjective} from './parseAdjectives';
 export {parseNoun} from './parseNoun';
-export {parseNounPhrase} from './parseNounPhrase';
+export {parseSimpleNounPhrase} from './parseNounPhrase';
 export {
   parseIdentifier, 
   parseArticle, 

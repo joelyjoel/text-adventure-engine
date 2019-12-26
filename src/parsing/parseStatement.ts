@@ -2,7 +2,7 @@ import { Context } from "../Context";
 import { Dictionary } from "../Dictionary";
 import { Parse } from "./Parse";
 import { Template } from "../Template";
-import { parseNounPhrase, NounPhraseParse } from "./parseNounPhrase";
+import { parseSimpleNounPhrase, NounPhraseParse } from "./parseNounPhrase";
 import { PredicateSyntax } from "../PredicateSyntax";
 import { Tense, allTenses } from "../util/tense";
 import { getPossibleTenses } from "../util/detectTense";
@@ -74,7 +74,7 @@ export function * parseStatement(str:string, ctx:Context):Generator<StatementPar
     if(syntaxKind == 'template' || syntaxKind == 'predicate') {
       const parsedArgs = args.map((arg, i) => {
         if(syntax.params[i].entity) {
-          return parseNounPhrase(arg as string, ctx.dictionary)
+          return parseSimpleNounPhrase(arg as string, ctx.dictionary)
         } else
           return arg;
       })

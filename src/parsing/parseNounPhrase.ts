@@ -13,7 +13,7 @@ export interface NounPhraseParse extends Parse {
   syntax:null,
 }
 
-export function parseNounPhrase(
+export function parseSimpleNounPhrase(
   str:string, 
   dict:Dictionary
 ):(NounPhraseParse|null) {
@@ -69,7 +69,7 @@ export function parseComplexNounPhrase(str:string, dict:Dictionary) {
       let args = parse.args
       const parsedArgs = args.map((arg, i) => {
         if(syntax.params[i].entity) {
-          return parseNounPhrase(arg as string, dict)
+          return parseSimpleNounPhrase(arg as string, dict)
         } else
           return arg;
       })

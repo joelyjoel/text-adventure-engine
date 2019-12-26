@@ -1,6 +1,6 @@
 import { parseArticle } from "./parseIdentifier"
 import { Dictionary } from "../Dictionary";
-import { parseNounPhrase } from "./parseNounPhrase";
+import { parseSimpleNounPhrase } from "./parseNounPhrase";
 import { shallowParseStatement, parseStatement } from "./parseStatement";
 import { Context } from "../Context";
 
@@ -31,13 +31,13 @@ test('indefinite article test', () => {
   }
 })
 
-test('parseNounPhrase test 1', () => {
+test('parseSimpleNounPhrase test 1', () => {
   const dictionary = new Dictionary;
   dictionary.addNouns('cat', 'dog');
   dictionary.addAdjectives('big', 'small');
 
   const str = 'the big dog';
-  const parse = parseNounPhrase(str, dictionary);
+  const parse = parseSimpleNounPhrase(str, dictionary);
 
   expect(parse).toMatchObject({
     str: str,
@@ -63,7 +63,7 @@ test('Parsing phrasal nouns and adjectives', () => {
     .addNouns('bumper car', 'buddhist monk')
     .addAdjectives('free wheeling', 'sly')
 
-  const parse = parseNounPhrase('my sly free wheeling buddhist monk', dict);
+  const parse = parseSimpleNounPhrase('my sly free wheeling buddhist monk', dict);
   expect(parse).toBeTruthy();
   expect(parse).toMatchObject({
     identifier: {

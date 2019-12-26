@@ -1,9 +1,8 @@
-import { parseNounPhrase } from "../parsing";
 import { Dictionary } from "../Dictionary";
 import { Entity, Sentence, Variable, VariableTable } from "../logic";
 import { TruthTable } from "../logic/TruthTable";
 import { Context } from "../Context";
-import { NounPhraseParse } from "../parsing/parseNounPhrase";
+import { NounPhraseParse, parseSimpleNounPhrase } from "../parsing/parseNounPhrase";
 import { PredicateSyntaxParse, PredicateSyntax } from "../PredicateSyntax";
 
 /** Interpret a string noun-phrase as an existential claim. */
@@ -11,7 +10,7 @@ export function interpretNounPhrase(nounPhrase:string, ctx:Context|Dictionary) {
   if(ctx instanceof Dictionary)
     ctx = new Context(ctx);
 
-  const parse = parseNounPhrase(nounPhrase, ctx.dictionary);
+  const parse = parseSimpleNounPhrase(nounPhrase, ctx.dictionary);
   if(parse)
     return interpretParsedNounPhrase(parse, ctx);
   else
