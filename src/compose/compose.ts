@@ -1,8 +1,8 @@
-import { Tense, verbToTense } from "./tense";
+import { Tense, verbToTense } from "../util/tense";
 import { Template } from "../Template";
-import { getAuxiliaryVerb } from "./getAuxiliaryVerb";
-import { questionTemplate, simplePastQuestionTemplate } from "./verbOperations";
-import { getFirstWord } from "./getFirstWord";
+import { getAuxiliaryVerb } from "../util/getAuxiliaryVerb";
+import { questionTemplate, simplePastQuestionTemplate } from "../util/verbOperations";
+import { getFirstWord } from "../util/getFirstWord";
 
 /** Extra keys with string values interpretted as prepositional phrases. */
 type Composable = {

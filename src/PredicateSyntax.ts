@@ -1,6 +1,6 @@
 import { anyPersonRegex, anyConjugationRegex, conjugate, THIRD_PERSON_SINGULAR } from "./util/conjugate";
 import { or, g, wholeWord, initial, initialAndWholeWord, optionalConcatSpaced, concatSpaced, concat, optional } from "./util/regops.extended";
-import { compose, makeNegative } from "./util/compose";
+import { compose, makeNegative } from "./compose/compose";
 import { LPredicate } from "./linking/LPredicate";
 import { getAuxiliaryVerb } from "./util/getAuxiliaryVerb";
 import { Template, placeholderRegex } from "./Template";
