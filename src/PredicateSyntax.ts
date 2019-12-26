@@ -12,14 +12,21 @@ import { shiftWord } from "./util/getFirstWord";
 
 type Param = {name: string, index:number, entity: true}
 
-export interface PredicateSyntaxParse<T=string> {
+export interface PredicateSyntaxParse<ARGTYPE=string> {
   /** The arguments of the parsed string */
-  args: T[];
+  syntaxKind: 'predicate_syntax';
+  args: [...ARGTYPE[]];
   tense: Tense;
   negative: 'not'|false;
   question: boolean;
   nounPhraseFor: number|null;
   syntax: PredicateSyntax;
+  /** The original string. */
+  str: string;
+  from: number;
+  to: number;
+  /** Part of speech. */
+  pos: 'NP' | 'S';
 }
 
 export class PredicateSyntax {
@@ -235,6 +242,7 @@ export class PredicateSyntax {
         return null;
 
       return {
+        syntaxKind: 'predicate_syntax',
         args: this.orderArgs(assoc),
         syntax:this,
         tense, 
@@ -243,6 +251,10 @@ export class PredicateSyntax {
         nounPhraseFor: nounPhraseFor 
           ? this.paramIndex[nounPhraseFor].index
           : null,
+        from: 0,
+        to: str.length,
+        str,
+        pos: nounPhraseFor ? 'NP' : 'S',
       }
     } else
       return null;

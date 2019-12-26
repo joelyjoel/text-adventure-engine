@@ -1,6 +1,6 @@
 import { parseArticle } from "./parseIdentifier"
 import { Dictionary } from "../Dictionary";
-import { parseSimpleNounPhrase } from "./parseNounPhrase";
+import { parseSimpleNounPhrase, parseNounPhrase } from "./parseNounPhrase";
 import { shallowParseStatement, parseStatement } from "./parseStatement";
 import { Context } from "../Context";
 
@@ -107,13 +107,13 @@ test("Deep parsing a simple statement", () => {
   }
 })
 
-// test('Parsing a complex nounphrases.', () => {
-//   const dict = new Dictionary().addNouns('boy').addAdjectives('fat', 'round');
-//   const ctx = new Context(dict);
+test('Parsing a complex nounphrases.', () => {
+  const dict = new Dictionary().addNouns('boy').addAdjectives('fat', 'round');
+  const ctx = new Context(dict);
 
-//   let parse = parseNounPhrase('the boy which is fat', dict);
-//   expect(parse).toBeTruthy();
-//   expect(parse).toMatchObject({
-//     nounPhraseFor: 0,
-//   })
-// })
+  let parse = parseNounPhrase('the boy which is fat', dict);
+  expect(parse).toBeTruthy();
+  expect(parse).toMatchObject({
+    nounPhraseFor: 0,
+  })
+})

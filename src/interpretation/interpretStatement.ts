@@ -14,21 +14,23 @@ export function interpretParsedStatement(parse:StatementParse, ctx:Context) {
 
   const table = new VariableTable;
   const args = parse.args.map(arg => {
-    if(typeof arg == 'object' && arg.pos == 'nounphrase') {
+    if(typeof arg == 'object' && arg.pos == 'NP') {
       let interpretation = interpretParsedNounPhrase(arg, ctx);
       table.merge(interpretation);
       return interpretation.variables[0];
-    } else
-      throw 'Can only interpret statements with entity arguments';
+    } else {
+      console.log('## arg:', arg)
+      throw 'Can only interpret statements with noun phrase arguments';
+    }
   });
     
 
   let sentence = new Sentence(predicate, ...args);
   if(parse.tense == 'simple_present') {
     if(parse.negative)
-      table.assign(sentence, 'false');
+      table.assign(sentence, 'F');
     else
-      table.assign(sentence, 'true');
+      table.assign(sentence, 'T');
   } else
     throw `Unable to interpret sentence with tense: ${parse.tense}`
 

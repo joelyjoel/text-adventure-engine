@@ -2,13 +2,13 @@ import { Context } from "../Context";
 import { Dictionary } from "../Dictionary";
 import { Parse } from "./Parse";
 import { Template } from "../Template";
-import { parseSimpleNounPhrase, NounPhraseParse } from "./parseNounPhrase";
+import { SimpleNounPhraseParse, parseNounPhrase } from "./parseNounPhrase";
 import { PredicateSyntax } from "../PredicateSyntax";
 import { Tense, allTenses } from "../util/tense";
 import { getPossibleTenses } from "../util/detectTense";
 
 export interface StatementParse extends Parse {
-  args: (string|NounPhraseParse|number)[];
+  args: (string|SimpleNounPhraseParse|number)[];
   syntax: StatementSyntax
   syntaxKind: 'template' | 'predicate'
   pos: 'statement'|'question';
@@ -16,6 +16,10 @@ export interface StatementParse extends Parse {
   question: boolean;
   negative: 'not' | false;
 };
+
+
+
+
 
 /** Classes that can be used to parse NLP statements. 
  * e.g. "The cat is in the room".
@@ -74,14 +78,14 @@ export function * parseStatement(str:string, ctx:Context):Generator<StatementPar
     if(syntaxKind == 'template' || syntaxKind == 'predicate') {
       const parsedArgs = args.map((arg, i) => {
         if(syntax.params[i].entity) {
-          return parseSimpleNounPhrase(arg as string, ctx.dictionary)
+          return parseNounPhrase(arg as string, ctx.dictionary)
         } else
           return arg;
       })
 
       if(parsedArgs.every(arg => arg))
         yield {
-          args: parsedArgs as (string|number|NounPhraseParse)[],
+          args: parsedArgs as (string|number|SimpleNounPhraseParse)[],
           syntax,
           syntaxKind,
           pos, tense, question, negative,
