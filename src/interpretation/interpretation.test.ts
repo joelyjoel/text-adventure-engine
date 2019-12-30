@@ -6,7 +6,7 @@ import { parseStatement } from "../parsing/parseStatement";
 import { TruthTable } from "../logic/TruthTable";
 import { Noun } from "../Noun";
 import { Adjective } from "../Adjective";
-import { Sentence, VariableTable } from "../logic";
+import { Sentence, VariableTable, Predicate } from "../logic";
 import { parseNounPhrase } from "../parsing/parseNounPhrase";
 
 test('Interpretting a noun phrase', () => {
@@ -38,8 +38,13 @@ test("Interpretting a statement", () => {
     expect(interpretation.entities.length).toBe(1);
 
     let [e] = interpretation.entities;
-    expect(interpretation.lookUp(new Sentence(noun.predicate, e))).toBe('T')
-    expect(interpretation.lookUp(new Sentence(adj.predicate, e))).toBe('T')
+    expect(interpretation.lookUp(
+      new Sentence(ctx.linkingMatrix.syntaxToMeaningOrCrash(noun).predicate, e)
+    )).toBe('T')
+    expect(interpretation.lookUp(new Sentence(
+      ctx.linkingMatrix.syntaxToMeaningOrCrash(adj).predicate, 
+      e
+    ))).toBe('T')
   }
 })
 

@@ -4,6 +4,7 @@ import { TruthTable } from "../logic/TruthTable";
 import { Context } from "../Context";
 import { SimpleNounPhraseParse, parseNounPhrase, NounPhraseParse } from "../parsing/parseNounPhrase";
 import { PredicateSyntaxParse, PredicateSyntax } from "../PredicateSyntax";
+import { negativise } from "./negativise";
 
 /** Interpret a string noun-phrase as an existential claim. */
 export function interpretNounPhrase(nounPhrase:string, ctx:Context|Dictionary) {
@@ -61,36 +62,47 @@ export function interpretParsedNounPhrase(
       table.merge(subTable);
 
     // Interpret the top level predicate in the noun phrase
-    let P = syntax.predicate;
-    if(P) {
-      let sentence = new Sentence(P, ...argVariables)
+    let meaning = ctx.linkingMatrix.syntaxToMeaning({syntax, tense})
+    if(meaning) {
+      let sentence = new Sentence(meaning.predicate, ...argVariables)
 
-      let truth = negative == false ? 'T' : 'F';
+      let truth = meaning.truth;
+
+      if(negative)
+        truth = negativise(truth)
       
       table.assign(sentence, truth);
 
       return table;
 
     } else
-      throw `Syntax missing a predicate: ${syntax.name}`
+      throw `Syntax missing a predicate: ${syntax.symbol}`
 
   } else if(parse.syntaxKind == 'simple_noun_phrase') {
     let npParse = parse as SimpleNounPhraseParse;
     // Destructure the parse
-    const nounPredicate = npParse.noun.noun.predicate;
-    const adjPredicates = npParse.adjectives
-      .map(adjparse => adjparse.adj.predicate);
+    const nounMeaning = ctx.linkingMatrix.syntaxToMeaning(npParse.noun.noun)//npParse.noun.noun.predicate;
+    const adjMeanings = npParse.adjectives
+      .map(adjparse => ctx.linkingMatrix.syntaxToMeaning(adjparse.adj));
 
-    // Create a stand in entity variable
-    const x = new Variable;
+    if(nounMeaning) {
+      // Create a stand in entity variable
+      const x = new Variable;
 
-    // Create variable table to express the interpretation
-    const table = new VariableTable(x);
-    table.assign(new Sentence(nounPredicate, x), 'T')
-    for(let predicate of adjPredicates)
-      table.assign(new Sentence(predicate, x), 'T');
+      // Create variable table to express the interpretation
+      const table = new VariableTable(x);
+      table.assign(new Sentence(nounMeaning.predicate, x), nounMeaning.truth)
+      for(let i in adjMeanings) {
+        let meaning = adjMeanings[i]
+        if(meaning)
+          table.assign(new Sentence(meaning.predicate, x), meaning.truth);
+        else
+          throw `Meaningless adjective: "${npParse.adjectives[i].adj.str}"`
+      }
 
-    return table;
+      return table;
+    } else 
+      throw `Meaningless noun: ${npParse.noun.noun}`;
   } else
     throw `Unexpected syntaxKind: '${parse.syntaxKind}'`
 }

@@ -1,18 +1,19 @@
 
 import { NounPredicate } from "./linking/NounPredicate";
 import { toSnakeCase } from "./util/toCamelCase";
+import { PredicateSyntax } from "./PredicateSyntax";
 
 export class Noun {
   str: string;
   phrasal: boolean;
-  predicate: NounPredicate
   readonly symbol: string;
+  predicateSyntax: PredicateSyntax;
 
   constructor(str:string) {
     this.str = str;
     this.phrasal = /\s/.test(str);
 
-    this.predicate = new NounPredicate(this);
+    this.predicateSyntax = new PredicateSyntax(`be a ${str}`, ['subject']);
 
     this.symbol = toSnakeCase(str);
   }

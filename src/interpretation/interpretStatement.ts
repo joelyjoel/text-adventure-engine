@@ -2,14 +2,26 @@ import { StatementParse, parseStatement } from "../parsing/parseStatement";
 import { Context } from "../Context";
 import { interpretParsedNounPhrase } from "./interpretNounPhrase";
 import { TruthTable } from "../logic/TruthTable";
-import { Sentence, Entity, VariableTable } from "../logic";
+import { Sentence, Entity, VariableTable, Predicate } from "../logic";
+import { Template } from "../Template";
+import { PredicateSyntax } from "../PredicateSyntax";
 
 export function interpretParsedStatement(parse:StatementParse, ctx:Context) {
   if(parse.question)
     throw "Cannot interpet a question as a statement."
 
-  const predicate = parse.syntax.predicate;
-  if(!predicate)
+  let syntax = parse.syntax;
+
+  let meaning
+  if(syntax instanceof PredicateSyntax) {
+    meaning = ctx.linkingMatrix.syntaxToMeaning({
+      syntax: syntax, tense: parse.tense,
+    })
+  } else
+    throw `Unable to interpret syntax: ${syntax}`
+
+
+  if(!meaning)
     throw "Can't interpret a statement without associated predicate."
 
   const table = new VariableTable;
@@ -25,7 +37,7 @@ export function interpretParsedStatement(parse:StatementParse, ctx:Context) {
   });
     
 
-  let sentence = new Sentence(predicate, ...args);
+  let sentence = new Sentence(meaning.predicate, ...args);
   if(parse.tense == 'simple_present') {
     if(parse.negative)
       table.assign(sentence, 'F');

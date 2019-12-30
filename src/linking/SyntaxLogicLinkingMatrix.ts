@@ -71,36 +71,61 @@ export class SyntaxLogicLinkingMatrix {
     // Passed a noun,
     if(something instanceof Noun) {
       let noun:Noun = something;
-      this.addLinkage(noun, {
-        predicate: new Predicate(
-          1, // unary.
-          `${Predicate.getNextSymbol()}_isA${toCamelCase(noun.str)}`
-        ), 
-        truth:'T'
-      });
+
+      // Use the predicateSyntax version to generate a meaning.
+      let meaning = this.syntaxToMeaning({
+        syntax: noun.predicateSyntax,
+        tense:'simple_present',
+      })
+      
+      // If that doesn't work
+      if(!meaning) {
+        // Add it and try again
+        this.add(noun.predicateSyntax)
+        meaning = this.syntaxToMeaning({
+          syntax: noun.predicateSyntax,
+          tense: 'simple_present'
+        })
+      }
+
+      if(meaning)
+        this.addLinkage(noun, meaning);
+      else
+        throw "Something is not working."
     } 
     
     // Passed an adjective,
     else if(something instanceof Adjective) {
       let adj = something;
-      this.addLinkage(adj, {
-        predicate: new Predicate(
-          1, // unary
-          `${Predicate.getNextSymbol()}_is${toCamelCase(adj.str)}`
-        ),
-        truth: 'T',
+      let meaning = this.syntaxToMeaning({
+        syntax: adj.predicateSyntax, 
+        tense:'simple_present'
       })
+      if(!meaning) {
+        // Add it and try again.
+        this.add(adj.predicateSyntax);
+        meaning = this.syntaxToMeaning({
+          syntax: adj.predicateSyntax, 
+          tense:'simple_present'
+        })
+      }
+
+      if(meaning)
+        this.addLinkage(adj, meaning)
+      else
+        // Ok this is bad.
+        throw 'Something is not working.'
     }
 
     // Passed an entire dictionary
     else if(something instanceof Dictionary) {
       let D = something;
+      for(let syntax of D.statementSyntaxs)
+        this.add(syntax);
       for(let noun of D.nouns)
         this.add(noun);
       for(let adj of D.adjectives) 
         this.add(adj);
-      for(let syntax of D.statementSyntaxs)
-        this.add(syntax);
     }
 
     // Passed a PredicateSyntax object
@@ -204,5 +229,14 @@ export class SyntaxLogicLinkingMatrix {
       else
         return null;
     }
+  }
+
+  /** To make testing more concise. Finds a meaning for a syntax or throws an exception. Only use if you are sure a meaning should exist for the syntax. */
+  syntaxToMeaningOrCrash(syntax:Syntax):Meaning {
+    let meaning = this.syntaxToMeaning(syntax);
+    if(meaning)
+      return meaning;
+    else
+      throw `No logical meaning for syntax: ${syntax}`;
   }
 }

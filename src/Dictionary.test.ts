@@ -8,7 +8,7 @@ test("Dictionary includes noun statements", () => {
   const noun = new Noun('fort');
   dict.addNoun(noun);
   expect(
-    dict.statementSyntaxs.includes(noun.predicate.syntaxs[0])
+    dict.statementSyntaxs.includes(noun.predicateSyntax)
   ).toBe(true);
 })
 
@@ -17,7 +17,7 @@ test('Dictionary includes adjective statements', () => {
   let myAdj = new Adjective('lofty');
   dict.addAdjective(myAdj);
 
-  expect(dict.statementSyntaxs.includes(myAdj.predicate.syntaxs[0]))
+  expect(dict.statementSyntaxs.includes(myAdj.predicateSyntax))
     .toBe(true);
 })
 

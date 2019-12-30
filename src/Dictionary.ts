@@ -55,7 +55,7 @@ export class Dictionary {
     else
       this.nounIndex[lastWord] = [noun];
     
-    this.addStatementSyntaxs(...noun.predicate.syntaxs);
+    this.addStatementSyntaxs(noun.predicateSyntax);
 
     // Chainable
     return this;
@@ -95,7 +95,7 @@ export class Dictionary {
     else
       this.adjectiveIndex[lastWord] = [adj];
     
-    this.addStatementSyntaxs(...adj.predicate.syntaxs);
+    this.addStatementSyntaxs(adj.predicateSyntax);
 
     return this;
   }
@@ -110,9 +110,6 @@ export class Dictionary {
 
   /** Add a present tense statement syntax to the dictionary. */
   addStatementSyntax(syntax: StatementSyntax) {
-    if(!syntax.predicate)
-      console.warn("Adding non-logical syntax to the dictionary");
-
     // Exit early if syntax already exists.
     if(this.statementSyntaxs.includes(syntax)) {
       console.warn(`Adding duplicate syntax to the dictionary:`, syntax)
