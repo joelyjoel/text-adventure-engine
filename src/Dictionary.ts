@@ -30,16 +30,26 @@ export class Dictionary {
   }
 
   /** Add a noun to the dictionary. */
-  addNoun(noun:Noun|string) : this {
-    if(typeof noun == 'string') {
-      noun = new Noun(noun);
-    } 
+  addNoun(nounOrString:Noun|string) : this {
+    // Handle string input.
+    const noun = typeof nounOrString == 'string' 
+      ? new Noun(nounOrString) 
+      : nounOrString
+
+    /** Last word of the noun. */
+    const lastWord = noun.lastWord;
+
+    // Exit early if there is a duplicate noun.
+    let subIndex = this.nounIndex[lastWord];
+    if(subIndex && subIndex.find(dupe => dupe.str == noun.str)) {
+      console.warn( `Adding duplicate noun to dictionary: "${noun.str}"`);
+      return this;
+    }
 
     // Add noun to the list of all nouns.
     this.nouns.push(noun);
 
     // Index the noun by its last word
-    const lastWord = noun.lastWord;
     if(this.nounIndex[lastWord])
       this.nounIndex[lastWord].push(noun);
     else
@@ -60,15 +70,26 @@ export class Dictionary {
   }
 
   /** Add an adjective to the dictionary. */
-  addAdjective(adj: Adjective|string) : this {
-    if(typeof adj == 'string')
-      adj = new Adjective(adj);
+  addAdjective(adjOrString: Adjective|string) : this {
+    // Handle string input
+    let adj = typeof adjOrString == 'string'
+      ? new Adjective(adjOrString)
+      : adjOrString
+
+    /** Last word of adjective (they can be phrasal). */
+    const lastWord = adj.lastWord;
+
+    // Exit early if adjective already exists in teh dictionary.
+    let subIndex = this.adjectiveIndex[lastWord];
+    if(subIndex && subIndex.find(dupe => dupe.str == adj.str)) {
+      console.warn(`Adding duplicate adjective to dictionary: ${adj.str}`)
+      return this
+    }
 
     // Add adj to the list of adjectives
     this.adjectives.push(adj);
 
     // Index the adjective by last word.
-    const lastWord = adj.lastWord;
     if(this.adjectiveIndex[lastWord])
       this.adjectiveIndex[lastWord].push(adj);
     else
@@ -91,6 +112,12 @@ export class Dictionary {
   addStatementSyntax(syntax: StatementSyntax) {
     if(!syntax.predicate)
       console.warn("Adding non-logical syntax to the dictionary");
+
+    // Exit early if syntax already exists.
+    if(this.statementSyntaxs.includes(syntax)) {
+      console.warn(`Adding duplicate syntax to the dictionary:`, syntax)
+      return this;
+    }
 
     this.statementSyntaxs.push(syntax);
 

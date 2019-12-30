@@ -6,6 +6,9 @@ import { PredicateSyntax } from "../PredicateSyntax";
 import { Predicate } from "../logic";
 import { Tense } from "../util/tense";
 import { Dictionary } from "../Dictionary";
+import { toCamelCase } from "../util/toCamelCase";
+import { StatementSyntax } from "../parsing/parseStatement";
+import { Template } from "../Template";
 
 /** There are 3 types of syntax (for now): Adjectives, nouns or sentences
  * MAY CHANGE IN FUTURE.
@@ -46,15 +49,78 @@ export class SyntaxLogicLinkingMatrix {
   /** A Dictionary object with all the syntaxs used in the matrix. */
   readonly dictionary?:Dictionary;
 
-  constructor() {
+  constructor(options?:{dictionary?:Dictionary}) {
+    // De-structure options.
+    const {
+      dictionary
+    } = options || {};
+
     this.m2sIndex = {};
     this.s2mIndex = { nouns:{}, adjectives: {}, statements:{} }
-    this.dictionary = new Dictionary
+
+    if(dictionary) {
+      this.add(dictionary);
+      this.dictionary = dictionary;
+      // ! will there be duplicate entries in the dictionary?
+    } else
+      this.dictionary = new Dictionary
   }
 
   /** A flexible function for adding things to the matrix. */
-  add() {
-    throw '## function unfinished'
+  add(something:Noun|Adjective|Dictionary|StatementSyntax) {
+    // Passed a noun,
+    if(something instanceof Noun) {
+      let noun:Noun = something;
+      this.addLinkage(noun, {
+        predicate: new Predicate(
+          1, // unary.
+          `${Predicate.getNextSymbol()}_isA${toCamelCase(noun.str)}`
+        ), 
+        truth:'T'
+      });
+    } 
+    
+    // Passed an adjective,
+    else if(something instanceof Adjective) {
+      let adj = something;
+      this.addLinkage(adj, {
+        predicate: new Predicate(
+          1, // unary
+          `${Predicate.getNextSymbol()}_is${toCamelCase(adj.str)}`
+        ),
+        truth: 'T',
+      })
+    }
+
+    // Passed an entire dictionary
+    else if(something instanceof Dictionary) {
+      let D = something;
+      for(let noun of D.nouns)
+        this.add(noun);
+      for(let adj of D.adjectives) 
+        this.add(adj);
+      for(let syntax of D.statementSyntaxs)
+        this.add(syntax);
+    }
+
+    // Passed a PredicateSyntax object
+    else if(something instanceof PredicateSyntax) {
+      let syntax = something;
+      this.addLinkage(
+        {syntax, tense:'simple_present'},
+        {
+          predicate: new Predicate(
+            syntax.numberOfArgs, 
+            `${Predicate.getNextSymbol()}_${syntax.name}`
+          ),
+          truth: 'T',
+        }
+      )
+    }
+
+    // Passed a template
+    else if(something instanceof Template)
+      throw "SyntaxLogicLinkningMatrix doesn't yet support Templates."
   }
 
   /** Associate a syntax with a meaning. */
