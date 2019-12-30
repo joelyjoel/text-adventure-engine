@@ -191,3 +191,10 @@ export function identifyVarPositions(
     return list.length ? list : null;
   })
 }
+
+/** Check whether a mapping is a complete mapping. */
+export function isCompleteMapping(
+  mapping:PartialMapping
+): mapping is CompleteMapping {
+  return !mapping.includes(null);
+}
