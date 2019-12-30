@@ -6,7 +6,7 @@ import { getAuxiliaryVerb } from "./util/getAuxiliaryVerb";
 import { Template, placeholderRegex } from "./Template";
 import { Tense, allTenses, verbToTense } from "./util/tense";
 import { questionRegex, simplePastQuestionTemplate } from "./util/verbOperations";
-import { toCamelCase } from "./util/toCamelCase";
+import { toCamelCase, toSnakeCase } from "./util/toCamelCase";
 import { sentenceFormSymbol } from "./util/sentenceFormSymbol";
 import { shiftWord } from "./util/getFirstWord";
 
@@ -69,6 +69,7 @@ export class PredicateSyntax {
   private _predicate?: LPredicate;
 
   readonly name: string;
+  readonly symbol: string;
 
   constructor(infinitive:string, params:string[]) {
     this.infinitive = infinitive;
@@ -105,8 +106,13 @@ export class PredicateSyntax {
 
     this.numberOfArgs = this.params.length;
 
-    // Choose a name
+    // Choose a (non-unique) name
     this.name = toCamelCase(conjugate(this.infinitive, THIRD_PERSON_SINGULAR), ...this.prepositions)
+
+    // Choose a unique symbol
+    this.symbol = `${toSnakeCase(infinitive)}(${
+      params.map(str => toSnakeCase(str)).join(',')
+    })`;
   }
 
   /** Link this syntax to a syntactic predicate */
