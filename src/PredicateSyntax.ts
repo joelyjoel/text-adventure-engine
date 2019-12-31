@@ -115,24 +115,6 @@ export class PredicateSyntax {
     })`;
   }
 
-  /** Link this syntax to a syntactic predicate */
-  assign(P?:LPredicate):this {
-    if(this._predicate)
-      throw "Cannot assign multiple predicates to one syntax";
-
-    if(P && !this._predicate)
-      this._predicate = P;
-    return this;
-  }
-
-  get predicate():LPredicate|undefined {
-    return this._predicate;
-  }
-
-  set predicate(P:LPredicate|undefined) {
-    this.assign(P)
-  }
-
   *parse(
     str:string, 
     options:{
