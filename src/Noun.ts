@@ -1,5 +1,4 @@
 
-import { NounPredicate } from "./linking/NounPredicate";
 import { toSnakeCase } from "./util/toCamelCase";
 import { PredicateSyntax } from "./PredicateSyntax";
 
@@ -8,6 +7,7 @@ export class Noun {
   phrasal: boolean;
   readonly symbol: string;
   predicateSyntax: PredicateSyntax;
+  numberOfArgs: 1;
 
   constructor(str:string) {
     this.str = str;
@@ -16,6 +16,7 @@ export class Noun {
     this.predicateSyntax = new PredicateSyntax(`be a ${str}`, ['subject']);
 
     this.symbol = toSnakeCase(str);
+    this.numberOfArgs = 1;
   }
 
   get lastWord() {

@@ -1,7 +1,6 @@
 import { anyPersonRegex, anyConjugationRegex, conjugate, THIRD_PERSON_SINGULAR } from "./util/conjugate";
 import { or, g, wholeWord, initial, initialAndWholeWord, optionalConcatSpaced, concatSpaced, concat, optional } from "./util/regops.extended";
 import { compose, makeNegative } from "./compose/compose";
-import { LPredicate } from "./linking/LPredicate";
 import { getAuxiliaryVerb } from "./util/getAuxiliaryVerb";
 import { Template, placeholderRegex } from "./Template";
 import { Tense, allTenses, verbToTense } from "./util/tense";
@@ -64,9 +63,6 @@ export class PredicateSyntax {
 
   /** How many arguments does the syntax take? */
   readonly numberOfArgs: number;
-
-  /** The linked logical predicate. */
-  private _predicate?: LPredicate;
 
   readonly name: string;
   readonly symbol: string;

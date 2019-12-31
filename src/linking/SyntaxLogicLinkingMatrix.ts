@@ -15,6 +15,13 @@ import { Template } from "../Template";
  */
 type Syntax = Adjective|Noun|{syntax: PredicateSyntax, tense:Tense};
 
+function syntaxObject(syntax:Syntax) {
+  if(syntax instanceof Adjective || syntax instanceof Noun)
+  return syntax;
+else
+  return syntax.syntax;
+}
+
 /** A meaning is a predicate + a truth-value.
  * THIS TYPE MAY CHANGE IN THE FUTURE.
  */
@@ -67,7 +74,7 @@ export class SyntaxLogicLinkingMatrix {
   }
 
   /** A flexible function for adding things to the matrix. */
-  add(something:Noun|Adjective|Dictionary|StatementSyntax) {
+  add(something:Noun|Adjective|Dictionary|StatementSyntax|Syntax[]) {
     // Passed a noun,
     if(something instanceof Noun) {
       let noun:Noun = something;
@@ -146,6 +153,20 @@ export class SyntaxLogicLinkingMatrix {
     // Passed a template
     else if(something instanceof Template)
       throw "SyntaxLogicLinkningMatrix doesn't yet support Templates."
+
+    // Passed a syntax array
+    else if(something instanceof Array) {
+      // Check they all take the same number of arguments.
+      let syntaxs = something
+      let numberOfArgs = syntaxObject(syntaxs[0]).numberOfArgs
+      if(!syntaxs.every(syntax => syntaxObject(syntax).numberOfArgs == numberOfArgs))
+        throw "Syntaxs do not have matching numbers of arguments."
+
+      let predicate = new Predicate(
+        numberOfArgs, 
+        syntaxObject(syntaxs[0]).symbol
+      )
+    }
   }
 
   /** Associate a syntax with a meaning. */

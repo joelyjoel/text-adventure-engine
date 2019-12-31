@@ -1,4 +1,3 @@
-import { AdjectivePredicate } from "./linking/AdjectivePredicate";
 import { toSnakeCase } from "./util/toCamelCase";
 import { PredicateSyntax } from "./PredicateSyntax";
 
@@ -8,6 +7,7 @@ export class Adjective {
   phrasal: boolean;
   readonly symbol: string;
   predicateSyntax: PredicateSyntax;
+  numberOfArgs = 1;
 
   constructor(str:string) {
     this.str = str;
@@ -16,6 +16,7 @@ export class Adjective {
     this.predicateSyntax = new PredicateSyntax(`be ${str}`, ['subject']);
     
     this.symbol = toSnakeCase(this.str);
+    this.numberOfArgs = 1;
   }
 
   get lastWord() {
