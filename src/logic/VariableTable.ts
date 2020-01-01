@@ -57,7 +57,7 @@ export class VariableTable extends TruthTable {
 
   /** Quickly determine whether a mapping fits a sentence. */
   testMapping(table:TruthTable, mapping:Entity[]) {
-    const mapped = this.substitute(...mapping).facts;
+    const mapped = this.substitute(...mapping).iterate();
     for(let {sentence, truth} of mapped)
       if(table.lookUp(sentence) != truth)
         return false;

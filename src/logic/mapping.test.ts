@@ -2,7 +2,7 @@ import { Variable } from "./Variable"
 import { Entity } from "./Entity";
 import { Sentence } from "./Sentence";
 import { Predicate } from "./Predicate";
-import { identifyVarPositions, mapFromSingleSentence, findMappings, combinePartialMappings } from "./mapping";
+import { identifyVarPositions, mapFromSingleSentence, findMappings, combinePartialMappings, findCompleteMappings } from "./mapping";
 import { TruthTable } from "./TruthTable";
 import { VariableTable } from "./VariableTable";
 
@@ -90,4 +90,27 @@ test('Finding mappings from an existential table', () => {
   
   expect(findMappings(claim2, table)).toContainEqual([a, b])
   expect(findMappings(claim2, table)).toContainEqual([b, c])
+})
+
+test('Finding mappings given a starting mapping', () => {
+  let [x,y,z, x1] = Variable.bulk();
+  let [a,b,c,d] = Entity.bulk();
+  let P = new Predicate(2);
+
+  let table = new TruthTable()
+    .assign(new Sentence(P, a, b), 'T')
+    .assign(new Sentence(P, c, d), 'T')
+
+  let addition = new TruthTable()
+    .assign(new Sentence(P, b, c), 'T');
+
+  let claim = new VariableTable(x,y,z,x1)
+    .assign(new Sentence(P, x, y), 'T')
+    .assign(new Sentence(P, y, z), 'T')
+    .assign(new Sentence(P, z, x1), 'T')
+
+  let stg = findCompleteMappings(claim, [addition, table]);
+  expect(stg).toStrictEqual([
+    [a,b,c,d]
+  ]);
 })
