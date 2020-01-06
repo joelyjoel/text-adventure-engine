@@ -184,7 +184,7 @@ export function *mapFromSingleSentence(
   const duplicatePositions:number[][] = varPositions
     .filter(arr => arr !== null && arr.length > 1) as number[][]
 
-  for(let table of onto instanceof Array ? onto : [onto]) {
+  for(let table of (onto instanceof Array ? onto : [onto])) {
     // Find all sentences with a matching predicate.
     let candidates = table.byPredicate(sentence.predicate); 
 

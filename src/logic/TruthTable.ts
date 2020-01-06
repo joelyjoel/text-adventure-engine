@@ -41,6 +41,16 @@ export class TruthTable {
     return this; 
   }
 
+  /** Assign a statement as true */
+  T(P:Predicate, ...args:Entity[]) {
+    return this.assign(new Sentence(P, ...args), 'T');
+  }
+
+  /** Assign a statement as false */
+  F(P:Predicate, ...args:Entity[]) {
+    return this.assign(new Sentence(P, ...args), 'F');
+  }
+
   /** Remove a truth assignment from the table */
   remove(sentence: Sentence) {
     const {predicateSymbol, argsSymbol} = this.idMapSentence(sentence);
@@ -69,6 +79,15 @@ export class TruthTable {
     for(let i in this.index)
       for(let j in this.index[i])
         yield this.index[i][j];
+  }
+
+  filter(callback:(assignment:TruthAssignment) => boolean):TruthTable {
+    let table = new TruthTable();
+    for(let statement of this.iterate())
+      if(callback(statement))
+        table.assign(statement.sentence, statement.truth)
+
+    return table;
   }
 
   /** Iterate through each truth assignment with a given predicate. */
@@ -188,7 +207,7 @@ export class TruthTable {
     })
   }
 
-  mergeConsequences( b:TruthTable) {
+  measureCompatibility( b:TruthTable) {
     let overlap = 0;
     let contradictions = 0;
     let introductions = 0;
@@ -217,5 +236,18 @@ export class TruthTable {
     
     // otherwise
     return false;
+  }
+
+  get predicateSymbols() {
+    return Object.keys(this.index);
+  }
+
+  static merge(...tables:TruthTable[]) {
+    let combined = new TruthTable;
+
+    for(let table of tables)
+      combined.merge(table);
+
+    return combined;
   }
 }

@@ -71,11 +71,17 @@ export class VariableTable extends TruthTable {
 
   /** Represents the table as a string of logical symbols. */
   get symbol() {
-    return `∃ (${this.variables.map(v => v.symbol).join(',')}) s.t. {` +
+    return `∃ (${
+      this.variables.map(v => v.symbol).join(',')
+    }) s.t. ${this.symbolBody}`;
+  }
+
+  get symbolBody() {
+    return `{${
       this.facts
         .map(({sentence, truth}) => `(${sentence.symbol}=${truth})`)
         .join(' & ') 
-      + '}';
+    }}`
   }
 
   merge(...tables:(TruthTable|VariableTable)[]) {
