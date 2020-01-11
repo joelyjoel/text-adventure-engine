@@ -39,7 +39,7 @@ export class Predicate {
   }
 
   static getSymbol(id:number) {
-    return 'PQR'[id%3] + (Math.floor(id/3) || '')
+    return 'pqr'[id%3] + (Math.floor(id/3) || '')
   }
 
   static getNextSymbol() {
