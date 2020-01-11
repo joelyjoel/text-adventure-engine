@@ -5,7 +5,6 @@ import {
 } from './util/toPossessiveAdjective';
 import { getPerson } from './util/getPerson';
 import { conjugate, anyPersonRegex } from './util/conjugate';
-import { LPredicate } from './linking/LPredicate';
 import { Tense } from './util/tense';
 
 export const placeholderRegex = /@?#?_(?:'s)?/g;
@@ -22,7 +21,6 @@ export class Template {
   tense: Tense;
   readonly template: string;
 
-  predicate?: LPredicate;
   readonly question: boolean;
   readonly negative: 'not' | false;
   readonly pos: 'statement';
