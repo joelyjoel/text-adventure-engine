@@ -24,10 +24,16 @@ export class Predicate {
       return Predicate.getSymbol(this.id);
   }
 
+  get knownSymbol() {
+    return `known_${this.symbol}`;
+  }
+
+  /** True if the predicate takes one argument. */
   get unary() {
     return this.numberOfArgs == 1;
   }
 
+  /** True if the predicate takes exactly two arguments. */
   get binary() {
     return this.numberOfArgs == 2;
   }
