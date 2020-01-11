@@ -29,6 +29,7 @@
     "typescript": "^3.6.4"
   },
   "dependencies": {
-    "regops": "^1.2.1"
+    "regops": "^1.2.1",
+    "swipl": "^1.0.5"
   }
 }
