@@ -24,9 +24,9 @@ export class Predicate {
       return Predicate.getSymbol(this.id);
   }
 
-  get knownSymbol() {
-    return `known_${this.symbol}`;
-  }
+  // get knownSymbol() {
+  //   return `known_${this.symbol}`;
+  // }
 
   /** True if the predicate takes one argument. */
   get unary() {
