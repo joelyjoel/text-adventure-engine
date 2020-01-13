@@ -10,6 +10,7 @@ export function parseProperNoun(str:string) : ProperNounParse|null {
   let parse = properNounRegex.exec(str);
   if(parse)
     return {
+      syntaxKind: 'propernoun',
       pos: 'propernoun',
       properNoun: str,
       from: 0, 

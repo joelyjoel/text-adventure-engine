@@ -10,6 +10,8 @@ export interface Parse {
   /** The original (unparsed) string */
   readonly str: string;
 
+  syntaxKind: string;
+
   /** The dictionary used to parse the string. */
   readonly dicitonary?: Dictionary
 }
