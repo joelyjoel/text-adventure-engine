@@ -99,11 +99,27 @@ export function verbToTense(
   }
 }
 
-function simple_present(infinitive:string):string {
-  return infinitive;
-}
+/** A tense that is not syntactically exact, to simplify logical interpretations. */
+export type CoarseTense = 'past'|'present'|'future';
 
-function present_continuous(infinitive:string) {
-  return `be ${gerundify(infinitive)}`
-}
+export function toCoarseTense(tense:Tense):CoarseTense {
+  switch(tense) {
+    case 'past_perfect':
+    case 'past_perfect_continuous':
+    case 'past_continuous':
+    case 'present_perfect':
+    case 'present_perfect_continuous':
+    case 'simple_past':
+      return 'past';
 
+    case 'simple_present':
+    case 'present_continuous':
+      return 'present'
+
+    case 'future_continuous':
+    case 'future_perfect':
+    case 'future_perfect_continuous':
+    case 'simple_future':
+      return 'future';
+  }
+}

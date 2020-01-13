@@ -1,4 +1,4 @@
-import { verbToTense } from "./tense"
+import { verbToTense, allTenses, toCoarseTense } from "./tense"
 
 test('verbToTense', () => {
   expect(verbToTense('walk home', 'simple_present')).toBe('walk home')
@@ -33,3 +33,8 @@ test('verbToTense', () => {
   expect(verbToTense('travel by train', 'future_continuous'))
   .toBe('will be travelling by train')
 });
+
+test('toCoarseTense', () => {
+  for(let tense of allTenses)
+    expect(toCoarseTense(tense)).toBeTruthy();
+})
