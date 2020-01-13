@@ -1,7 +1,7 @@
 import { PrologTable } from "./PrologTable"
 import { Sentence, Predicate, Entity } from ".";
 
-test('PrologTable: adding new facts', () => {
+test.skip('PrologTable: adding new facts', () => {
   let table = new PrologTable;
   let P = new Predicate(2)
 
