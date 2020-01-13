@@ -1,5 +1,5 @@
 import { Parse } from "./Parse";
-interface ProperNounParse extends Parse {
+export interface ProperNounParse extends Parse {
   pos: 'propernoun',
   properNoun: string,
 }

@@ -4,11 +4,13 @@ import { Parse } from "./Parse";
 import { parseIdentifier, IdentifierParse } from "./parseIdentifier";
 import { parseAdjectives, AdjectiveParse } from "./parseAdjectives";
 import { PredicateSyntaxParse } from "../PredicateSyntax";
+import { parseProperNoun, ProperNounParse } from "./parseProperNoun";
+import { parsePronoun, PronounParse } from "./parsePronoun";
 
 
 // # # # # # TYPES
 
-export type NounPhraseParse = (SimpleNounPhraseParse|PredicateSyntaxParse<any>);
+export type NounPhraseParse = (SimpleNounPhraseParse|PredicateSyntaxParse<any>|ProperNounParse|PronounParse);
 
 export interface SimpleNounPhraseParse extends Parse {
   syntaxKind: 'simple_noun_phrase';
@@ -19,22 +21,32 @@ export interface SimpleNounPhraseParse extends Parse {
   syntax:null,
 }
 
-// ##################
+
 
 export function parseNounPhrase(
   str:string, 
   dict:Dictionary
 ):(NounPhraseParse|null) {
+  // Parse as a proper noun.
+  let properNounParse = parseProperNoun(str);
+  if(properNounParse)
+    return properNounParse;
+
+  let pronounParse = parsePronoun(str);
+  if(pronounParse)
+    return pronounParse;
+
+  // Parse as complex (predicateSyntax) noun-phrase
   let complexParse = parseComplexNounPhrase(str, dict);
   if(complexParse)
     return complexParse;
   
-  // Otherwise,
+  // Otherwise, parse as simple noun phrase.
   let simpleParse = parseSimpleNounPhrase(str, dict);
   if(simpleParse)
     return simpleParse;
 
-  // Otherwise,
+  // Otherwise, the parse fails.
   return null;
 }
 
