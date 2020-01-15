@@ -10,7 +10,7 @@ export interface ContextConstructorOptions {
 
 export class Context {
   dictionary: Dictionary;
-  truthTable?: TruthTable;
+  truthTable: TruthTable;
   linkingMatrix: SyntaxLogicLinkingMatrix;
 
   speaker: Entity;
@@ -22,7 +22,7 @@ export class Context {
 
   constructor(
     dictionaryOrLinking:Dictionary|SyntaxLogicLinkingMatrix, 
-    truthTable?:TruthTable,
+    truthTable:TruthTable = new TruthTable,
     options:Partial<ContextConstructorOptions> = {},
   ) {
     let dictionary:Dictionary, linkingMatrix:SyntaxLogicLinkingMatrix;

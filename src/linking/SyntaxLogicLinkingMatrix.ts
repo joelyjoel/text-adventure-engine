@@ -74,7 +74,7 @@ export class SyntaxLogicLinkingMatrix {
   }
 
   /** A flexible function for adding things to the matrix. */
-  add(something:Noun|Adjective|Dictionary|StatementSyntax|Syntax[]) {
+  add(something:Noun|Adjective|Dictionary|StatementSyntax|Syntax[]):this {
     // Passed a noun,
     if(something instanceof Noun) {
       let noun:Noun = something;
@@ -167,6 +167,8 @@ export class SyntaxLogicLinkingMatrix {
         syntaxObject(syntaxs[0]).symbol
       )
     }
+
+    return this
   }
 
   /** Associate a syntax with a meaning. */

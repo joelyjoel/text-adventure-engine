@@ -1,12 +1,31 @@
 import { Noun } from "./Noun";
 import { Adjective } from "./Adjective";
 import { PredicateSyntax } from "./PredicateSyntax";
-import { Tense } from "./util/tense";
+import { Tense, isTense } from "./util/tense";
 import { pronounRegex } from "./parsing/parsePronoun";
 import { toPlural } from "./util/plural";
 import { properNounRegex } from "./parsing/parseProperNoun";
+import { Entity, Sentence } from "./logic";
+import { Context } from "./Context";
 
-type Syntax = Adjective|Noun|{syntax: PredicateSyntax, tense:Tense, nounPhraseFor:number}|string
+type EmbeddedSentence = {
+  syntax: PredicateSyntax;
+  args:EntitySyntax[]; 
+  tense:Tense;
+  nounPhraseFor:number;
+  negative: boolean;
+}
+function isEmbeddedSentence(o:any):o is EmbeddedSentence {
+  return typeof o == 'object'
+    && o.syntax instanceof PredicateSyntax
+    && o.args instanceof Array
+    && o.args.every((arg:any) => arg instanceof EntitySyntax)
+    && isTense(o.tense)
+    && typeof o.nounPhraseFor == 'number'
+    && typeof o.negative == 'boolean'
+}
+
+type Syntax = Adjective|Noun|EmbeddedSentence|string
 // ^ note: KEEP LOCAL
 
 export interface EntitySyntaxConstructorOptions {
@@ -38,6 +57,7 @@ export class EntitySyntax {
   adjectives: Adjective[];
   properNouns: string[];
   plural: boolean;
+  sentences: EmbeddedSentence[];
 
 
   constructor(
@@ -128,12 +148,51 @@ export class EntitySyntax {
         this.properNouns.push(syntax);
       else
         throw `Invalid proper noun: '${syntax}'\nNote: Each word in a proper noun must begin with a capital letter.`
-    }else
+    } else if(isEmbeddedSentence(syntax)) {
+      this.sentences.push(syntax)
+    } else {
+      console.warn(`EntitySyntax::addSyntax: Unexpected syntax:`, syntax)
       throw `Unexpected syntax: ${syntax}`
+    }
   }
 
   addSyntaxs(...syntaxs:Syntax[]) {
     for(let syntax of syntaxs)
       this.addSyntax(syntax);
+  }
+
+  static forEntity(e:Entity, ctx:Context) {
+    let table = ctx.truthTable;
+    let result = new EntitySyntax([]);
+    if(table) {
+      for(let {statement, position} of table.involving(e)) {
+        let syntaxs = ctx.linkingMatrix.meaningToSyntaxs({
+          predicate: statement.sentence.predicate,
+          truth: statement.truth,
+        })
+
+        for(let syntax of syntaxs) {
+          if(syntax instanceof Adjective || syntax instanceof Noun)
+            result.addSyntax(syntax)
+          else if(syntax.tense && syntax.syntax)
+            result.addSyntax({
+              ...syntax, 
+              nounPhraseFor:position, 
+              negative:false,
+              args: statement.sentence.args.map(
+                e => EntitySyntax.forEntity(e, ctx)
+              )
+            })
+          else
+            console.warn('EntitySyntax.forEntity: unexpected syntax:', syntax)
+        }
+      }
+    }
+
+    for(let properNoun in ctx.properNouns)
+      if(ctx.properNouns[properNoun] == e)
+        result.addSyntax(properNoun)
+
+    return result;
   }
 }

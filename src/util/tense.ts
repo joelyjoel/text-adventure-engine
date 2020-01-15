@@ -53,6 +53,10 @@ export type Tense = (
   | 'future_continuous'
 );
 
+export function isTense(o:any):o is Tense {
+  return typeof o == 'string' && (allTenses as string[]).includes(o)
+}
+
 export function verbToTense(
   /** verb in infinitive form */ inf:string, 
   tense:Tense

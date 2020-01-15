@@ -90,6 +90,16 @@ export class TruthTable {
     return table;
   }
 
+  *involving(e:Entity) {
+    for(let statement of this.iterate()) {
+      for(let i=0; i<statement.sentence.args.length; ++i) {
+        if(statement.sentence.args[i] == e) {
+          yield {statement, position: i}
+        }
+      }
+    }
+  }
+
   /** Iterate through each truth assignment with a given predicate. */
   *byPredicate(P:Predicate) {
     let symbol = P.symbol;
