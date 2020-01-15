@@ -11,6 +11,10 @@ export class Context {
   speaker: Entity;
   listener: Entity;
 
+  properNouns: {
+    [properNoun:string]: Entity;
+  }
+
   constructor(
     dictionaryOrLinking:Dictionary|SyntaxLogicLinkingMatrix, 
     truthTable?:TruthTable
