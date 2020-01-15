@@ -66,7 +66,7 @@ test('Interpretting a complex noun phrase', () => {
   if(parse2) {
     let claim = interpretParsedStatement(parse2, ctx);
     expect(claim).toBeTruthy();
-    console.log(`"${str2}":\n${claim.symbol}`)
+    // console.log(`"${str2}":\n${claim.symbol}`)
   } else fail(`Unable to parse: ${str2}`)
 })
 
@@ -97,7 +97,7 @@ test.each([
 
   let interpretation = interpretNounPhrase(pronoun, ctx);
 
-  console.log(interpretation);
+  // console.log(interpretation);
 
   if(interpretation)
     expect(interpretation.returns).toBeInstanceOf(Entity);
