@@ -22,7 +22,7 @@ export interface PronounParse extends Parse {
 export function parsePronoun(str:string):PronounParse|null {
   const basicInfo = {
     syntaxKind: 'pronoun',
-    pronoun: str,
+    pronoun: str.toLowerCase(),
     str, from: 0, to:str.length
   }
 
