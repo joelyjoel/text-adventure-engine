@@ -78,12 +78,15 @@ test.each(
 
   let interpretation = interpretNounPhrase(propernoun, ctx);
 
-  console.log(interpretation);
-
   if(interpretation)
     expect(interpretation.returns).toBeInstanceOf(Entity);
   else
     fail(`Interpretation is null.`)
+
+  // Check for consistency.
+  let interpretation2 = interpretNounPhrase(propernoun, ctx);
+  if(interpretation2 && interpretation)
+    expect(interpretation2.returns).toBe(interpretation.returns)
 })
 
 test.each([
