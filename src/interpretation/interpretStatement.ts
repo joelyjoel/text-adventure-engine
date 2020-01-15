@@ -28,8 +28,10 @@ export function interpretParsedStatement(parse:StatementParse, ctx:Context) {
   const args = parse.args.map(arg => {
     if(typeof arg == 'object' && arg.pos == 'NP') {
       let interpretation = interpretParsedNounPhrase(arg, ctx);
-      table.merge(interpretation);
-      return interpretation.variables[0];
+      let argTable = interpretation.table
+      if(argTable)
+        table.merge(argTable);
+      return interpretation.returns;
     } else {
       console.log('## arg:', arg)
       throw 'Can only interpret statements with noun phrase arguments';

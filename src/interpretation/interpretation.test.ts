@@ -6,7 +6,7 @@ import { parseStatement } from "../parsing/parseStatement";
 import { TruthTable } from "../logic/TruthTable";
 import { Noun } from "../Noun";
 import { Adjective } from "../Adjective";
-import { Sentence, VariableTable, Predicate } from "../logic";
+import { Sentence, VariableTable, Predicate, Entity } from "../logic";
 import { parseNounPhrase } from "../parsing/parseNounPhrase";
 
 test('Interpretting a noun phrase', () => {
@@ -14,8 +14,10 @@ test('Interpretting a noun phrase', () => {
 
   let interpretation = interpretNounPhrase('the hairy dog', dict);
 
-  expect(interpretation).toBeTruthy();
-  expect(interpretation).toBeInstanceOf(VariableTable)
+  if(interpretation)
+    expect(interpretation.table).toBeInstanceOf(VariableTable)
+  else
+    fail('Interpretation failed (null)')
   // This test could use some elaboration.
 })
 
@@ -56,7 +58,6 @@ test('Interpretting a complex noun phrase', () => {
   let parse = parseNounPhrase(str, dict);
   if(parse) {
     let claim = interpretParsedNounPhrase(parse, ctx);
-    console.log(`"${str}": ${claim.symbol}`)
     expect(claim).toBeTruthy();
   } else fail(`Unable to parse: ${str}`)
 
@@ -67,4 +68,36 @@ test('Interpretting a complex noun phrase', () => {
     expect(claim).toBeTruthy();
     console.log(`"${str2}":\n${claim.symbol}`)
   } else fail(`Unable to parse: ${str2}`)
+})
+
+test.each(
+  ['Henry', 'Henry The Hoover']
+)('Interpreting Proper Noun: %s', propernoun => {
+  const dict = new Dictionary();
+  const ctx = new Context(dict)
+
+  let interpretation = interpretNounPhrase(propernoun, ctx);
+
+  console.log(interpretation);
+
+  if(interpretation)
+    expect(interpretation.returns).toBeInstanceOf(Entity);
+  else
+    fail(`Interpretation is null.`)
+})
+
+test.each([
+  'I', 'you', 'me',
+])('Interpreting Pronoun: %s', pronoun => {
+  const dict = new Dictionary();
+  const ctx = new Context(dict);
+
+  let interpretation = interpretNounPhrase(pronoun, ctx);
+
+  console.log(interpretation);
+
+  if(interpretation)
+    expect(interpretation.returns).toBeInstanceOf(Entity);
+  else
+    fail(`Interpretation of '${pronoun}' failed.`);
 })

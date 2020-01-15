@@ -29,4 +29,12 @@ export class Entity {
     while(true)
       yield new Entity;
   }
+
+  static getSymbol(id:number) {
+    return 'abc'[id%3] + (Math.floor(id/3) || '')
+  }
+
+  static getNextSymbol() {
+    return Entity.getSymbol(Entity.entity_counter)
+  }
 }

@@ -1,6 +1,6 @@
 import { Parse } from "./Parse";
 export interface ProperNounParse extends Parse {
-  pos: 'propernoun',
+  pos: 'proper_noun',
   properNoun: string,
 }
 
@@ -10,8 +10,8 @@ export function parseProperNoun(str:string) : ProperNounParse|null {
   let parse = properNounRegex.exec(str);
   if(parse)
     return {
-      syntaxKind: 'propernoun',
-      pos: 'propernoun',
+      syntaxKind: 'proper_noun',
+      pos: 'proper_noun',
       properNoun: str,
       from: 0, 
       to: str.length,

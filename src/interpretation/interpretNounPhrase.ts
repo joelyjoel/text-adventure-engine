@@ -7,6 +7,14 @@ import { PredicateSyntaxParse, PredicateSyntax } from "../PredicateSyntax";
 import { negativise } from "./negativise";
 import { PronounParse } from "../parsing/parsePronoun";
 import { ProperNounParse } from "../parsing/parseProperNoun";
+import { toCamelCase } from "../util/toCamelCase";
+
+export interface NounPhraseInterpretation {
+  /** A table of facts implied by the noun phrase */
+  table?:VariableTable;
+  /** Either a variable or an entity that the noun-phrase refers to. */
+  returns:Entity|Variable;
+};
 
 /** Interpret a string noun-phrase as an existential claim. */
 export function interpretNounPhrase(nounPhrase:string, ctx:Context|Dictionary) {
@@ -24,7 +32,7 @@ export function interpretNounPhrase(nounPhrase:string, ctx:Context|Dictionary) {
 export function interpretParsedNounPhrase(
   parse:NounPhraseParse, 
   ctx:Context
-):VariableTable {
+):NounPhraseInterpretation {
   const {syntaxKind} = parse;
 
   if(syntaxKind == 'predicate_syntax') {
@@ -36,14 +44,16 @@ export function interpretParsedNounPhrase(
   } else if(parse.syntaxKind == 'simple_noun_phrase')
     return interpretSimpleNounPhrase(parse as SimpleNounPhraseParse, ctx);
 
-  // else if (parse.syntaxKind == 'pronoun')
-  //   return interpretPronoun(parse as PronounParse, ctx);
+  else if (parse.syntaxKind == 'pronoun')
+    return interpretPronoun(parse as PronounParse, ctx);
 
+  else if(parse.syntaxKind == 'proper_noun')
+    return interpretProperNoun(parse as ProperNounParse, ctx);
   else
     throw `Unexpected syntaxKind: '${parse.syntaxKind}'`
 }
 
-function interpretSimpleNounPhrase(parse:SimpleNounPhraseParse, ctx:Context) {
+function interpretSimpleNounPhrase(parse:SimpleNounPhraseParse, ctx:Context):NounPhraseInterpretation {
   // Destructure the parse
   const nounMeaning = ctx.linkingMatrix.syntaxToMeaning(parse.noun.noun)
   const adjMeanings = parse.adjectives
@@ -64,7 +74,7 @@ function interpretSimpleNounPhrase(parse:SimpleNounPhraseParse, ctx:Context) {
         throw `Meaningless adjective: "${parse.adjectives[i].adj.str}"`
     }
 
-    return table;
+    return {table, returns:x};
   } else 
     throw `Meaningless noun: ${parse.noun.noun}`;
 }
@@ -72,7 +82,7 @@ function interpretSimpleNounPhrase(parse:SimpleNounPhraseParse, ctx:Context) {
 function interpretPredicateSyntaxNounPhrase(
   parse:PredicateSyntaxParse<NounPhraseParse>, 
   ctx:Context
-) {
+):NounPhraseInterpretation {
   // De-structure the parse object.
   const {args, syntax, tense, nounPhraseFor, str, negative} = parse
 
@@ -84,22 +94,25 @@ function interpretPredicateSyntaxNounPhrase(
     arg => interpretParsedNounPhrase(arg, ctx)
   )
   const argVariables = interprettedArgs.map(
-    table => table.variables[0]
+    arg => arg.returns//arg.variables[0]
   )
 
   // Get the main variable.
   let x:Variable;
   if(typeof nounPhraseFor == 'number')
-    x = interprettedArgs[nounPhraseFor].variables[0];
+    x = argVariables[nounPhraseFor];
   else
     throw "Something bad happened";
 
   // Create a variable table to express the interpretation.
-  const table = new VariableTable(x);
+  const table = new VariableTable();
+  if(x instanceof Variable)
+    table.addVariable(x);
 
   // Merge the interpretted arguments into the table.
-  for(let subTable of interprettedArgs)
-    table.merge(subTable);
+  for(let arg of interprettedArgs)
+    if(arg.table)
+      table.merge(arg.table);
 
   // Interpret the top level predicate in the noun phrase
   let meaning = ctx.linkingMatrix.syntaxToMeaning({syntax, tense})
@@ -113,27 +126,36 @@ function interpretPredicateSyntaxNounPhrase(
     
     table.assign(sentence, truth);
 
-    return table;
+    return {table, returns:x};
 
   } else
     throw `Syntax missing a predicate: ${syntax.symbol}`
 }
 
-function interpretPronoun(parse:PronounParse, ctx:Context) {
+function interpretPronoun(parse:PronounParse, ctx:Context):NounPhraseInterpretation {
   // First person singular
   if(/me|i/i.test(parse.pronoun))
-    return ctx.speaker;
+    return {returns: ctx.speaker};
   
   else if(parse.pronoun == 'you')
-    return ctx.listener;
+    return {returns: ctx.listener};
 
   else
     throw `Unable to interpret pronoun '${parse.pronoun}'`;
 }
 
-function interpretProperNoun(parse:ProperNounParse, ctx:Context) {
-  if(ctx.properNouns[parse.properNoun])
-    ctx.properNouns[parse.properNoun] = new Entity;
+function interpretProperNoun(
+  parse:ProperNounParse, 
+  ctx:Context
+):NounPhraseInterpretation {
+  // De-structure the parse.
+  let {properNoun} = parse;
+
+  // Create new entity if it does not already exist
+  if(!ctx.properNouns[properNoun]) {
+    let symbol = `${Entity.getNextSymbol()}_${toCamelCase(properNoun)}`
+    ctx.properNouns[properNoun] = new Entity(symbol);
+  }
   
-  return ctx.properNouns[parse.properNoun];
+  return {returns: ctx.properNouns[properNoun]};
 }

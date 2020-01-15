@@ -3,6 +3,11 @@ import { TruthTable } from "./logic/TruthTable";
 import { Entity } from "./logic";
 import { SyntaxLogicLinkingMatrix } from "./linking/SyntaxLogicLinkingMatrix";
 
+export interface ContextConstructorOptions {
+  speaker: Entity;
+  listener: Entity;
+}
+
 export class Context {
   dictionary: Dictionary;
   truthTable?: TruthTable;
@@ -17,7 +22,8 @@ export class Context {
 
   constructor(
     dictionaryOrLinking:Dictionary|SyntaxLogicLinkingMatrix, 
-    truthTable?:TruthTable
+    truthTable?:TruthTable,
+    options:Partial<ContextConstructorOptions> = {},
   ) {
     let dictionary:Dictionary, linkingMatrix:SyntaxLogicLinkingMatrix;
     if(dictionaryOrLinking instanceof Dictionary) {
@@ -35,5 +41,9 @@ export class Context {
     this.linkingMatrix = linkingMatrix;
     this.dictionary = dictionary;
     this.truthTable = truthTable;
+    this.properNouns = {};
+
+    this.speaker = options.speaker || new Entity;
+    this.listener = options.listener || new Entity;
   }
 }
