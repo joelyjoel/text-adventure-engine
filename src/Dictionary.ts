@@ -41,7 +41,7 @@ export class Dictionary {
     // Exit early if there is a duplicate noun.
     let subIndex = this.nounIndex[lastWord];
     if(subIndex && subIndex.find(dupe => dupe.str == noun.str)) {
-      console.warn( `Adding duplicate noun to dictionary: "${noun.str}"`);
+      console.trace( `Adding duplicate noun to dictionary: "${noun.str}"`);
       return this;
     }
 
@@ -81,7 +81,7 @@ export class Dictionary {
     // Exit early if adjective already exists in teh dictionary.
     let subIndex = this.adjectiveIndex[lastWord];
     if(subIndex && subIndex.find(dupe => dupe.str == adj.str)) {
-      console.warn(`Adding duplicate adjective to dictionary: ${adj.str}`)
+      console.trace(`Adding duplicate adjective to dictionary: ${adj.str}`)
       return this
     }
 
@@ -111,7 +111,7 @@ export class Dictionary {
   addStatementSyntax(syntax: StatementSyntax) {
     // Exit early if syntax already exists.
     if(this.statementSyntaxs.includes(syntax)) {
-      console.warn(`Adding duplicate syntax to the dictionary:`, syntax)
+      // console.trace(`Adding duplicate syntax to the dictionary:`, syntax)
       return this;
     }
 

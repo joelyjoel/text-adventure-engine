@@ -88,15 +88,15 @@ export class SyntaxLogicLinkingMatrix {
     if(something instanceof Noun) {
       let noun:Noun = something;
 
-      // Use the predicateSyntax version to generate a meaning.
+      // Use the PredicateSyntax version to generate a meaning.
       let meaning = this.syntaxToMeaning({
         syntax: noun.predicateSyntax,
-        tense:'simple_present',
+        tense: 'simple_present',
       })
       
       // If that doesn't work
       if(!meaning) {
-        // Add it and try again
+        // Add the PredicateSyntax and try again
         this.add(noun.predicateSyntax)
         meaning = this.syntaxToMeaning({
           syntax: noun.predicateSyntax,
