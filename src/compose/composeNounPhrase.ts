@@ -54,5 +54,6 @@ export function composeNounPhrase(args:NounPhraseComposable) {
       article = 'an';
 
     return `${article} ${adjsnoun}`;
-  }
+  } else
+    throw "unable to compose noun phrase";
 }

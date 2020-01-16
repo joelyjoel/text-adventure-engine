@@ -24,6 +24,10 @@ test('composeEntity', () => {
     let str = composeEntity(e, ctx, {numberOfAdjectives: 1});
     expect(str).toBe('the green box')
     console.log(str);
+
+    console.log(
+      composeEntity(e, ctx, {numberOfEmbeddedSentences:1})
+    )
   } else
     fail();
 })

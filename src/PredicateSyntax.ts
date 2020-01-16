@@ -331,13 +331,25 @@ export class PredicateSyntax {
       tense?:Tense; 
       question?:boolean;
       negative?: false|'not';
-      nounPhraseFor?: string;
+      nounPhraseFor?: string|number;
     }|Tense={}
   ) {
     if(typeof options == 'string')
       options = {tense: options};
-    const {tense='simple_present', question=false, negative=false, nounPhraseFor=null} = options
+    const {
+      tense='simple_present', 
+      question=false, 
+      negative=false, 
+    } = options
     let assoc = this.associateArgs(args);
+
+    let nounPhraseFor:string|null;
+    if(typeof options.nounPhraseFor == 'string')
+      nounPhraseFor = options.nounPhraseFor;
+    else if(typeof options.nounPhraseFor == 'number')
+      nounPhraseFor = this.params[options.nounPhraseFor].name;
+    else
+      nounPhraseFor = null;
 
     return compose({
       tense, infinitive:this.infinitive, ...assoc, question, negative, nounPhraseFor

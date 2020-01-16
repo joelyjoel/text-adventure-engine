@@ -26,7 +26,7 @@ export function interpretParsedStatement(parse:StatementParse, ctx:Context) {
 
   const table = new VariableTable;
   const args = parse.args.map(arg => {
-    if(typeof arg == 'object' && arg.pos == 'NP') {
+    if(typeof arg == 'object' && (arg.pos == 'NP' || arg.pos == 'proper_noun' || arg.pos == 'pronoun')) {
       let interpretation = interpretParsedNounPhrase(arg, ctx);
       let argTable = interpretation.table
       if(argTable)

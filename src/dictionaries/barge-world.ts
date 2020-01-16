@@ -16,6 +16,7 @@ export const barge_world_dict = new Dictionary()
     'bank',
     'river',
     'canal',
+    'rabbit',
   )
   .addAdjectives(
     'narrowbeam', 
@@ -33,5 +34,6 @@ export const barge_world_dict = new Dictionary()
     new PredicateSyntax('float', ['subject']),
     new PredicateSyntax('sink', ['subject']),
     new PredicateSyntax('be moored', ['subject', 'beside']),
-    new PredicateSyntax('be', ['subject', 'inside'])
+    new PredicateSyntax('be', ['subject', 'inside']),
+    new PredicateSyntax('live', ['subject', 'aboard'])
   )

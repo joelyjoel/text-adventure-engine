@@ -7,11 +7,7 @@ import { isTense } from "../util/tense";
 import { composeNounPhrase } from "./composeNounPhrase";
 import { isPredicateSyntaxWithTense } from "../linking/SyntaxLogicLinkingMatrix";
 
-export interface composeEntityOptions {
-  numberOfAdjectives: number  
-  article: 'the'|'a';
-  useProperNoun: boolean;
-}
+
 
 export function collectEntitySyntaxs(
   e:Entity, 
@@ -35,12 +31,12 @@ export function collectEntitySyntaxs(
           adjectives.push(syntax.str)
         else if(isPredicateSyntaxWithTense(syntax)) {
           if(collectSentences)
-            for(let nounPhraseFor in statement.sentence.args)
-              if(statement.sentence.args[nounPhraseFor] == e)
+            for(let i in statement.sentence.args)
+              if(statement.sentence.args[i] == e)
                 sentences.push({
                   ...syntax, 
                   args: statement.sentence.args,
-                  nounPhraseFor,
+                  nounPhraseFor:parseInt(i),
                 })
         } else
           throw `Unexpected syntax type: ${syntax}`;
@@ -52,13 +48,27 @@ export function collectEntitySyntaxs(
     throw `collectEntitySyntaxs expects context to have a truth table.`
 }
 
+export interface composeEntityOptions {
+  numberOfAdjectives: number  
+  article: 'the'|'a';
+  useProperNoun: boolean;
+  numberOfEmbeddedSentences?: number
+}
+
 export function composeEntity(
   e:Entity, 
   ctx:Context, 
   options:Partial<composeEntityOptions> = {}
 ) {
+  const {
+    numberOfAdjectives = 1,
+    article,
+    useProperNoun = Math.random() < 1/2,
+    numberOfEmbeddedSentences = 0
+  } = options
+
   // Possibly use a proper noun
-  if(options.useProperNoun) {
+  if(useProperNoun) {
     // look for a proper noun
     let properNouns = []
     for(let properNoun in ctx.properNouns)
@@ -72,13 +82,11 @@ export function composeEntity(
   }
 
   // Fetch all syntaxs
-  let {nouns, adjectives, sentences} = collectEntitySyntaxs(e, ctx);
-
-  // MAKE SIMPLE NOUN PHRASE:
-  const {
-    numberOfAdjectives = Math.floor(Math.random()*(adjectives.length+1)),
-    article
-  } = options
+  let {nouns, adjectives, sentences} = collectEntitySyntaxs(
+    e, 
+    ctx, 
+    numberOfEmbeddedSentences > 0,
+  );
 
   // choose a noun
   let noun = nouns.length 
@@ -95,5 +103,34 @@ export function composeEntity(
     noun, adjectives, article
   })
 
+  if(numberOfEmbeddedSentences > 0 && sentences.length > 0) {
+    if(numberOfEmbeddedSentences > 1)
+      console.warn('Using more than 1 embedded sentence in a noun phrase leads to strange results.')
+      
+    // choose sentences
+    sentences = sentences
+      .sort(() => Math.random()*2-1)
+      .slice(0, numberOfEmbeddedSentences);
+
+    for(let sentence of sentences) {
+      let args:string[] = []
+      args[sentence.nounPhraseFor] = nounPhrase
+      for(let i in sentence.args)
+        if(!args[i])
+          args[i] = composeEntity(
+            sentence.args[i], 
+            ctx, 
+            {numberOfEmbeddedSentences:0}
+          )
+
+      
+
+      nounPhrase = sentence.syntax.str(args, {
+        tense: sentence.tense, 
+        nounPhraseFor: sentence.nounPhraseFor
+      })
+    }
+  }    
+  
   return nounPhrase
 }
