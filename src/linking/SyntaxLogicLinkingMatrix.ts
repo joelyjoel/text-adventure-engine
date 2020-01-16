@@ -4,7 +4,7 @@ import { Noun } from "../Noun";
 
 import { PredicateSyntax } from "../PredicateSyntax";
 import { Predicate } from "../logic";
-import { Tense } from "../util/tense";
+import { Tense, isTense } from "../util/tense";
 import { Dictionary } from "../Dictionary";
 import { toCamelCase } from "../util/toCamelCase";
 import { StatementSyntax } from "../parsing/parseStatement";
@@ -13,7 +13,16 @@ import { Template } from "../Template";
 /** There are 3 types of syntax (for now): Adjectives, nouns or sentences
  * MAY CHANGE IN FUTURE.
  */
-type Syntax = Adjective|Noun|{syntax: PredicateSyntax, tense:Tense};
+declare type Syntax = Adjective|Noun|{syntax: PredicateSyntax, tense:Tense};
+
+export function isPredicateSyntaxWithTense(o:any):o is {
+  syntax: PredicateSyntax, 
+  tense:Tense
+} {
+  return typeof o == 'object'
+    && o.syntax instanceof PredicateSyntax
+    && isTense(o.tense);
+}
 
 function syntaxObject(syntax:Syntax) {
   if(syntax instanceof Adjective || syntax instanceof Noun)

@@ -8,7 +8,9 @@ type NounPhraseComposable = {
   indefinite?: boolean;
   possessor?: string;
   article?: string;
+
   adjectives?: string[];
+
   noun?: string;
   plural?: boolean;
 
@@ -30,16 +32,10 @@ export function composeNounPhrase(args:NounPhraseComposable) {
     let article
     if(args.article)
       article = args.article;
-    else if(possessor) {
-      article = toPossessiveAdjective(possessor)
-    } else if(args.definite === true)
-      article = 'the';
-    else if(args.definite === false)
-      article = 'a';
-    else if(args.indefinite === true)
-      article = 'a';
-    else if(args.indefinite === false)
-      article = 'the';
+    else if(possessor)
+      article = toPossessiveAdjective(possessor);
+    else if(args.definite === false || args.indefinite === true)
+      article = plural ? 'some' : 'a';
     else
       article = 'the';
 

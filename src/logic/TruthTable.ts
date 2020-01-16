@@ -91,13 +91,13 @@ export class TruthTable {
   }
 
   *involving(e:Entity) {
-    for(let statement of this.iterate()) {
-      for(let i=0; i<statement.sentence.args.length; ++i) {
-        if(statement.sentence.args[i] == e) {
-          yield {statement, position: i}
-        }
-      }
-    }
+    e = this.idMapEntity(e);
+
+    // Loop through all statements in the table.
+    for(let statement of this.iterate())
+      // Loop through each argument.
+      if(statement.sentence.args.includes(e))
+        yield statement;
   }
 
   /** Iterate through each truth assignment with a given predicate. */
@@ -201,12 +201,18 @@ export class TruthTable {
   idMapSentence({predicate, args}: Sentence) {
     return new Sentence(predicate, ...args.map(arg => {
       if(arg instanceof Entity) {
-        while(this.identityMap[arg.symbol])
-          arg = this.identityMap[arg.symbol];
-        return arg;
+        return this.idMapEntity(arg);
       } else
         return arg;
     }))
+  }
+
+  idMapEntity(e:Entity):Entity {
+    while(this.identityMap[e.symbol])
+      e = this.identityMap[e.symbol];
+
+    // Then finally,
+    return e;
   }
 
   /** Check that another table could be merged into this table without changing any existing assignements. */
