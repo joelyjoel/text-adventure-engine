@@ -125,3 +125,7 @@ export class VariableTable extends TruthTable {
     return this.implement(...complete);
   }
 }
+
+export function completePartialMapping(mapping:PartialMapping) {
+  return mapping.map(x => x ? x : new Entity);
+}

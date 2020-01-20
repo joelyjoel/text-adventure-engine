@@ -10,9 +10,9 @@ export interface ContextConstructorOptions {
 
 export class Context {
   dictionary: Dictionary;
-  truthTable: TruthTable;
   linkingMatrix: SyntaxLogicLinkingMatrix;
-
+  
+  truthTable: TruthTable;
   speaker: Entity;
   listener: Entity;
 

@@ -1,3 +1,4 @@
+/** Negate a truth value */
 export function negativise(truth:string):string {
   if(truth == 'T')
     return 'F';
