@@ -2,16 +2,16 @@ import { Context } from "../Context";
 import { Dictionary } from "../Dictionary";
 import { Parse } from "./Parse";
 import { Template } from "../Template";
-import { SimpleNounPhraseParse, parseNounPhrase } from "./parseNounPhrase";
+import { SimpleNounPhraseParse, parseNounPhrase, NounPhraseParse } from "./parseNounPhrase";
 import { PredicateSyntax } from "../PredicateSyntax";
 import { Tense, allTenses } from "../util/tense";
 import { getPossibleTenses } from "../util/detectTense";
 
 export interface StatementParse extends Parse {
-  args: (string|SimpleNounPhraseParse|number)[];
+  args: NounPhraseParse[];
   syntax: StatementSyntax
   syntaxKind: 'template' | 'predicate'
-  pos: 'statement'|'question';
+  pos: string;
   tense: Tense;
   question: boolean;
   negative: 'not' | false;
@@ -26,7 +26,7 @@ export interface StatementParse extends Parse {
 */
 export type StatementSyntax = (Template | PredicateSyntax);
 
-export function * shallowParseStatement(str:string, ctx:Context|Dictionary):Generator<StatementParse> {
+export function * shallowParseStatement(str:string, ctx:Context|Dictionary) {
   if(ctx instanceof Dictionary)
     ctx = new Context(ctx);
 
@@ -57,17 +57,18 @@ export function * shallowParseStatement(str:string, ctx:Context|Dictionary):Gene
           str,
         };
 
-    } else if(syntax instanceof Template) {
-      let parse = syntax.parse(str);
-      if(parse)
-        yield {
-          ...parse,
-          from: 0,
-          to: str.length,
-          syntaxKind: 'template',
-          str,
-        };
-    }
+    } 
+    // else if(syntax instanceof Template) {
+    //   let parse = syntax.parse(str);
+    //   if(parse)
+    //     yield {
+    //       ...parse,
+    //       from: 0,
+    //       to: str.length,
+    //       syntaxKind: 'template',
+    //       str,
+    //     };
+    // }
   }
 }
 
@@ -75,17 +76,26 @@ export function * shallowParseStatement(str:string, ctx:Context|Dictionary):Gene
 export function * parseStatement(str:string, ctx:Context):Generator<StatementParse> {
   for(const parse of shallowParseStatement(str, ctx)) {
     const {args, syntax, syntaxKind, tense, question, negative, pos} = parse
-    if(syntaxKind == 'template' || syntaxKind == 'predicate') {
-      const parsedArgs = args.map((arg, i) => {
+    if(syntaxKind == 'predicate') {
+      /*const parsedArgs = args.map((arg, i) => {
         if(syntax.params[i].entity) {
           return parseNounPhrase(arg as string, ctx.dictionary)
         } else
           return arg;
-      })
+      })*/
 
-      if(parsedArgs.every(arg => arg))
+      const parsedArgs = [];
+      for(let arg of args) {
+        let argParse = parseNounPhrase(arg, ctx.dictionary);
+        if(argParse)
+          parsedArgs.push(argParse)
+        else
+          break
+      }
+
+      if(parsedArgs.length == args.length)
         yield {
-          args: parsedArgs as (string|number|SimpleNounPhraseParse)[],
+          args: parsedArgs,// as (string|number|SimpleNounPhraseParse)[],
           syntax,
           syntaxKind,
           pos, tense, question, negative,

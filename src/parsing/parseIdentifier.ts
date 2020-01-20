@@ -4,9 +4,12 @@ const articleRegex = /^(?:the|an|a)(?=\s|$)/i;
 const demonstrativeRegex = /^(this|that)(?=\s|$)/
 const possessiveRegex = /^(?:my|your|his|her|its|our|their|[\w ]+\'s)(?=\s|$)/i;
 
-export interface IdentifierParse extends Parse {
+export interface IdentifierParse {
   identifier: string;
-  pos: 'article' | 'demonstrative' | 'possessive'
+  pos: 'article' | 'demonstrative' | 'possessive',
+  from: number;
+  to:number;
+  str:string;
 }
 
 export function parseArticle(str:string) : (IdentifierParse|null) {
