@@ -2,9 +2,11 @@
   "name": "text-adventure-engine",
   "version": "1.0.0",
   "description": "An engine for hosting multiplayer text adventure games",
-  "main": "src/index.ts",
+  "main": "built/index.js",
+  "types": "built/index.d.ts",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "build": "tsc"
   },
   "repository": {
     "type": "git",
@@ -29,7 +31,6 @@
     "typescript": "^3.6.4"
   },
   "dependencies": {
-    "regops": "^1.2.1",
-    "swipl": "^1.0.5"
+    "regops": "^1.2.1"
   }
 }

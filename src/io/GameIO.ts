@@ -1,4 +1,4 @@
-import * as EventEmitter from 'events';
+import {EventEmitter} from 'events';
 
 interface GameIOMessage {
   from: 'user' | 'game' | 'system';
