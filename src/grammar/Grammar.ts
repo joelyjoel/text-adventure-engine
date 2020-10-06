@@ -1,4 +1,4 @@
-import {quickGrammar} from './quickGrammar';
+import {quickGrammar, RuleFunctionMapping} from './quickGrammar';
 import {cleanHiddenAnnotations, isHiddenNonTerminal} from './cleanParseTree';
 import {Tree} from './Tree';
 
@@ -59,8 +59,6 @@ export interface AnnotatedTree<TerminalSymbol=string, NonTerminalSymbol=Terminal
 export function isAnnotatedTree(x:any): x is AnnotatedTree<any> {
   return x.head && x.body && x.F
 }
-
-export type ParseTree<T=string, NT=T> = AnnotatedTree<ParseTreeTerminalSymbol<T, NT>, ParseTreeNonTerminalSymbol<T, NT>>;
 
 export type ParseTable<TerminalSymbol, NonTerminalSymbol> = [number, NonTerminalSymbol, number][];
 
@@ -340,7 +338,11 @@ export class Grammar<TerminalSymbol=string, NonTerminalSymbol=TerminalSymbol> {
 
 
 
+  /** 
+   * @deprecated
+   */
   * recursiveAnnotations(S=this.startingSymbol, {cleanTrees=true}={}):Generator<AnnotatedTree<TerminalSymbol, NonTerminalSymbol>> {
+    console.warn('Grammar.prototype.recursiveAnnotations() is deprecated');
     if(cleanTrees) {
       for(let tree of this.recursiveAnnotations(S, {cleanTrees:false}))
         yield cleanHiddenAnnotations(tree, this.isHidden);
@@ -417,6 +419,27 @@ export class Grammar<TerminalSymbol=string, NonTerminalSymbol=TerminalSymbol> {
         }
   }
 
+  /**
+   * Test whether two trees are equal.
+   */
+  compareTrees(
+    oak: Tree<TerminalSymbol, NonTerminalSymbol, any, any>, 
+    cedar: Tree<TerminalSymbol, NonTerminalSymbol, any, any>
+  ):boolean {
+    // Check trees have same rule kind
+    if(oak.ruleKind == 'terminal')
+      return cedar.ruleKind == 'terminal' && this.compareSymbol(oak.head, cedar.head) && this.compareSymbol(oak.body, cedar.body);
+
+    else if(oak.ruleKind == 'nonTerminal')
+      return cedar.ruleKind == 'nonTerminal' && this.compareSymbol(oak.head, cedar.head) && this.compareTrees(oak.body[0], cedar.body[0]) && this.compareTrees(oak.body[1], cedar.body[1]);
+
+    else if(oak.ruleKind == 'alias')
+      return cedar.ruleKind == 'alias' && this.compareSymbol(oak.head, cedar.head) && this.compareTrees(oak.body, cedar.body);
+
+    else
+      throw "Tree has unexpected rule kind: "+JSON.stringify(oak);
+  }
+
 
 
 
@@ -467,8 +490,8 @@ export class Grammar<TerminalSymbol=string, NonTerminalSymbol=TerminalSymbol> {
   // #### PARSING SOURCE CODE:::
 
   /** Quickly create a grammar from source code string. */
-  static quick(src:string): Grammar<string> {
-    return quickGrammar(src);
+  static quick(...srcs:(string|RuleFunctionMapping)[]): Grammar<string> {
+    return quickGrammar(...srcs);
   }
 
   static createUniqueNonTerminal() {

@@ -5,7 +5,7 @@ import * as path from 'path';
 import {PredicateSyntax} from '../PredicateSyntax';
 import {preparePosTagParseTable} from '../wordnet';
 import {allTenses} from '../util/tense';
-import {evaluateTree, flattenTree} from './Tree'
+import {evaluateTree, flattenTree, rewindParseTreeSymbols} from './Tree'
 
 let G:Grammar<string>
 beforeAll(() => new Promise(fulfil => {
@@ -103,24 +103,90 @@ describe.skip("Parsing strings composed by PredicateSyntax objects", () => {
     }
 });
 
-test('Producing recursive annotation trees', () => {
-  const [...trees] = fishGrammar.recursiveAnnotations();
-  expect(trees.length).toBeGreaterThanOrEqual(1);
-  for(let tree of trees) {
-
-  }
-});
-
 test.todo("Executing a parse tree from a function grammar");
 
-describe('Executing recursively generated trees without error.', () => {
+describe('Comparing Trees', () => {
   const [...trees] = fishGrammar.recursiveTrees();
-  for(let tree of trees) {
-    const str = flattenTree(tree).join(' ');
-    test(`evaluating "${str}"`, () => {
-      const evaluated = evaluateTree(tree);
-      expect(evaluated).toBeTruthy()
-    })
-  }
+
+  test('Comparison positive for testing trees against themselves', () => {
+    for(let tree of trees)
+      expect(fishGrammar.compareTrees(tree, tree)).toBe(true);
+  });
+
+  test.todo('Comparison is positive when testing trees against deep clones of themseelves')
+
+  test('Comparison is negative when testing trees with different strings', () => {
+    for(let i=0; i < trees.length-1; ++i) {
+      const str1 = flattenTree(trees[i]).join(' ');
+      for(let j=i+1; j < trees.length; ++j) {
+        const str2 = flattenTree(trees[j]).join(' ');
+        if(str1 == str2)
+          // skip test because trees might be duplicates
+          continue;
+        else
+          expect(fishGrammar.compareTrees(trees[i], trees[j])).toBe(false);
+      }
+    }
+  });
 });
 
+describe('Evaluating Trees', () => {
+  // Create a function grammar
+  const GrAYmmer = Grammar.quick({
+    '_np -> the _noun': noun => ({
+      noun,
+      adjectives: [],
+    }),
+
+    '_np -> the _adjlist _noun': (adjectives, noun) => ({
+      adjectives, 
+      noun
+    }),
+
+    '_noun -> twink;bear;daddy;queen': T => T,
+    '_adjective -> basic;hungry;': T =>T,
+
+    '_adjlist -> _adjective': adj => [adj],
+    '_adjlist -> _adjective _adjective': (...args) => args, 
+  });
+
+  describe('Evaluating/recognising/parsing trees generated from a string grammar', () => {
+    const trees = GrAYmmer.recursiveTrees();
+    for(let tree of trees) {
+      const str = flattenTree(tree);
+
+      test(`Recognising string "${str.join(' ')}" as belonging to the grammar`, () => {
+        expect(GrAYmmer.recognise(str)).toBe(true);
+      });
+
+      test(`(Re-)Parsing string "${str.join(' ')}" produces original tree`, () => {
+        const forest = GrAYmmer.parse(str);
+        let foundMatch = false;
+        for(let parseTree of forest.recursiveTrees()) {
+          // Rewind the parse tree
+          const rewindedTree = rewindParseTreeSymbols(parseTree);
+          if(GrAYmmer.compareTrees(rewindedTree, tree)) {
+            foundMatch = true;
+            break;
+          }
+          expect(foundMatch).toBe(true);
+        }
+      });
+
+      test(`Evaluating "${str.join(' ')}"`, () => {
+        const evaluation = evaluateTree(tree);
+        expect(evaluation).toBeTruthy();
+        expect(evaluation).toHaveProperty('noun');
+        expect(evaluation).toHaveProperty('adjectives');
+        expect(evaluation.noun).toBe(str[str.length-1]);
+        expect(evaluation.adjectives).toEqual(str.slice(1, -1));
+      });
+
+          }
+
+  });
+
+  describe('Executing parse trees', () => {
+
+  });
+});
