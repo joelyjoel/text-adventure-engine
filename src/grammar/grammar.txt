@@ -1,0 +1,46 @@
+_predicateSyntax -> _subject _verbTense
+_predicateSyntax -> _subject _verbTense _object
+_predicateSyntax -> _subject _verbTense _pplist
+_predicateSyntax -> _subject _verbTense _object __pplist
+
+# Noun phrases
+_subject -> _simpleNounPhrase | _subjectPronoun
+_object -> _simpleNounPhrase | _objectPronoun
+_simpleNounPhrase -> _article _anyNoun | _article _adjlist _anyNoun
+_anyNoun -> _noun | _pluralNoun
+_simpleNounPhrase -> _pluralNoun | _adjlist _pluralNoun
+_article -> the|a|an|some|any
+_adjlist -> _adjective | _adjlist _adjective
+_objectPronoun -> me|you|it|him|her|them|us
+_subjectPronoun -> I|you|it|he|she|they|we
+
+# Preposition phrases
+_pplist -> _pp | _pplist _pp
+_pp -> _preposition _object
+_preposition -> of|in|at|on|under|with
+
+# VERB TENSES
+_simplePresent -> _conjugatedVerb
+_presentContinuous -> _be _gerund
+_simplePast -> _pastTense
+_pastContinuous -> _were _gerund
+_presentPerfect -> _have _pastParticiple
+_presentPerfectContinuous -> _have been _gerund
+_pastPerfect -> had _pastParticiple
+_pastPerfectContinuous -> had been _gerund
+_futurePerfect -> will have _pastParticiple
+_futurePerfectContinuous -> will have been _gerund
+_simpleFuture -> will _infinitive
+_futureContinuous -> will be _gerund
+
+_verbTense -> _simplePresent | _presentContinuous | _simplePast | _simplePast | _pastContinuous  | _presentPerfect | _presentPerfectContinuous | _pastPerfect | _pastPerfectContinuous | _futurePerfect | _futurePerfectContinuous | _simpleFuture | _futureContinuous 
+
+
+# Verb Conjugation
+_conjugatedVerb -> _firstPersonSingular | _secondPersonSingular| _thirdPersonSingular
+_conjugatedVerb -> _firstPersonPlural | _secondPersonPlural| thirdPersonPlural
+
+# vital irregular verbs
+_be -> am|are|is
+_were -> were|was
+_have -> have | has

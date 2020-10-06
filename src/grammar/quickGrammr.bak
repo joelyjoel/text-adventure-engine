@@ -1,0 +1,134 @@
+import {Grammar, TerminalRule, NonTerminalRule, AliasRule} from './Grammar';
+
+/** Parse a one-line grammar rule */
+export function parseRule(line:string) {
+  const [head, rh, ...extra] = line.split(/\s*->\s*/);
+  if(extra.length)
+    throw "Grammar rule syntax error: "+line;
+  const bodies = rh.split(/\s*[;\|]\s*/)
+    .map(body => body.trim())
+    .filter(body => body.length)
+    .map(body => body.split(' '))
+  return {head, bodies};
+}
+
+export function expandRule(head: string, body:string[], F?: (...args:any[]) => any) {
+  if(body.length == 1) {
+    // SINGLE LENGTH BODY
+    if(Grammar.isTerminal(body[0]))
+      // 
+      return {
+        nonTerminalRules: [],
+        terminalRules: [{
+          head, 
+          body: body[0], 
+          F: () => {
+            if(F)
+              return F(body[0])
+            else
+              throw "No user function defined";
+          },
+        }],
+        aliasRules: [],
+      };
+    else
+      return {
+        nonTerminalRules: [],
+        terminalRules: [],
+        aliasRules: [{
+          head, 
+          body:body[0], 
+          F: (nonTerminalReturnValue: any) => {
+            if(F)
+              return F(nonTerminalReturnValue)
+            else
+              throw "No user function defined";
+          }
+        }],
+      }
+  } else {
+    const nonTerminalRules:NonTerminalRule<string>[] = [];
+    const terminalRules:TerminalRule<string>[] = [];
+
+    const ntBody = body.map(S => {
+      if(Grammar.isTerminal(S)) {
+        let head = Grammar.createUniqueNonTerminal();
+        terminalRules.push({head, body: S, F: () => []});
+        return head;
+      } else
+        return S;
+    })
+
+    let prev = head;
+    const mergeUpwards = (a:any[], b:any[]) => [...a, ...b];
+    for(let i=0; i<ntBody.length - 2; ++i) {
+      let remainder = Grammar.createUniqueNonTerminal();
+      nonTerminalRules.push({
+        head: prev,
+        body: [ntBody[i], remainder],
+        F: (a, accumulation:any[]) => {
+          if(i == 0 && F) {
+            // Final element, execute the user defined function.
+            if(ntBody[i] == body[i]) {
+              // User provided the non-terminal
+              return F(a, ...accumulation);
+            } else {
+              // User provided a terminal, which has been automatically substituted.
+              return F(...accumulation);
+            }
+          }
+
+
+          // Otherwise
+          if(ntBody[i] == body[i]) {
+            // User provided a non terminal
+            // In this case we want to prepend the return value of the non terminal to the accumulation
+            return [a, ...accumulation];
+          } else {
+            // User provided a terminal which has been substituted with a non terminal
+            // These should be ignored so we just return the accumulated list of return values
+            return accumulation;
+          }
+        },
+      });
+      prev = remainder;
+    }
+
+    nonTerminalRules.push({
+      head: prev,
+      body: ntBody.slice(-2) as [string, string], // Bit risky..
+      F: (A:string[], B:string[]) => [...A, ...B],
+    });
+
+    return {nonTerminalRules, terminalRules, aliasRules: []};
+  }
+}
+
+/** Quickly create a grammar from source code string. */
+export function quickGrammar(src:string): Grammar<string> {
+  const lines = src.split('\n')
+    .map(line => line.trim()) // Remove white space
+    .filter(line => line.length) // Remove blank lines
+    .filter(line => !/^\s*(#|\/\/)/.test(line)) // remove comments
+
+  const terminalRules:TerminalRule<string>[] = [];
+  const nonTerminalRules:NonTerminalRule<string>[] = [];
+  const aliasRules:AliasRule<string>[] = [];
+
+  for(let line of lines) {
+    const {head, bodies} = parseRule(line);
+
+    for(let body of bodies) {
+      const expanded = expandRule(head, body);
+      terminalRules.push(...expanded.terminalRules);
+      nonTerminalRules.push(...expanded.nonTerminalRules);
+      aliasRules.push(...expanded.aliasRules);
+    }
+  }
+
+  return new Grammar<string>({
+    terminalRules, 
+    nonTerminalRules, 
+    aliasRules,
+  });
+}

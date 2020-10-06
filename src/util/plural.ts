@@ -76,7 +76,7 @@ export function toSingular(pluralNoun:string):string|null {
   if(/s$/.test(pluralNoun))
     return pluralNoun.slice(0, -1)
 
-  // Otherwise return null, this is recognised as a plural noun
+  // Otherwise return null, this is not recognised as a plural noun
   return null
 }
 

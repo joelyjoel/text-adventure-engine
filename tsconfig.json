@@ -3,6 +3,7 @@
       "outDir": "./built",
       "allowJs": true,
       "target": "es5",
+      "lib": ["esnext"], 
       "noImplicitAny": true,
       "downlevelIteration": true,
       "strictNullChecks": true
