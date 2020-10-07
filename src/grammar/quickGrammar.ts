@@ -3,8 +3,8 @@ import {Grammar, TerminalRule, NonTerminalRule, AliasRule} from './Grammar';
 /** Parse a one-line grammar rule */
 export function parseRule(line:string) {
   const [head, rh, ...extra] = line.split(/\s*->\s*/);
-  if(extra.length)
-    throw "Grammar rule syntax error: "+line;
+  if(head == undefined || rh == undefined || extra.length)
+    throw `Grammar rule syntax error: "${line}"`;
   const bodies = rh.split(/\s*[;\|]\s*/)
     .map(body => body.trim())
     .filter(body => body.length)
@@ -15,8 +15,11 @@ export function parseRule(line:string) {
 export function expandRule(
   head: string, 
   body:string[], 
-  F: (...args:any[]) => any = (...args) => [...args],
+  F?: (...args:any[]) => any,
 ) {
+  const defaultTerminalFunction = (terminal:string) => terminal;
+  const defaultNTFunction = (...args:any[]) => [...args];
+
   if(body.length == 1) {
     // SINGLE LENGTH BODY
     if(Grammar.isTerminal(body[0]))
@@ -25,7 +28,7 @@ export function expandRule(
         terminalRules: [{
           head, 
           body: body[0], 
-          F: () => F(body[0]),
+          F: () => (F || defaultTerminalFunction)(body[0]),
         }],
         nonTerminalRules: [], aliasRules: [],
       };
@@ -36,7 +39,7 @@ export function expandRule(
         aliasRules: [{
           head, 
           body:body[0], 
-          F: (nonTerminalReturnValue: any) => F(nonTerminalReturnValue),
+          F: (nonTerminalReturnValue: any) => (F || defaultNTFunction)(nonTerminalReturnValue),
         }],
       }
 
@@ -66,9 +69,9 @@ export function expandRule(
         F: (a:any, accumulation:any[]) => {
           if(ntBody[0] == body[0])
             // User provided the non-terminal
-            return F(a, ...accumulation);
+            return (F || defaultNTFunction)(a, ...accumulation);
           else
-            return F(...accumulation);
+            return (F || defaultNTFunction)(...accumulation);
         }
       })
 
@@ -101,7 +104,7 @@ export function expandRule(
       nonTerminalRules.push({
         head,
         body: ntBody as [string, string],
-        F: (A:any, B:any) => F(
+        F: (A:any, B:any) => (F || defaultNTFunction)(
           ...(body[0] != ntBody[0] ? [] : [A]),
           ...(body[1] != ntBody[1] ? [] : [B]),
         ),
@@ -164,7 +167,7 @@ export function expandRuleFunctionMapping(src:RuleFunctionMapping) {
   return {terminalRules, nonTerminalRules, aliasRules};
 }
 
-export function quickGrammar(...sources:(string|RuleFunctionMapping)[]): Grammar<string> {
+export function quickGrammar(...sources:(string|RuleFunctionMapping|Grammar<string>)[]): Grammar<string> {
   const terminalRules:TerminalRule<string>[] = [],
     nonTerminalRules:NonTerminalRule<string>[] = [],
     aliasRules:AliasRule<string>[] = [];
@@ -175,6 +178,10 @@ export function quickGrammar(...sources:(string|RuleFunctionMapping)[]): Grammar
       terminalRules.push(...expanded.terminalRules);
       nonTerminalRules.push(...expanded.nonTerminalRules);
       aliasRules.push(...expanded.aliasRules);
+    } else if(src instanceof Grammar) {
+      terminalRules.push(...src.terminalRules);
+      nonTerminalRules.push(...src.nonTerminalRules);
+      aliasRules.push(...src.aliasRules);
     } else {
       const expanded = expandRuleFunctionMapping(src);
       terminalRules.push(...expanded.terminalRules);

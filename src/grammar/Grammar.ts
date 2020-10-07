@@ -83,6 +83,10 @@ export interface GrammarConstructorOptions<TerminalSymbol, NonTerminalSymbol> {
    */
   compareSymbol?: (a:TerminalSymbol|NonTerminalSymbol, b:TerminalSymbol|NonTerminalSymbol) => boolean;
   isHidden?: (S:NonTerminalSymbol) => boolean;
+  /** 
+   * Suppresses console warnings.
+   * */
+  pleaseBeQuiet?: boolean;
 }
 
 export class Grammar<TerminalSymbol=string, NonTerminalSymbol=TerminalSymbol> {
@@ -92,6 +96,7 @@ export class Grammar<TerminalSymbol=string, NonTerminalSymbol=TerminalSymbol> {
   startingSymbol: NonTerminalSymbol;
   compareSymbol: (a:NonTerminalSymbol|TerminalSymbol, b:NonTerminalSymbol|TerminalSymbol) => boolean;
   isHidden: (S:NonTerminalSymbol) => boolean;
+  beQuiet: boolean;
 
   constructor({
     terminalRules=[], 
@@ -101,6 +106,7 @@ export class Grammar<TerminalSymbol=string, NonTerminalSymbol=TerminalSymbol> {
     compareSymbol = Object.is,
     // @ts-ignore
     isHidden = isHiddenNonTerminal,
+    pleaseBeQuiet=false,
   }:GrammarConstructorOptions<TerminalSymbol, NonTerminalSymbol>) {
     // Assign the rules
     this.terminalRules = terminalRules;
@@ -108,6 +114,7 @@ export class Grammar<TerminalSymbol=string, NonTerminalSymbol=TerminalSymbol> {
     this.aliasRules = aliasRules;
     this.compareSymbol = compareSymbol;
     this.isHidden = isHidden;
+    this.beQuiet = pleaseBeQuiet
 
     if(!startingSymbol) {
       const topSymbols = this.listTopNonTerminals();
@@ -116,7 +123,7 @@ export class Grammar<TerminalSymbol=string, NonTerminalSymbol=TerminalSymbol> {
           this.startingSymbol = topSymbols[0];
         else
           console.warn('Cannot determine `startingSymbol` of grammar. Candidates:', topSymbols);
-      } else
+      } else if(!this.beQuiet)
         console.warn('Cannot dermine `startingSymbol` of grammar. No candidates.');
     } else
       this.startingSymbol = startingSymbol;
@@ -342,7 +349,8 @@ export class Grammar<TerminalSymbol=string, NonTerminalSymbol=TerminalSymbol> {
    * @deprecated
    */
   * recursiveAnnotations(S=this.startingSymbol, {cleanTrees=true}={}):Generator<AnnotatedTree<TerminalSymbol, NonTerminalSymbol>> {
-    console.warn('Grammar.prototype.recursiveAnnotations() is deprecated');
+    if(!this.beQuiet)
+      console.warn('Grammar.prototype.recursiveAnnotations() is deprecated');
     if(cleanTrees) {
       for(let tree of this.recursiveAnnotations(S, {cleanTrees:false}))
         yield cleanHiddenAnnotations(tree, this.isHidden);
@@ -441,6 +449,14 @@ export class Grammar<TerminalSymbol=string, NonTerminalSymbol=TerminalSymbol> {
   }
 
 
+  *iterateRules() {
+    for(let rule of this.terminalRules)
+      yield rule;
+    for(let rule of this.nonTerminalRules)
+      yield rule;
+    for(let rule of this.aliasRules)
+      yield rule;
+  }
 
 
   listAllNonTerminals() {
@@ -483,6 +499,33 @@ export class Grammar<TerminalSymbol=string, NonTerminalSymbol=TerminalSymbol> {
     ) 
   }
 
+  /**
+   * Get a list of all non-terminal symbols that do not exist as the head of any rule.
+   */
+  listLooseNonTerminals():NonTerminalSymbol[] {
+    const list = [];
+    for(let S of this.listAllNonTerminals()) {
+      let loose = true;
+      for(let rule of this.iterateRules()) {
+        if(this.compareSymbol(S, rule.head)) {
+          loose = false
+          break;
+        }
+      }
+      if(loose)
+        list.push(S)
+    }
+
+    return list;
+  }
+
+  assertNoLooseNonTerminals() {
+    const list = this.listLooseNonTerminals();
+    if(list.length)
+      throw `Grammar has ${list.length} loose non-terminal symbols: ${list}`;
+
+  }
+
   get numberOfRules() {
     return this.terminalRules.length + this.nonTerminalRules.length + this.aliasRules.length;
   }
@@ -490,8 +533,34 @@ export class Grammar<TerminalSymbol=string, NonTerminalSymbol=TerminalSymbol> {
   // #### PARSING SOURCE CODE:::
 
   /** Quickly create a grammar from source code string. */
-  static quick(...srcs:(string|RuleFunctionMapping)[]): Grammar<string> {
+  static quick(...srcs:(string|RuleFunctionMapping|Grammar)[]): Grammar<string> {
     return quickGrammar(...srcs);
+  }
+
+  /** 
+   * Combine a number of grammars, assuming the starting symbol of the first grammar.
+   * */
+  static merge<T, NT>(...grammars:Grammar<T, NT>[]):Grammar<T, NT> {
+    const terminalRules:TerminalRule<T, NT>[] = [],
+      nonTerminalRules: NonTerminalRule<T, NT>[] = [],
+      aliasRules: AliasRule<T, NT>[] = [];
+
+    for(let g of grammars) {
+      terminalRules.push(...g.terminalRules);
+      nonTerminalRules.push(...g.nonTerminalRules);
+      aliasRules.push(...g.aliasRules);
+    }
+
+    const {startingSymbol, compareSymbol, isHidden} = grammars[0];
+    return new Grammar({
+      terminalRules,
+      nonTerminalRules,
+      aliasRules,
+      startingSymbol,
+      compareSymbol,
+      isHidden,
+    });
+
   }
 
   static createUniqueNonTerminal() {
