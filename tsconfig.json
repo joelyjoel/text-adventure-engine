@@ -6,7 +6,8 @@
       "lib": ["esnext"], 
       "noImplicitAny": true,
       "downlevelIteration": true,
-      "strictNullChecks": true
+      "strictNullChecks": true,
+      "declaration": true,
   },
   "include": [
       "./src/**/*"
