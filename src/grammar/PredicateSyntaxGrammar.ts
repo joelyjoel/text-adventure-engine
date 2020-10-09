@@ -25,7 +25,7 @@ export const PredicateSyntaxGrammar = Grammar.quick(
         tense,
       }),
 
-    'PredicateSyntax -> _Subject _VerbTense _Object':
+    '_PredicateSyntax -> _Subject _VerbTense _Object':
       (subjectNp, {verb, tense}, objectNp) => ({
         verb,
         params: ['subject', 'object'],
@@ -50,3 +50,4 @@ export const PredicateSyntaxGrammar = Grammar.quick(
       }),
   }
 );
+PredicateSyntaxGrammar.startingSymbol = '_PredicateSyntax';

@@ -21,7 +21,7 @@ const THIRD_PERSON_SINGULAR = 3   // he/she/it
 const FIRST_PERSON_PLURAL = 4     // we
 const SECOND_PERSON_PLURAL = 5    // you
 const THIRD_PERSON_PLURAL = 6     // they
-const GERUND = 7
+const GERUND = 7                  // -ing
 const PAST_PARTICIPLE = 8
 const PAST_TENSE = 9
 const ALL_PERSON_REGEX = 10
@@ -63,6 +63,7 @@ const irregularConjugations:{
   were: {1:'was', 3:'was'},
   
   have: {3:'has', 8:'had', 9:"had"},
+  had: {3: 'had'},
   eat: {7:'eating', 8:'eaten', 9:'ate'},
   contain: {7:'containing', 8:'contained', 9:'contained'},
   hold: {8:'held', 9:'held'},

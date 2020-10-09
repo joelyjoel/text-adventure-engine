@@ -1,10 +1,14 @@
-import {Grammar, TerminalRule, NonTerminalRule, AliasRule} from './Grammar';
+import {Grammar, TerminalRule, NonTerminalRule, AliasRule, GrammarConstructorOptions} from './Grammar';
 
 /** Parse a one-line grammar rule */
 export function parseRule(line:string) {
   const [head, rh, ...extra] = line.split(/\s*->\s*/);
+
   if(head == undefined || rh == undefined || extra.length)
     throw `Grammar rule syntax error: "${line}"`;
+  if(Grammar.isTerminal(head))
+    throw `Left-hand-side of grammar rule must be a non-terminal symbol. i.e begin with an underscore (_).\nOffending line\n\t"${line}"`
+
   const bodies = rh.split(/\s*[;\|]\s*/)
     .map(body => body.trim())
     .filter(body => body.length)
@@ -19,6 +23,12 @@ export function expandRule(
 ) {
   const defaultTerminalFunction = (terminal:string) => terminal;
   const defaultNTFunction = (...args:any[]) => [...args];
+
+  if(body.length == 0)
+    throw "Cannot expand rule with empty body";
+  if(body.some(word => word.length==0)) {
+    throw "Cannot expand rule with empty words in its body";
+  }
 
   if(body.length == 1) {
     // SINGLE LENGTH BODY
@@ -167,7 +177,7 @@ export function expandRuleFunctionMapping(src:RuleFunctionMapping) {
   return {terminalRules, nonTerminalRules, aliasRules};
 }
 
-export function quickGrammar(...sources:(string|RuleFunctionMapping|Grammar<string>)[]): Grammar<string> {
+export function quickGrammar(...sources:(string|RuleFunctionMapping|Grammar<string>)[]): GrammarConstructorOptions<string> {
   const terminalRules:TerminalRule<string>[] = [],
     nonTerminalRules:NonTerminalRule<string>[] = [],
     aliasRules:AliasRule<string>[] = [];
@@ -190,9 +200,13 @@ export function quickGrammar(...sources:(string|RuleFunctionMapping|Grammar<stri
     }
   }
 
-  return new Grammar({
+  return {
     terminalRules,
     nonTerminalRules,
     aliasRules,
-  });
+    compareSymbol: Object.is,
+    isTerminalSymbol: (o:any):o is string => typeof o == 'string' && !/^_/.test(o),
+    isNonTerminalSymbol: (o:any):o is string => typeof o ==  'string' && /^_/.test(o),
+    pleaseBeQuiet: true,
+  };
 }

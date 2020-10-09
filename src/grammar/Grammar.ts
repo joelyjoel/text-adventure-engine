@@ -1,5 +1,4 @@
 import {quickGrammar, RuleFunctionMapping} from './quickGrammar';
-import {cleanHiddenAnnotations, isHiddenNonTerminal} from './cleanParseTree';
 import {Tree} from './Tree';
 
 /** 
@@ -9,6 +8,15 @@ export interface TerminalRule<TerminalSymbol, NonTerminalSymbol=TerminalSymbol> 
   head:  NonTerminalSymbol;
   body: TerminalSymbol;
   F: (terminal: TerminalSymbol) => any;
+}
+
+/** Test whether an object is a valid TerminalRule. */
+export function isTerminalRule<T, NT>(
+  o:any,
+  isTerminalSymbol: (S:any) => S is T,
+  isNonTerminalSymbol: (S:any) => S is NT,
+):o is TerminalRule<T, NT> {
+  return isNonTerminalSymbol(o.head) && isTerminalSymbol(o.body) && typeof o.F == 'function';
 }
 
 /**
@@ -21,6 +29,22 @@ export interface NonTerminalRule<TerminalSymbol, NonTerminalSymbol=TerminalSymbo
 }
 
 /**
+ * Test whether an object is a valid NonTerminalRule.
+ */
+export function isNonTerminalRule<T, NT>(
+  o:any,
+  isTerminalSymbol: (S:any) => S is T,
+  isNonTerminalSymbol: (S:any) => S is NT,
+):o is NonTerminalRule<T, NT> {
+  return isNonTerminalSymbol(o.head) 
+    && o.body instanceof Array 
+    && o.body.length == 2
+    && isNonTerminalSymbol(o.body[0])
+    && isNonTerminalSymbol(o.body[1])
+    && typeof o.F == 'function';
+}
+
+/**
  * A grammar production rule in the form A -> B where both A and B are non-terminal. This allows for a handy extension from the Chomsky Normal Form, at the cost of slightly reduced efficiency.
  */
 export interface AliasRule<TerminalSymbol, NonTerminalSymbol=TerminalSymbol> {
@@ -30,16 +54,30 @@ export interface AliasRule<TerminalSymbol, NonTerminalSymbol=TerminalSymbol> {
 }
 
 /**
+ * Test whether an object is a valid AliasRule.
+ */
+export function isAliasRule<T, NT>(
+  o: any,
+  isTerminalSymbol: (S:any) => S is T,
+  isNonTerminalSymbol: (S:any) => S is NT,
+) {
+  return isNonTerminalSymbol(o.head)
+    && isNonTerminalSymbol(o.body)
+    && typeof o.F == 'function';
+}
+
+
+/**
  * Shorthand type for TerminalRule|NonTerminalRule|AliasRule.
  */
 export type AnyRule<TerminalSymbol, NonTerminalSymbol=TerminalSymbol> = TerminalRule<TerminalSymbol, NonTerminalSymbol>|NonTerminalRule<TerminalSymbol, NonTerminalSymbol>|AliasRule<TerminalSymbol, NonTerminalSymbol>
 
-export interface ParseTreeTerminalSymbol<TerminalSymbol, NonTerminalSymbol> {
+export interface ParseTreeTerminalSymbol<TerminalSymbol, NonTerminalSymbol=TerminalSymbol> {
   from: number;
   to: number;
   S:TerminalSymbol;
 }
-export interface ParseTreeNonTerminalSymbol<TerminalSymbol, NonTerminalSymbol> {
+export interface ParseTreeNonTerminalSymbol<TerminalSymbol, NonTerminalSymbol=TerminalSymbol> {
   from: number;
   to: number;
   S: NonTerminalSymbol;
@@ -49,18 +87,12 @@ export type ParseTreeSymbol<TerminalSymbol=string, NonTerminalSymbol=TerminalSym
 
 export type ParseForest<TerminalSymbol=string, NonTerminalSymbol=TerminalSymbol> = Grammar<ParseTreeTerminalSymbol<TerminalSymbol, NonTerminalSymbol>, ParseTreeNonTerminalSymbol<TerminalSymbol, NonTerminalSymbol>>;
 
-export interface AnnotatedTree<TerminalSymbol=string, NonTerminalSymbol=TerminalSymbol> {
-  head: NonTerminalSymbol,
-  body: (TerminalSymbol|AnnotatedTree<TerminalSymbol, NonTerminalSymbol>)[];
-  F: (...bodyEvals:any[]) => any;
-  clean?: boolean;
-};
-
-export function isAnnotatedTree(x:any): x is AnnotatedTree<any> {
-  return x.head && x.body && x.F
-}
-
-export type ParseTable<TerminalSymbol, NonTerminalSymbol> = [number, NonTerminalSymbol, number][];
+export type ParseTable<TerminalSymbol, NonTerminalSymbol=TerminalSymbol> = [
+  number, 
+  NonTerminalSymbol, 
+  number, 
+  ((...args:any) => any)?
+][];
 
 let uniqueNonTerminalCounter = 0;
 
@@ -71,7 +103,7 @@ let uniqueNonTerminalCounter = 0;
 
 // ### START OF CLASS PROPER
 
-export interface GrammarConstructorOptions<TerminalSymbol, NonTerminalSymbol> {
+export interface GrammarConstructorOptions<TerminalSymbol, NonTerminalSymbol=TerminalSymbol> {
   terminalRules?: TerminalRule<TerminalSymbol, NonTerminalSymbol>[], 
   nonTerminalRules?: NonTerminalRule<TerminalSymbol, NonTerminalSymbol>[], 
   aliasRules?:AliasRule<TerminalSymbol, NonTerminalSymbol>[], 
@@ -87,6 +119,15 @@ export interface GrammarConstructorOptions<TerminalSymbol, NonTerminalSymbol> {
    * Suppresses console warnings.
    * */
   pleaseBeQuiet?: boolean;
+
+  /** 
+   * Optionally provide a type guard function for terminal symbols to help debuging the grammar. 
+   * */
+  isTerminalSymbol?: (o:any) => o is TerminalSymbol;
+  /** 
+   * Optionally provide a type guard function for non-terminal symbols to help debuging the grammar. 
+   * */
+  isNonTerminalSymbol?: (o: any) => o is NonTerminalSymbol;
 }
 
 export class Grammar<TerminalSymbol=string, NonTerminalSymbol=TerminalSymbol> {
@@ -97,6 +138,8 @@ export class Grammar<TerminalSymbol=string, NonTerminalSymbol=TerminalSymbol> {
   compareSymbol: (a:NonTerminalSymbol|TerminalSymbol, b:NonTerminalSymbol|TerminalSymbol) => boolean;
   isHidden: (S:NonTerminalSymbol) => boolean;
   beQuiet: boolean;
+  isTerminalSymbol: (S: any) => S is TerminalSymbol;
+  isNonTerminalSymbol: (S: any) => S is NonTerminalSymbol;
 
   constructor({
     terminalRules=[], 
@@ -105,8 +148,12 @@ export class Grammar<TerminalSymbol=string, NonTerminalSymbol=TerminalSymbol> {
     startingSymbol,
     compareSymbol = Object.is,
     // @ts-ignore
-    isHidden = isHiddenNonTerminal,
+    isHidden = (S:any) => /^__/.test(S),
     pleaseBeQuiet=false,
+    // @ts-ignore
+    isTerminalSymbol = () => {throw "No type guard defined for terminal symbols."}, 
+    // @ts-ignore
+    isNonTerminalSymbol = () => {throw "No type guard defined for non-terminal symbols."},
   }:GrammarConstructorOptions<TerminalSymbol, NonTerminalSymbol>) {
     // Assign the rules
     this.terminalRules = terminalRules;
@@ -115,13 +162,15 @@ export class Grammar<TerminalSymbol=string, NonTerminalSymbol=TerminalSymbol> {
     this.compareSymbol = compareSymbol;
     this.isHidden = isHidden;
     this.beQuiet = pleaseBeQuiet
+    this.isTerminalSymbol = isTerminalSymbol;
+    this.isNonTerminalSymbol = isNonTerminalSymbol;
 
     if(!startingSymbol) {
       const topSymbols = this.listTopNonTerminals();
       if(topSymbols.length) {
         if(topSymbols.length == 1)
           this.startingSymbol = topSymbols[0];
-        else
+        else if(!this.beQuiet)
           console.warn('Cannot determine `startingSymbol` of grammar. Candidates:', topSymbols);
       } else if(!this.beQuiet)
         console.warn('Cannot dermine `startingSymbol` of grammar. No candidates.');
@@ -186,7 +235,10 @@ export class Grammar<TerminalSymbol=string, NonTerminalSymbol=TerminalSymbol> {
    * Parse the given string, creates a 'parse-forest' in the form of another 
    * context-free-grammar.
    * */
-  parse(str:TerminalSymbol[], initialTable?:ParseTable<TerminalSymbol, NonTerminalSymbol>):ParseForest<TerminalSymbol, NonTerminalSymbol> {
+  parse(
+    str:TerminalSymbol[], 
+    initialTable?:ParseTable<TerminalSymbol, NonTerminalSymbol>
+  ):ParseForest<TerminalSymbol, NonTerminalSymbol> {
     // Create shorthands for verbose types.
     type T = ParseTreeTerminalSymbol<TerminalSymbol, NonTerminalSymbol>;
     type NT = ParseTreeNonTerminalSymbol<TerminalSymbol, NonTerminalSymbol>;
@@ -203,7 +255,13 @@ export class Grammar<TerminalSymbol=string, NonTerminalSymbol=TerminalSymbol> {
     const table:ParseTable<TerminalSymbol, NonTerminalSymbol> = []
     /** Returns true if the table includes a particular symbol-indexes combo */
     const tableIncludes = (a:number, b:NonTerminalSymbol, c:number) => table.some(([x, y, z]) => x == a && this.compareSymbol(b , y) && c == z);
-    const addToTable = (i:number, B:NonTerminalSymbol, j:number) => {
+
+    /** Add a record to the parsing table. */
+    const addToTable = (
+      i:number, 
+      B:NonTerminalSymbol, 
+      j:number
+    ) => {
       table.push([i, B, j]);
 
       // For each alias rule, head -> body, s.t. body = B
@@ -220,13 +278,13 @@ export class Grammar<TerminalSymbol=string, NonTerminalSymbol=TerminalSymbol> {
 
     // Add records from `initialTable`
     if(initialTable)
-      for(let [i, S, j] of initialTable) {
+      for(let [i, S, j, F] of initialTable) {
         addToTable(i, S, j);
         if(i+1==j) {
           terminalRules.push({
             head: {from: i, S, to:j},
             body: {from: i, S:str[i], to:j},
-            F: () => ({nonTerminal: S, terminal:str[i]}),
+            F: F || (() => str[i]),
           })
         }
       }
@@ -271,14 +329,30 @@ export class Grammar<TerminalSymbol=string, NonTerminalSymbol=TerminalSymbol> {
       terminalRules,
       nonTerminalRules,
       aliasRules,
-      compareSymbol: (a:any, b:any) => {
+      compareSymbol: (a:T|NT, b:T|NT) => {
         return a.from == b.from && a.to == b.to && this.compareSymbol(a.S, b.S);
       },
+      isTerminalSymbol: (S:any):S is T => {
+        return typeof S =='object' &&
+          typeof S.from == 'number'
+          && S.from >= 0
+          && typeof S.to == 'number'
+          && S.to >= 0
+          && this.isTerminalSymbol(S.S);
+      },
+
+      isNonTerminalSymbol: (S:any):S is NT => {
+        return typeof S == 'object' &&
+          typeof S.from == 'number' &&
+          typeof S.to == 'number' &&
+          S.from >= 0 &&
+          S.to >= 0 &&
+          this.isNonTerminalSymbol(S.S);
+      },
+      
       startingSymbol,
       isHidden: S => this.isHidden(S.S),
     })
-
-    // TODO: Optimise by indexing table
   }
 
   *recursiveSubstitutions(S=this.startingSymbol):Generator<TerminalSymbol[]> {
@@ -342,55 +416,6 @@ export class Grammar<TerminalSymbol=string, NonTerminalSymbol=TerminalSymbol> {
     }
   }
 
-
-
-
-  /** 
-   * @deprecated
-   */
-  * recursiveAnnotations(S=this.startingSymbol, {cleanTrees=true}={}):Generator<AnnotatedTree<TerminalSymbol, NonTerminalSymbol>> {
-    if(!this.beQuiet)
-      console.warn('Grammar.prototype.recursiveAnnotations() is deprecated');
-    if(cleanTrees) {
-      for(let tree of this.recursiveAnnotations(S, {cleanTrees:false}))
-        yield cleanHiddenAnnotations(tree, this.isHidden);
-
-      return ;
-    }
-
-
-    const isRelevant = (rule:any) => this.compareSymbol(rule.head, S);
-
-    // Loop through the terminal substitutions of S
-    for(let rule of this.terminalRules.filter(isRelevant))
-      yield {
-        head:S, 
-        body:[rule.body],
-        F: rule.F,
-      }
-
-    // Loop through the non-terminal substitutions of S
-    for(let rule of this.nonTerminalRules.filter(isRelevant)) {
-      const [B, C] = rule.body;
-      for(let c of this.recursiveAnnotations(C))
-        for(let b of this.recursiveAnnotations(B))
-          yield {
-            head:S, 
-            body: [b, c],
-            F: rule.F,
-          };
-    }
-
-    // Loop through the alias substitutions of S
-    for(let rule of this.aliasRules.filter(isRelevant))
-      for(let tree of this.recursiveAnnotations(rule.body))
-        yield {
-          head: S, 
-          body: [tree],
-          F: rule.F,
-        };
-  }
-
   * recursiveTrees(S=this.startingSymbol):Generator<Tree<TerminalSymbol, NonTerminalSymbol>> {
     const isRelevant = (rule:AnyRule<TerminalSymbol, NonTerminalSymbol>) => this.compareSymbol(rule.head, S);
 
@@ -449,7 +474,7 @@ export class Grammar<TerminalSymbol=string, NonTerminalSymbol=TerminalSymbol> {
   }
 
 
-  *iterateRules() {
+  * iterateRules() {
     for(let rule of this.terminalRules)
       yield rule;
     for(let rule of this.nonTerminalRules)
@@ -522,19 +547,35 @@ export class Grammar<TerminalSymbol=string, NonTerminalSymbol=TerminalSymbol> {
   assertNoLooseNonTerminals() {
     const list = this.listLooseNonTerminals();
     if(list.length)
-      throw `Grammar has ${list.length} loose non-terminal symbols: ${list}`;
-
+      throw `Grammar has ${list.length} loose non-terminal symbols: ${list.join(', ')}`;
   }
 
   get numberOfRules() {
     return this.terminalRules.length + this.nonTerminalRules.length + this.aliasRules.length;
   }
 
+  checkRules() {
+    if(!this.isNonTerminalSymbol(this.startingSymbol))
+      throw "Starting symbol is not valid: " + JSON.stringify(this.startingSymbol);
+
+    for(let rule of this.terminalRules)
+      if(!isTerminalRule(rule, this.isTerminalSymbol, this.isNonTerminalSymbol)) {
+        throw "Rule is not valid: " + JSON.stringify(rule)
+      }
+    for(let rule of this.nonTerminalRules)
+      if(!isNonTerminalRule(rule, this.isTerminalSymbol, this.isNonTerminalSymbol))
+        throw "Found invalid non-terminal rule: " + JSON.stringify(rule);
+
+    for(let rule of this.aliasRules)
+      if(!isAliasRule(rule, this.isTerminalSymbol, this.isNonTerminalSymbol))
+        throw "Found invalid alias rule: " + JSON.stringify(rule);
+  }
+
   // #### PARSING SOURCE CODE:::
 
   /** Quickly create a grammar from source code string. */
   static quick(...srcs:(string|RuleFunctionMapping|Grammar)[]): Grammar<string> {
-    return quickGrammar(...srcs);
+    return new Grammar(quickGrammar(...srcs));
   }
 
   /** 
@@ -551,7 +592,7 @@ export class Grammar<TerminalSymbol=string, NonTerminalSymbol=TerminalSymbol> {
       aliasRules.push(...g.aliasRules);
     }
 
-    const {startingSymbol, compareSymbol, isHidden} = grammars[0];
+    const {startingSymbol, compareSymbol, isHidden, isTerminalSymbol, isNonTerminalSymbol} = grammars[0];
     return new Grammar({
       terminalRules,
       nonTerminalRules,
@@ -559,6 +600,8 @@ export class Grammar<TerminalSymbol=string, NonTerminalSymbol=TerminalSymbol> {
       startingSymbol,
       compareSymbol,
       isHidden,
+      isTerminalSymbol,
+      isNonTerminalSymbol,
     });
 
   }
@@ -571,8 +614,8 @@ export class Grammar<TerminalSymbol=string, NonTerminalSymbol=TerminalSymbol> {
    * Determine whether a string symbol is terminal or non-terminal. Non-terminal string symbols always begin with an underscore (_).
    */
   static isTerminal(sym:string) {
-  return sym[0] != '_';
-} 
+    return sym[0] != '_';
+  } 
 
   
 

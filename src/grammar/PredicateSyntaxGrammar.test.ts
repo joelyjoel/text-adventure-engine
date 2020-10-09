@@ -1,12 +1,15 @@
 import {Grammar} from './Grammar';
-import {NounPhraseGrammar} from './PredicateSyntaxGrammar';
+import {PredicateSyntaxGrammar} from './PredicateSyntaxGrammar';
+import {NounPhraseGrammar} from './NounPhraseGrammar';
 import {ExamplePOSGrammar} from './ExamplePOSGrammar';
 import {evaluateTree} from './Tree';
-import {deepCompare} from '../util/deepCompare';
+// @ts-ignore
+import {deepCompare, deepMatch} from '../util/deepCompare';
 
-describe("Parsing noun phrases", () => {
+describe("Testing NounPhraseGrammar with hard-coded strings", () => {
   const G = Grammar.merge(NounPhraseGrammar, ExamplePOSGrammar);
   G.assertNoLooseNonTerminals();
+  G.checkRules();
 
   test.each([
     [
@@ -25,7 +28,6 @@ describe("Parsing noun phrases", () => {
     const split = str.split(' ');
     expect(G.recognise(split)).toBe(true);
 
-    const jsonExpectation = JSON.stringify(expectedEvaluation);
     const forest = G.parse(split);
     let foundMatch = false;
     for(let tree of forest.recursiveTrees({S: '_SimpleNounPhrase', from:0, to:split.length})) {
@@ -37,3 +39,43 @@ describe("Parsing noun phrases", () => {
   });
 });
 
+describe("Testing PredicateSyntaxGrammar with hard-coded strings", () => {
+  const G = Grammar.merge(PredicateSyntaxGrammar, ExamplePOSGrammar);
+  G.assertNoLooseNonTerminals();
+  G.checkRules();
+
+  console.log(G.randomSubstitution().join(' '));
+  console.log(G.randomSubstitution().join(' '));
+  console.log(G.randomSubstitution().join(' '));
+  console.log(G.randomSubstitution().join(' '));
+
+  test.each([
+    [
+      'the green cat chases the blue fish',
+      {
+        verb: 'chase', 
+        params: ['subject', 'object'], 
+        tense:'simplePresent',
+      },
+    ],
+    [
+      'I dance with you',
+      {verb: 'dance', params: ['subject', 'with']},
+    ]
+  ])( 
+    'Parsing "%s"',
+    (str:string, expectedEvaluation:any) => {
+      const split = str.split(' ');
+      expect(G.recognise(split)).toBe(true);
+
+      const forest = G.parse(split);
+      let foundMatch = false;
+      for(let tree of forest.recursiveTrees()) {
+        const evaluation = evaluateTree(tree);
+        if(deepMatch(expectedEvaluation, evaluation))
+          foundMatch = true;
+      }
+      expect(foundMatch).toBe(true);
+    }
+  )
+});

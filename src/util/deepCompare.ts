@@ -18,3 +18,15 @@ export function deepCompare(a:any, b:any):boolean {
   } else
     return a === b;
 }
+
+export function deepMatch(a:any, b:any):boolean {
+  if(a instanceof Object && b instanceof Object) {
+    for(let key in a)
+      if(!deepMatch(a[key], b[key]))
+        return false;
+    
+      // Otherwise,
+       return true
+  } else
+    return a === b;
+}

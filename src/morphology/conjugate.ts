@@ -1,5 +1,6 @@
 import {Morphology} from './'
 import {endsWithOOrX, endsWithE, endsWithShortConsonant, endsWithS, endsWithOesOrXes, endsWithDoubleShortConsonant, endsWithIng, endsWithEd} from './usefulRegex';
+import {deconjugateIrregular, getIrregularConjugation} from '../util/irregularConjugations';
 
 
 export const regularVerbConjugation:Morphology = {
@@ -155,9 +156,12 @@ export const regularVerbConjugation:Morphology = {
 
 }
 
-export type VerbForm = keyof typeof regularVerbConjugation;
+export type VerbForm = string;
 
 export function conjugate(infinitive:string, person:VerbForm) {
+  const irreg = getIrregularConjugation(infinitive, formNames.indexOf(person))
+  if(irreg)
+    return irreg;
   return regularVerbConjugation.infinitive[person](infinitive);
 }
 
@@ -169,17 +173,35 @@ export function getConjugationTable(infinitive:string) {
   return table;
 }
 
+/** Used for compatibility with older code that used numbers instead of strings to represent verb forms */
+const formNames = [
+  'infinitive', 
+  'firstPersonSingular', 'secondPersonSingular', 'thirdPersonSingular',
+  'firstPersonPlural', 'secondPersonPlural', 'thirdPersonPlural',
+  'gerund', 'pastParticiple', 'pastTense',
+]
 export function * deconjugate(word: string) {
-  
+  // Check for irregular conjugation
+  let irreg = deconjugateIrregular(word);
+  if(irreg) {
+    for(let {infinitive, form} of irreg) {
+      yield {form: formNames[form], infinitive}
+    }
+
+    // Don't continue regular deconjugation if irregular
+    return ;
+  }
+
+  // Do irregular de-conjugation  
   for(let form in regularVerbConjugation)
     if(regularVerbConjugation[form].infinitive) {
       let infinitiveHypothesis = regularVerbConjugation[form].infinitive(word);
       if(infinitiveHypothesis != null) {
         if(typeof infinitiveHypothesis == 'string')     
-          yield {form, 'infinitive':infinitiveHypothesis};
+          yield {form, infinitive:infinitiveHypothesis};
         else
           for(let inf of infinitiveHypothesis)
-            yield {form, 'infinitive': inf};
+            yield {form, infinitive: inf};
       } 
     }   
 }

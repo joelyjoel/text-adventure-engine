@@ -255,13 +255,21 @@ test('PredicateSyntax: parsing with unknown tense', () => {
 
 describe('Known bugs', () => {
   //eat(subject,object)[the cat, the fish] in past_perfect
-  test("Mis-conjugating the auxilliar verb in past_perfect tense", () => {
+  test("Mis-conjugating the auxilliary verb in past_perfect tense", () => {
     expect(
       new PredicateSyntax('eat', ['subject', 'object']).str(
         ['the cat', 'the fish'],
         {tense: 'past_perfect'},
       )
     ).toBe('the cat had eaten the fish');
- 
+  })
+
+  test("Mis-conjugating the auxilliary verb in past_perfect_continuous tense", () => {
+    expect(
+      new PredicateSyntax('eat', ['subject', 'object']).str(
+        ['the cat', 'the fish'],
+        {tense: 'past_perfect_continuous'},
+      )
+    ).toBe('the cat had been eating the fish');
   })
 });
