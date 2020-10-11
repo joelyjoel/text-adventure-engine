@@ -9,6 +9,9 @@ const INDIFFERENT = '?'
 /** A collection of sentences with corresponding truth assignments */
 export class TruthTable {
   defaultTruthValue: string;
+  /** 
+   * Truth assignments indexed by predicate symbol and sub-indexed by the concatenation of the argument symbols.
+   */
   private index: {
     [predicate_symbol:string]: {
       [argsSymbol:string]: {sentence:Sentence, truth:string}
@@ -23,7 +26,9 @@ export class TruthTable {
     this.identityMap = {};
   }
 
-  /** Assign a truth value to a sentence */
+  /** 
+   * Assign a truth value to a sentence 
+   */
   assign(sentence:Sentence, truth:string):this {
     sentence = this.idMapSentence(sentence);
 
@@ -41,14 +46,18 @@ export class TruthTable {
     return this; 
   }
 
-  /** Assign a statement as true */
+  /** 
+   * Assign the truth value 'T' (meaning true) to a sentence.
+   */
   T(P:Predicate, ...args:Entity[]) {
     return this.assign(new Sentence(P, ...args), 'T');
   }
 
-  /** Assign a statement as false */
+  /** 
+   * Assign the truth-value 'F' (meaning false) to a sentence.
+   */
   F(P:Predicate, ...args:Entity[]) {
-    return this.assign(new Sentence(P, ...args), 'F');
+  return this.assign(new Sentence(P, ...args), 'F');
   }
 
   /** Remove a truth assignment from the table */
@@ -81,6 +90,9 @@ export class TruthTable {
         yield this.index[i][j];
   }
 
+  /**
+   * Creates a new truth table using only the truth-assignments that pass the test implemented by the provided function.
+   */
   filter(callback:(assignment:TruthAssignment) => boolean):TruthTable {
     let table = new TruthTable();
     for(let statement of this.iterate())

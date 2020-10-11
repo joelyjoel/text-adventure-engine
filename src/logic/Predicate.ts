@@ -1,3 +1,15 @@
+/**
+ * The `Predicate` class corresponds exactly to eponymous concept 
+ * in predicate logic. It represents a type of sentence that can 
+ * be made about some entities. Each predicate accepts a specific 
+ * number (`numberOfArgs` property) of arguments where each argument is 
+ * an `Entity`.
+ *
+ * Again, using a whole class for this object might be overly 
+ * fancy when a simple string would suffice. String predicates 
+ * would need a simple way to encode how many arguments they accept, 
+ * I think Prolog has a convention for this.
+ */
 export class Predicate {
   protected static predicate_counter = 0;
 

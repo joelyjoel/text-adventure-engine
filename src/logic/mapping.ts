@@ -14,7 +14,7 @@ export function findMappings(
   claim:VariableTable, 
   onto:TruthTable|TruthTable[], 
   given:PartialMapping[] = [blankPartialMapping(claim.numberOfVariables)]
-) {
+):PartialMapping[]|null {
   // Start with the given list or a blank (completely indifferent partial mapping.)
 
   let accumulatedMappings:PartialMapping[] = given
