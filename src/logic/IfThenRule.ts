@@ -1,8 +1,7 @@
 import { VariableTable } from "./VariableTable";
 import { TruthTable } from "./TruthTable";
 import { mapFromSingleSentence, findCompleteMappings } from "./mapping";
-import { Variable } from "./Variable";
-import { Sentence } from "./Sentence";
+import {Variable, Sentence} from './basics';
 
 export class IfThenRule {
   variables: Variable[];

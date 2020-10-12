@@ -1,6 +1,4 @@
-import { Sentence } from "./Sentence";
-import { Entity } from "./Entity";
-import { Predicate } from "./Predicate";
+import {Sentence, Predicate, Entity, stringifySentence, stringifyArgs, isEntity} from './basics'
 
 type TruthAssignment = {sentence:Sentence, truth:string};
 
@@ -32,7 +30,8 @@ export class TruthTable {
   assign(sentence:Sentence, truth:string):this {
     sentence = this.idMapSentence(sentence);
 
-    const {predicateSymbol, argsSymbol} = sentence;
+    const predicateSymbol = sentence.predicate;
+    const argsSymbol = stringifyArgs(sentence);
 
     if(!this.index[predicateSymbol])
       this.index[predicateSymbol] = {[argsSymbol]: {sentence, truth}};
@@ -49,20 +48,22 @@ export class TruthTable {
   /** 
    * Assign the truth value 'T' (meaning true) to a sentence.
    */
-  T(P:Predicate, ...args:Entity[]) {
-    return this.assign(new Sentence(P, ...args), 'T');
+  T(predicate:Predicate, ...args:Entity[]) {
+    return this.assign({predicate, args}, 'T');
   }
 
   /** 
    * Assign the truth-value 'F' (meaning false) to a sentence.
    */
-  F(P:Predicate, ...args:Entity[]) {
-  return this.assign(new Sentence(P, ...args), 'F');
+  F(predicate:Predicate, ...args:Entity[]) {
+  return this.assign({predicate, args}, 'F');
   }
 
   /** Remove a truth assignment from the table */
   remove(sentence: Sentence) {
-    const {predicateSymbol, argsSymbol} = this.idMapSentence(sentence);
+    const mapped = this.idMapSentence(sentence);
+    const predicateSymbol = mapped.predicate;
+    const argsSymbol = stringifyArgs(mapped);
     
     if(this.index[predicateSymbol])
       delete this.index[predicateSymbol][argsSymbol];
@@ -70,7 +71,9 @@ export class TruthTable {
 
   /** Look up the truth value of a sentence */
   lookUp(sentence:Sentence) {
-    const {predicateSymbol, argsSymbol} = this.idMapSentence(sentence);
+    const mapped = this.idMapSentence(sentence);
+    const predicateSymbol = mapped.predicate;
+    const argsSymbol = stringifyArgs(mapped);
 
     if(this.index[predicateSymbol] && this.index[predicateSymbol][argsSymbol])
       return this.index[predicateSymbol][argsSymbol].truth;
@@ -114,8 +117,7 @@ export class TruthTable {
 
   /** Iterate through each truth assignment with a given predicate. */
   *byPredicate(P:Predicate) {
-    let symbol = P.symbol;
-    let subIndex = this.index[symbol];
+    let subIndex = this.index[P]
     for(let i in subIndex)
       yield subIndex[i];
   }
@@ -124,7 +126,7 @@ export class TruthTable {
   get symbol() {
     return '{\n' +
     this.facts
-      .map(({sentence, truth}) => `\t(${sentence.symbol}=${truth})`)
+      .map(({sentence, truth}) => `\t(${stringifySentence(sentence)}=${truth})`)
       .join('\t&\n') 
     + '\n}';
   }
@@ -154,7 +156,7 @@ export class TruthTable {
     const facts = this.facts;
     for(let {sentence, truth} of facts) {
       newTable.assign(
-        new Sentence(sentence.predicate, ...sentence.args),
+        {predicate: sentence.predicate, args: [...sentence.args]},
         truth
       )
     }
@@ -182,22 +184,22 @@ export class TruthTable {
     /** Should the identity be added to the identity map? Set to `false` if the duplicate entity will never be reused. */
     addToMap=true
   ) {
-    while(this.identityMap[mainEntity.symbol])
-      mainEntity = this.identityMap[mainEntity.symbol];
+    while(this.identityMap[mainEntity])
+      mainEntity = this.identityMap[mainEntity];
 
     for(let {sentence} of this.iterate()) {
-      let originalSymbol = sentence.argsSymbol;
+      let originalSymbol = stringifyArgs(sentence);
 
       for(let i in sentence.args)
         if(sentence.args[i] == duplicate)
           sentence.args[i] = mainEntity;
 
       // If the arguments have been changes, change the sentence's key in the index
-      let newSymbol = sentence.argsSymbol;
+      let newSymbol = stringifyArgs(sentence);
       if(newSymbol != originalSymbol) {
-        let subIndex = this.index[sentence.predicateSymbol];
+        let subIndex = this.index[sentence.predicate];
         if(!subIndex)
-          throw 'Indexing fault: ' + sentence.predicateSymbol;
+          throw 'Indexing fault: ' + sentence.predicate;
 
         subIndex[newSymbol] = subIndex[originalSymbol]
         delete subIndex[originalSymbol];
@@ -206,22 +208,25 @@ export class TruthTable {
 
     // Add an entry to the identity map so that both entities can be used interchangeably.
     if(addToMap)
-      this.identityMap[duplicate.symbol] = mainEntity;
+      this.identityMap[duplicate] = mainEntity;
   }
 
   /** Create a new sentence, converting any duplicate arguments into the main entity of its identity group */
   idMapSentence({predicate, args}: Sentence) {
-    return new Sentence(predicate, ...args.map(arg => {
-      if(arg instanceof Entity) {
-        return this.idMapEntity(arg);
-      } else
-        return arg;
-    }))
+    return {
+      predicate, 
+      args: args.map(arg => {
+        if(isEntity(arg)) {
+          return this.idMapEntity(arg);
+        } else
+          return arg;
+      }),
+    }
   }
 
   idMapEntity(e:Entity):Entity {
-    while(this.identityMap[e.symbol])
-      e = this.identityMap[e.symbol];
+    while(this.identityMap[e])
+      e = this.identityMap[e];
 
     // Then finally,
     return e;
