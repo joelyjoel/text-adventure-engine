@@ -1,12 +1,12 @@
 import { SyntaxLogicLinkingMatrix } from "./SyntaxLogicLinkingMatrix";
-import { Predicate } from "../logic";
+import { Predicate, createPredicate } from "../logic";
 import { PredicateSyntax } from "../PredicateSyntax";
 import { Adjective } from "../Adjective";
 import { Noun } from "../Noun";
 import { barge_world_dict } from "../dictionaries/barge-world";
 
 test('SyntaxLogicLinkingMatrix', () => {
-  let predicate = new Predicate(1);
+  let predicate = createPredicate(1);
   let syntax = new PredicateSyntax('be a clown', ['subject']);
   let adj = new Adjective('clownly')
   let noun = new Noun('clown');

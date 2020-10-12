@@ -1,8 +1,6 @@
+import {Variable, Entity, Sentence, stringifySentence, createEntity} from './basics';
 import { TruthTable } from "./TruthTable";
-import { Variable } from "./Variable";
-import { Entity } from "./Entity";
 import { findMappings, PartialMapping } from "./mapping";
-import { Sentence } from "./Sentence";
 
 export class VariableTable extends TruthTable {
   readonly variables: Variable[];
@@ -72,14 +70,14 @@ export class VariableTable extends TruthTable {
   /** Represents the table as a string of logical symbols. */
   get symbol() {
     return `∃ (${
-      this.variables.map(v => v.symbol).join(',')
+      this.variables.join(',')
     }) s.t. ${this.symbolBody}`;
   }
 
   get symbolBody() {
     return `{${
       this.facts
-        .map(({sentence, truth}) => `(${sentence.symbol}=${truth})`)
+        .map(({sentence, truth}) => `(${stringifySentence(sentence)}=${truth})`)
         .join(' & ') 
     }}`
   }
@@ -108,7 +106,7 @@ export class VariableTable extends TruthTable {
           return mapping[i];
       })
 
-      table.assign(new Sentence(sentence.predicate, ...args), truth);
+      table.assign({predicate: sentence.predicate, args}, truth);
     }
 
     return table
@@ -116,16 +114,16 @@ export class VariableTable extends TruthTable {
 
   /** Replace the variables with new entities */
   spawn() {
-    let mapping = this.variables.map(x => new Entity)
+    let mapping = this.variables.map(x => createEntity())
     return this.implement(...mapping)
   }
 
   implementPartialMapping(mapping:PartialMapping) {
-    let complete = mapping.map(x => x ? x : new Entity)
+    let complete = mapping.map(x => x ? x : createEntity())
     return this.implement(...complete);
   }
 }
 
 export function completePartialMapping(mapping:PartialMapping) {
-  return mapping.map(x => x ? x : new Entity);
+  return mapping.map(x => x ? x : createEntity());
 }

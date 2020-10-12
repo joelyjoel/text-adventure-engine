@@ -1,5 +1,4 @@
-import { Entity, Sentence } from ".";
-import { Variable } from "./Variable";
+import { Entity, Sentence, Variable } from ".";
 import { TruthTable } from "./TruthTable";
 import { VariableTable } from "./VariableTable";
 
@@ -98,7 +97,7 @@ export function compareMappings(
 
 /** Get a symbol for a partial mapping. */
 export function mappingSymbol(mapping: PartialMapping) {
-  return mapping.map(x => x ? x.symbol : '?').join(' ')
+  return mapping.map(x => x ? x: '?').join(' ')
 }
 
 

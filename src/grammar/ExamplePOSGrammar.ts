@@ -16,6 +16,7 @@ export const ExamplePOSGrammar = Grammar.quick(`
   _secondPersonPlural -> dance; skate; chase
   _thirdPersonPlural -> dance; skate; chase; 
   _pastParticiple -> danced ; skated; chased;
+  _pastTense -> danced ; skated ; chased;
 `);
 
 // _pastParticiple, _firstPersonSingular, _secondPersonSingular, _thirdPersonSingular, _firstPersonPlural, _secondPersonPlural, _thirdPersonPlural

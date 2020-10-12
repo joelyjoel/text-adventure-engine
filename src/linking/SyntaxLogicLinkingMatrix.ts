@@ -3,7 +3,7 @@ import { Adjective } from "../Adjective";
 import { Noun } from "../Noun";
 
 import { PredicateSyntax } from "../PredicateSyntax";
-import { Predicate } from "../logic";
+import {Predicate, createPredicate} from '../logic';
 import { Tense, isTense } from "../util/tense";
 import { Dictionary } from "../Dictionary";
 import { toCamelCase } from "../util/toCamelCase";
@@ -150,9 +150,9 @@ export class SyntaxLogicLinkingMatrix {
       this.addLinkage(
         {syntax, tense:'simple_present'},
         {
-          predicate: new Predicate(
+          predicate: createPredicate(
             syntax.numberOfArgs, 
-            `${Predicate.getNextSymbol()}_${syntax.name}`
+            //`${Predicate.getNextSymbol()}_${syntax.name}`
           ),
           truth: 'T',
         }
@@ -171,9 +171,9 @@ export class SyntaxLogicLinkingMatrix {
       if(!syntaxs.every(syntax => syntaxObject(syntax).numberOfArgs == numberOfArgs))
         throw "Syntaxs do not have matching numbers of arguments."
 
-      let predicate = new Predicate(
+      let predicate = createPredicate(
         numberOfArgs, 
-        syntaxObject(syntaxs[0]).symbol
+        //syntaxObject(syntaxs[0]).symbol
       )
     }
 
@@ -219,7 +219,7 @@ export class SyntaxLogicLinkingMatrix {
     }
 
     // Update the meaning -> syntax index.
-    let predicateSymbol = meaning.predicate.symbol;
+    let predicateSymbol = meaning.predicate;
     if(this.m2sIndex[predicateSymbol]) {
       if(this.m2sIndex[predicateSymbol][meaning.truth])
         this.m2sIndex[predicateSymbol][meaning.truth].push(syntax);
@@ -233,7 +233,7 @@ export class SyntaxLogicLinkingMatrix {
    * NOTE: meaning -> syntaxs is one to many.
    */
   meaningToSyntaxs(meaning:Meaning):Syntax[] {
-    let predicateSymbol = meaning.predicate.symbol;
+    let predicateSymbol = meaning.predicate;
     let subIndex = this.m2sIndex[predicateSymbol];
     if(subIndex) {
       let syntaxs = subIndex[meaning.truth];

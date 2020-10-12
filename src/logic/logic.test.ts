@@ -1,16 +1,29 @@
-import { Sentence, Predicate, Entity, TruthTable, Variable, VariableTable } from ".";
+import { 
+  Sentence, 
+  Predicate, 
+  Entity, 
+  TruthTable, 
+  Variable, 
+  VariableTable, 
+  createEntity, 
+  createPredicate,
+  stringifySentence,
+  createVariable,
+  createEntities,
+  createVariables
+} from "./index";
 
 
 
 test('Truth assignments and look-up', () => {
   const table = new TruthTable;
 
-  let P = new Predicate(2)
-  let a = new Entity;
-  let b = new Entity;
+  let P = createPredicate(2);
+  let a = createEntity();
+  let b = createEntity();
 
-  let S1 = new Sentence(P, a, b);
-  let S2 = new Sentence(P, b, a);
+  let S1:Sentence = {predicate:P, args: [a,b]};
+  let S2:Sentence = {predicate:P, args:[b,a]};
 
   table.assign(S1, 'past');
 
@@ -22,111 +35,111 @@ test('Truth assignments and look-up', () => {
 test('Truth table identity', () => {
   let table = new TruthTable;
 
-  let P = new Predicate(2)
+  let P = createPredicate(2);
 
-  let a = new Entity();
-  let b = new Entity();
-  let c = new Entity();
-  let d = new Entity();
+  let a = createEntity();
+  let b = createEntity();
+  let c = createEntity();
+  let d = createEntity();
 
-  table.assign(new Sentence(P, a, b), 'true')
+  table.assign({predicate:P, args:[a,b]}, 'true')
   table.makeIdentical(c, b);
 
-  expect(table.idMapSentence(new Sentence(P, a, b)).symbol)
-    .toBe(new Sentence(P,a,c).symbol);
+  expect(stringifySentence(table.idMapSentence({predicate: P, args:[a,b]})))
+    .toBe(stringifySentence({predicate:P, args: [a,c]}));
 
-  expect(table.lookUp(new Sentence(P, a, c)))
+  expect(table.lookUp({predicate: P, args:[a,c]}))
     .toBe('true');
 
-  expect(table.lookUp(new Sentence(P, a, b))).toBe('true');
-  expect(table.lookUp(new Sentence(P, a, c))).toBe('true');
+  expect(table.lookUp({predicate: P, args:[a,b]})).toBe('true');
+  expect(table.lookUp({predicate: P, args: [a,c]})).toBe('true');
 
-  table.assign(new Sentence(P, b, a), 'true');
+  table.assign({predicate: P, args:[b,a]}, 'true');
   
-  expect(table.lookUp(new Sentence(P, b, a))).toBe('true');
-  expect(table.lookUp(new Sentence(P, c, a))).toBe('true');
+  expect(table.lookUp({predicate: P, args:[b,a]})).toBe('true');
+  expect(table.lookUp({predicate: P, args:[c, a]})).toBe('true');
 
   expect(table.entities.includes(b)).toBe(false);
 
 
   // Identity without identity map.
   table.makeIdentical(a, d, false);
-  expect(table.lookUp(new Sentence(P,a,b))).toBe('true');
-  expect(table.lookUp(new Sentence(P,d,b))).toBe(table.defaultTruthValue);
+  expect(table.lookUp({predicate:P, args:[a,b]})).toBe('true');
+  expect(table.lookUp({predicate: P,args:[d,b]})).toBe(table.defaultTruthValue);
 
   table.makeIdentical(d, a, false);
-  expect(table.lookUp(new Sentence(P,a,b))).toBe(table.defaultTruthValue);
-  expect(table.lookUp(new Sentence(P,d,b))).toBe('true');
+  expect(table.lookUp({predicate:P, args:[a,b]})).toBe(table.defaultTruthValue);
+  expect(table.lookUp({predicate:P, args:[d,b]})).toBe('true');
 })
 
 test('Cloning a truth table', () => {
-  const P = new Predicate(1);
-  const Q = new Predicate(2);
-  const a = new Entity;
-  const b = new Entity;
+  const P = createPredicate(1);
+  const Q = createPredicate(2);
+  const a = createEntity();
+  const b = createEntity();
 
   const table1 = new TruthTable;
-  table1.assign(new Sentence(P, a), 'true');
-  table1.assign(new Sentence(Q, a, b), 'true');
+  table1.assign({predicate: P, args:[a]}, 'true');
+  table1.assign({predicate:Q, args:[a, b]}, 'true');
 
   const table2 = table1.clone();
-  expect(table2.lookUp(new Sentence(P, a))).toBe('true');
-  expect(table2.lookUp(new Sentence(Q, a, b))).toBe('true');
+  expect(table2.lookUp({predicate: P, args:[a]})).toBe('true');
+  expect(table2.lookUp({predicate: Q, args:[a, b]})).toBe('true');
 })
 
 test('VariableTable', () => {
   // Construct a variable table
-  const P = new Predicate(1);
-  const Q = new Predicate(1);
-  const x = new Variable;
-  const y = new Variable;
+  const P = createPredicate(1);
+  const Q = createPredicate(1);
+  const x = createVariable();;
+  const y = createVariable();;
 
   const varTable = new VariableTable;
   varTable.addVariables(x, y);
-  varTable.assign(new Sentence(P, x), 'true');
-  varTable.assign(new Sentence(Q, y), 'true');
+  varTable.assign({predicate:P, args:[x]}, 'true');
+  varTable.assign({predicate:Q, args:[y]}, 'true');
 
   // Make a substitution of that table.
-  const a = new Entity;
-  const b = new Entity;
+  const a = createEntity();
+  const b = createEntity();
   let subbed = varTable.substitute(a, b);
 
   // Assert that the subsitution worked
-  expect(subbed.lookUp(new Sentence(P, x))).toBe(subbed.defaultTruthValue);
-  expect(subbed.lookUp(new Sentence(Q, y))).toBe(subbed.defaultTruthValue);
-  expect(subbed.lookUp(new Sentence(P, a))).toBe('true');
-  expect(subbed.lookUp(new Sentence(P, b))).toBe(subbed.defaultTruthValue);
-  expect(subbed.lookUp(new Sentence(Q, a))).toBe(subbed.defaultTruthValue);
-  expect(subbed.lookUp(new Sentence(Q, b))).toBe('true');
+  expect(subbed.lookUp({predicate: P, args:[x]})).toBe(subbed.defaultTruthValue);
+  expect(subbed.lookUp({predicate:Q, args:[y]})).toBe(subbed.defaultTruthValue);
+  expect(subbed.lookUp({predicate:P, args:[a]})).toBe('true');
+  expect(subbed.lookUp({predicate:P, args:[b]})).toBe(subbed.defaultTruthValue);
+  expect(subbed.lookUp({predicate:Q, args:[a]})).toBe(subbed.defaultTruthValue);
+  expect(subbed.lookUp({predicate:Q, args:[b]})).toBe('true');
   
   // Assert that the var table was uneffected.
-  expect(varTable.lookUp(new Sentence(P, x))).toBe('true');
-  expect(varTable.lookUp(new Sentence(Q, y))).toBe('true');
-  expect(varTable.lookUp(new Sentence(P, a))).toBe(varTable.defaultTruthValue);
-  expect(varTable.lookUp(new Sentence(Q, b))).toBe(varTable.defaultTruthValue);
+  expect(varTable.lookUp({predicate:P, args:[x]})).toBe('true');
+  expect(varTable.lookUp({predicate:Q, args:[y]})).toBe('true');
+  expect(varTable.lookUp({predicate:P, args:[a]})).toBe(varTable.defaultTruthValue);
+  expect(varTable.lookUp({predicate:Q, args:[b]})).toBe(varTable.defaultTruthValue);
 })
 
 test('VariableTable::findMappingErrors', () => {
-  const P = new Predicate(1);
-  const Q = new Predicate(2);
-  const a = new Entity;
-  const b = new Entity;
+  const P = createPredicate(1);
+  const Q = createPredicate(2);
+  const a = createEntity();
+  const b = createEntity();
 
   let theTruth = new TruthTable;
-  theTruth.assign(new Sentence(P, a), 'true');
-  theTruth.assign(new Sentence(Q, a, b), 'maybe');
+  theTruth.assign({predicate: P, args:[a]}, 'true');
+  theTruth.assign({predicate: Q, args:[a, b]}, 'maybe');
 
   let hypothesis = new VariableTable;
-  hypothesis.addVariables(new Variable, new Variable);
+  hypothesis.addVariables(createVariable(), createVariable());
   const [x, y] = hypothesis.variables;
-  hypothesis.assign(new Sentence(Q, x, y), 'maybe');
+  hypothesis.assign({predicate: Q, args:[x, y]}, 'maybe');
 
   expect(hypothesis.findMappingErrors(theTruth, [a, b]))
     .toBe(null);
   expect(hypothesis.testMapping(theTruth, [a, b])).toBe(true);
 
   // Add another sentence to my hypothesis
-  hypothesis.assign(new Sentence(P, x), 'true');
+  hypothesis.assign({predicate: P, args:[x]}, 'true');
 
   expect(hypothesis.findMappingErrors(theTruth, [a, b]))
     .toBe(null);
@@ -134,9 +147,9 @@ test('VariableTable::findMappingErrors', () => {
 
 
   // Add a sentence that shouldn't match theTruth
-  hypothesis.assign(new Sentence(P, y), 'true');
+  hypothesis.assign({predicate: P, args:[y]}, 'true');
   expect(hypothesis.findMappingErrors(theTruth, [a, b]))
-    .toStrictEqual([new Sentence(P, b)]);
+    .toStrictEqual([{predicate: P, args:[b]}]);
   expect(hypothesis.testMapping(theTruth, [a, b])).toBe(false);
   expect(hypothesis.findMappingErrors(theTruth, [b, a]))
     .toHaveLength(2);
@@ -146,28 +159,28 @@ test('VariableTable::findMappingErrors', () => {
 test('Merging VariableTables', () => { 
 
   // Create two variable tables
-  let [x, y, z] = Variable.bulk();
-  let P = new Predicate(2);
+  let [x, y, z] = createVariables();
+  let P = createPredicate(2);
   let table1 = new VariableTable(x, y);
-  table1.assign(new Sentence(P, x, y), 'true');
+  table1.assign({predicate: P, args:[x, y]}, 'true');
   let table2 = new VariableTable(y, z);
-  table2.assign(new Sentence(P, y, z), 'true');
+  table2.assign({predicate: P, args:[y, z]}, 'true');
 
   table1.merge(table2);
   expect(table1.variables).toStrictEqual([x,y,z]);
-  expect(table1.lookUp(new Sentence(P, x, y))).toBe('true');
-  expect(table1.lookUp(new Sentence(P, y, z))).toBe('true');
-  expect(table2.lookUp(new Sentence(P, x, y)))
+  expect(table1.lookUp({predicate: P, args:[x, y]})).toBe('true');
+  expect(table1.lookUp({predicate: P, args:[y, z]})).toBe('true');
+  expect(table2.lookUp({predicate: P, args:[x, y]}))
     .toBe(table2.defaultTruthValue);
 })
 
 test('Implementing a VariableTable', () => {
-  let P = new Predicate(2);
-  let [a, b, c, d] = Entity.bulk();
-  let [x, y] = Variable.bulk();
+  let P = createPredicate(2);
+  let [a, b, c, d] = createEntities();
+  let [x, y] = createVariables()
   let vt = new VariableTable(x, y)
-    .assign(new Sentence(P, a, x), 'true')
-    .assign(new Sentence(P, y, d), 'true')
+    .assign({predicate: P, args:[a, x]}, 'true')
+    .assign({predicate: P, args:[y, d]}, 'true')
 
   let table = vt.implement(b, c)
 })
