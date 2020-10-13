@@ -8,6 +8,7 @@ import { questionRegex, simplePastQuestionTemplate } from "./util/verbOperations
 import { toCamelCase, toSnakeCase } from "./util/toCamelCase";
 import { sentenceFormSymbol } from "./util/sentenceFormSymbol";
 import { shiftWord } from "./util/getFirstWord";
+import {createPredicateSyntaxPredicate} from './linking/linking';
 
 type Param = {name: string, index:number, entity: true}
 
@@ -173,10 +174,11 @@ export class PredicateSyntax {
         }
       }
     }
-
-    
   }
 
+  /**
+   * Attempt to parse a string using a pre-defined tense, question form, negation and/or noun-phrase form.
+   */
   parseSpecific(
     str:string, 
     options:{tense:Tense, question?:boolean, negative?: false|'not', nounPhraseFor?:string|null}|Tense = 'simple_present'
@@ -356,7 +358,9 @@ export class PredicateSyntax {
     });
   }
 
-  /** Convert associative arguments into ordered argument list */
+  /** 
+   * Convert associative arguments into ordered argument list 
+   */
   orderArgs(assoc:{[key:string]:string}) {
     let ordered = [];
     for(let key in assoc)
@@ -365,7 +369,9 @@ export class PredicateSyntax {
     return ordered;
   }
 
-  /** Convert ordered argument list into an associative argument object. */
+  /** 
+   * Convert ordered argument list into an associative argument object. 
+   */
   associateArgs(ordered: string[]) {
     let assoc:{[key:string]:string} = {};
     for(let i in ordered) {
@@ -374,9 +380,20 @@ export class PredicateSyntax {
     return assoc;
   }
 
-  /** Check to see if a string includes the verb in any conjugation. */
+  /** 
+   * Check to see if a string includes the verb in any conjugation. 
+   * This can be used to quickly determine whether its worth doing a 
+   * full parse.
+   */
   quickCheck(str:string) {
     return this.quickCheckRegex.test(str);
+  }
+
+  /**
+   * Get the logical predicate that corresponds to this PredicateSyntax object.
+   */
+  get predicate() {
+    return createPredicateSyntaxPredicate({verb: this.infinitive, params:this.params.map(p => p.name)});
   }
 }
 

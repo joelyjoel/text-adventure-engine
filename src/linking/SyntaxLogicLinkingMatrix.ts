@@ -36,18 +36,22 @@ else
  */
 type Meaning = {predicate: Predicate, truth:string};
 
-/** A class for associating syntaxs with logical meanings (Usually predicate + 
- *  truth-value). 
-*/
+/** 
+ * A class for associating syntaxs (nouns, adjectives and sentences) with logical meanings (predicate + truth-value). 
+ */
 export class SyntaxLogicLinkingMatrix {
-  /** Index: syntaxs by meaning. */
+  /** 
+   * Index: syntaxs by meaning. 
+   */
   private m2sIndex:{
     [predicateSymbol: string]: {
       [truthValue:string]: Syntax[];
     }
   };
 
-  /** Index: meanings by syntax. */
+  /** 
+   * Index: meanings by syntax. 
+   */
   private s2mIndex: {
     adjectives: {
       [adjective: string]: Meaning;
@@ -82,7 +86,9 @@ export class SyntaxLogicLinkingMatrix {
       this.dictionary = new Dictionary
   }
 
-  /** A flexible function for adding things to the matrix. */
+  /** 
+   * A flexible function for adding things to the matrix. 
+   */
   add(something:Noun|Adjective|Dictionary|StatementSyntax|Syntax[]):this {
     // Passed a noun,
     if(something instanceof Noun) {
@@ -223,7 +229,7 @@ export class SyntaxLogicLinkingMatrix {
     if(this.m2sIndex[predicateSymbol]) {
       if(this.m2sIndex[predicateSymbol][meaning.truth])
         this.m2sIndex[predicateSymbol][meaning.truth].push(syntax);
-      else
+  else
         this.m2sIndex[predicateSymbol][meaning.truth] = [syntax];
     } else
       this.m2sIndex[predicateSymbol] = {[meaning.truth]: [syntax]}
