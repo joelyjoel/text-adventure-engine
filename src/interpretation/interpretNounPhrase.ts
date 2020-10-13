@@ -1,5 +1,5 @@
 import { Dictionary } from "../Dictionary";
-import { Entity, Sentence, Variable, VariableTable } from "../logic";
+import { Entity, Sentence, Variable, VariableTable, createVariable, isVariable, createEntity } from "../logic";
 import { TruthTable } from "../logic/TruthTable";
 import { Context } from "../Context";
 import { SimpleNounPhraseParse, parseNounPhrase, NounPhraseParse } from "../parsing/parseNounPhrase";
@@ -61,15 +61,15 @@ function interpretSimpleNounPhrase(parse:SimpleNounPhraseParse, ctx:Context):Nou
 
   if(nounMeaning) {
     // Create a stand in entity variable
-    const x = new Variable;
+    const x = createVariable();
 
     // Create variable table to express the interpretation
     const table = new VariableTable(x);
-    table.assign(new Sentence(nounMeaning.predicate, x), nounMeaning.truth)
+    table.assign({predicate: nounMeaning.predicate, args:[x]}, nounMeaning.truth)
     for(let i in adjMeanings) {
       let meaning = adjMeanings[i]
       if(meaning)
-        table.assign(new Sentence(meaning.predicate, x), meaning.truth);
+        table.assign({predicate:meaning.predicate, args:[x]}, meaning.truth);
       else
         throw `Meaningless adjective: "${parse.adjectives[i].adj.str}"`
     }
@@ -106,7 +106,7 @@ function interpretPredicateSyntaxNounPhrase(
 
   // Create a variable table to express the interpretation.
   const table = new VariableTable();
-  if(x instanceof Variable)
+  if(isVariable(x))
     table.addVariable(x);
 
   // Merge the interpretted arguments into the table.
@@ -117,7 +117,7 @@ function interpretPredicateSyntaxNounPhrase(
   // Interpret the top level predicate in the noun phrase
   let meaning = ctx.linkingMatrix.syntaxToMeaning({syntax, tense})
   if(meaning) {
-    let sentence = new Sentence(meaning.predicate, ...argVariables)
+    let sentence = {predicate: meaning.predicate, args:argVariables};
 
     let truth = meaning.truth;
 
@@ -153,8 +153,8 @@ function interpretProperNoun(
 
   // Create new entity if it does not already exist
   if(!ctx.properNouns[properNoun]) {
-    let symbol = `${Entity.getNextSymbol()}_${toCamelCase(properNoun)}`
-    ctx.properNouns[properNoun] = new Entity(symbol);
+    //let symbol = `${Entity.getNextSymbol()}_${toCamelCase(properNoun)}`
+    ctx.properNouns[properNoun] = createEntity();
   }
   
   return {returns: ctx.properNouns[properNoun]};

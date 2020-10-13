@@ -2,7 +2,7 @@ import { StatementParse } from "../parsing/parseStatement";
 import { Context } from "../Context";
 import { interpretParsedNounPhrase } from "./interpretNounPhrase";
 import { findImperfectMappings } from "../logic/mapping";
-import { VariableTable, TruthTable, Entity, Sentence } from "../logic";
+import { VariableTable, TruthTable, Entity, Sentence, createEntity } from "../logic";
 import { completePartialMapping } from "../logic/VariableTable";
 import { PredicateSyntax } from "../PredicateSyntax";
 import { negativise } from "./negativise";
@@ -41,7 +41,7 @@ export function interpretLeafDown(parse:StatementParse, ctx:Context) {
   if(parse.negative)
     meaning.truth = negativise(meaning.truth)
 
-  let mainSentence = new Sentence(meaning.predicate, ...args)
+  let mainSentence = {predicate: meaning.predicate, args}
 
   fullTable.assign(mainSentence, meaning.truth);
 
@@ -59,6 +59,6 @@ function findFirstBestIntroductoryMapping(claim:VariableTable, onto:TruthTable) 
   }
 
   // Otherwise create a completely introductory mapping
-  let mapping = claim.variables.map(x => new Entity)
+  let mapping = claim.variables.map(x => createEntity())
   return mapping
 }

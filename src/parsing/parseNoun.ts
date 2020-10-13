@@ -27,6 +27,7 @@ export function parseNoun(str: string, dictionary: Dictionary): NounParse|null {
   // Otherwise
   return {
     noun,
+    syntaxKind: 'noun',
     singular: true,
     pos: 'noun',
     from: str.length-noun.str.length,

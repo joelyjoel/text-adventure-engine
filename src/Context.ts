@@ -1,6 +1,6 @@
 import { Dictionary } from "./Dictionary";
 import { TruthTable } from "./logic/TruthTable";
-import { Entity } from "./logic";
+import { Entity , createEntity } from "./logic";
 import { SyntaxLogicLinkingMatrix } from "./linking/SyntaxLogicLinkingMatrix";
 
 export interface ContextConstructorOptions {
@@ -43,7 +43,7 @@ export class Context {
     this.truthTable = truthTable;
     this.properNouns = {};
 
-    this.speaker = options.speaker || new Entity;
-    this.listener = options.listener || new Entity;
+    this.speaker = options.speaker || createEntity();
+    this.listener = options.listener || createEntity();
   }
 }

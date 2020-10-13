@@ -6,7 +6,7 @@ import { parseStatement } from "../parsing/parseStatement";
 import { TruthTable } from "../logic/TruthTable";
 import { Noun } from "../Noun";
 import { Adjective } from "../Adjective";
-import { Sentence, VariableTable, Predicate, Entity } from "../logic";
+import { Sentence, VariableTable, Predicate, Entity, isEntity } from "../logic";
 import { parseNounPhrase } from "../parsing/parseNounPhrase";
 
 test('Interpretting a noun phrase', () => {
@@ -41,12 +41,12 @@ test("Interpretting a statement", () => {
 
     let [e] = interpretation.entities;
     expect(interpretation.lookUp(
-      new Sentence(ctx.linkingMatrix.syntaxToMeaningOrCrash(noun).predicate, e)
+      {predicate: ctx.linkingMatrix.syntaxToMeaningOrCrash(noun).predicate, args:[e]}
     )).toBe('T')
-    expect(interpretation.lookUp(new Sentence(
-      ctx.linkingMatrix.syntaxToMeaningOrCrash(adj).predicate, 
-      e
-    ))).toBe('T')
+    expect(interpretation.lookUp({
+      predicate: ctx.linkingMatrix.syntaxToMeaningOrCrash(adj).predicate, 
+      args: [e],
+    })).toBe('T')
   }
 })
 
@@ -79,7 +79,7 @@ test.each(
   let interpretation = interpretNounPhrase(propernoun, ctx);
 
   if(interpretation)
-    expect(interpretation.returns).toBeInstanceOf(Entity);
+    expect(isEntity(interpretation.returns)).toBe(true);
   else
     fail(`Interpretation is null.`)
 
@@ -100,7 +100,7 @@ test.each([
   // console.log(interpretation);
 
   if(interpretation)
-    expect(interpretation.returns).toBeInstanceOf(Entity);
+    expect(isEntity(interpretation.returns)).toBe(true);
   else
     fail(`Interpretation of '${pronoun}' failed.`);
 })

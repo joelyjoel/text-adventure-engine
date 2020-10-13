@@ -39,7 +39,7 @@ export function interpretParsedStatement(parse:StatementParse, ctx:Context) {
   });
     
 
-  let sentence = new Sentence(meaning.predicate, ...args);
+  let sentence = {predicate:meaning.predicate, args};
   if(parse.tense == 'simple_present') {
     if(parse.negative)
       table.assign(sentence, 'F');

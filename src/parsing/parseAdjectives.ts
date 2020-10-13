@@ -20,6 +20,7 @@ export function parseLastAdjective(str:string, dict:Dictionary) : (AdjectivePars
 
   if(adj)
     return {
+      syntaxKind: 'adjective',
       pos:'adjective',
       adj: adj,
       from: str.length - adj.str.length,
