@@ -16,7 +16,9 @@ export interface NounPhraseInterpretation {
   returns:Entity|Variable;
 };
 
-/** Interpret a string noun-phrase as an existential claim. */
+/** 
+ * Interpret a string noun-phrase as an existential claim. 
+ */
 export function interpretNounPhrase(nounPhrase:string, ctx:Context|Dictionary) {
   if(ctx instanceof Dictionary)
     ctx = new Context(ctx);

@@ -1,6 +1,6 @@
 import { IfThenRule } from "./IfThenRule";
 import { TruthTable } from "./TruthTable";
-import { Sentence } from "./Sentence";
+import { Sentence } from "./basics";
 
 export class RuleSet {
   rules: IfThenRule[];

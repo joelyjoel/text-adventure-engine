@@ -62,7 +62,7 @@ export function * createVariables() {
  */
 export type Predicate = string;
 
-export const PredicateSymbolRegexp = /^[PQR][0-9\w_]*\/(\d+)/
+export const PredicateSymbolRegexp = /^[0-9\w_]*\/(\d+)/
 
 /**
  * Check whether a given object is a valid predicate string

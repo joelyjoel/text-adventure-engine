@@ -37,3 +37,7 @@ describe.each([
     expect(foundMatch).toBe(true);
   });
 });
+
+test.todo('suggestSyntax for strings in question form');
+test.todo('suggestSyntax for strings in negated form');
+test.todo('suggestSyntax for strings in noun-phrase form');
