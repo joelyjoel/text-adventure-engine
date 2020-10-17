@@ -4,7 +4,7 @@ export interface Morphology {
   },
 }
 
-export interface MorphologyRelation {
+export type MorphologyRelation = {
   form: string;
   base: string;
   baseForm: string;

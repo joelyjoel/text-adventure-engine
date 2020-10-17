@@ -8,11 +8,21 @@ export function parseRule(line:string) {
     throw `Grammar rule syntax error: "${line}"`;
   if(Grammar.isTerminal(head))
     throw `Left-hand-side of grammar rule must be a non-terminal symbol. i.e begin with an underscore (_).\nOffending line\n\t"${line}"`
+  if(/^__\d/.test(head))
+    throw `Invalid symbol: '${head}'. Symbols beginning with a double underscor followed by a number are reserved.`;
+
 
   const bodies = rh.split(/\s*[;\|]\s*/)
     .map(body => body.trim())
     .filter(body => body.length)
-    .map(body => body.split(' '))
+    .map(body => body.split(' '));
+
+  for(let body of bodies)
+    for(let word of body)
+      if(/^__\d/.test(word))
+        throw `Invalid symbol: '${word}'. Symbols beginning with a double underscor followed by a number are reserved.`;
+
+
   return {head, bodies};
 }
 
@@ -208,5 +218,7 @@ export function quickGrammar(...sources:(string|RuleFunctionMapping|Grammar<stri
     isTerminalSymbol: (o:any):o is string => typeof o == 'string' && !/^_/.test(o),
     isNonTerminalSymbol: (o:any):o is string => typeof o ==  'string' && /^_/.test(o),
     pleaseBeQuiet: true,
+
+    stringifyNonTerminalSymbol: S => S,
   };
 }

@@ -128,6 +128,22 @@ export interface GrammarConstructorOptions<TerminalSymbol, NonTerminalSymbol=Ter
    * Optionally provide a type guard function for non-terminal symbols to help debuging the grammar. 
    * */
   isNonTerminalSymbol?: (o: any) => o is NonTerminalSymbol;
+
+
+  /**
+   * function to convert any grammar symbol into a string
+   */
+  stringifySymbol?: (S: TerminalSymbol|NonTerminalSymbol) => string;
+
+  /**
+   * function converting terminal symbols to strings
+   */
+  stringifyTerminalSymbol?: (S: TerminalSymbol) => string;
+
+  /**
+   * Function to convert non-terminal symbols to strings
+   */
+  stringifyNonTerminalSymbol?: (NT: NonTerminalSymbol) => string;
 }
 
 export class Grammar<TerminalSymbol=string, NonTerminalSymbol=TerminalSymbol> {
@@ -140,6 +156,8 @@ export class Grammar<TerminalSymbol=string, NonTerminalSymbol=TerminalSymbol> {
   beQuiet: boolean;
   isTerminalSymbol: (S: any) => S is TerminalSymbol;
   isNonTerminalSymbol: (S: any) => S is NonTerminalSymbol;
+  stringifyTerminalSymbol: (S: TerminalSymbol) => string
+  stringifyNonTerminalSymbol: (S:NonTerminalSymbol) => string;
 
   constructor({
     terminalRules=[], 
@@ -154,6 +172,12 @@ export class Grammar<TerminalSymbol=string, NonTerminalSymbol=TerminalSymbol> {
     isTerminalSymbol = () => {throw "No type guard defined for terminal symbols."}, 
     // @ts-ignore
     isNonTerminalSymbol = () => {throw "No type guard defined for non-terminal symbols."},
+
+    // Stringification
+    stringifySymbol = S => JSON.stringify(S),
+    stringifyTerminalSymbol = stringifySymbol,
+    stringifyNonTerminalSymbol = stringifySymbol,
+
   }:GrammarConstructorOptions<TerminalSymbol, NonTerminalSymbol>) {
     // Assign the rules
     this.terminalRules = terminalRules;
@@ -164,6 +188,9 @@ export class Grammar<TerminalSymbol=string, NonTerminalSymbol=TerminalSymbol> {
     this.beQuiet = pleaseBeQuiet
     this.isTerminalSymbol = isTerminalSymbol;
     this.isNonTerminalSymbol = isNonTerminalSymbol;
+
+    this.stringifyTerminalSymbol = stringifyTerminalSymbol;
+    this.stringifyNonTerminalSymbol = stringifyNonTerminalSymbol;
 
     if(!startingSymbol) {
       const topSymbols = this.listTopNonTerminals();
@@ -262,6 +289,10 @@ export class Grammar<TerminalSymbol=string, NonTerminalSymbol=TerminalSymbol> {
       B:NonTerminalSymbol, 
       j:number
     ) => {
+      // Skip if record is already in table.
+      if(tableIncludes(i, B, j))
+        return ;
+      
       table.push([i, B, j]);
 
       // For each alias rule, head -> body, s.t. body = B
@@ -352,6 +383,9 @@ export class Grammar<TerminalSymbol=string, NonTerminalSymbol=TerminalSymbol> {
       
       startingSymbol,
       isHidden: S => this.isHidden(S.S),
+
+      stringifyTerminalSymbol: S => this.stringifyTerminalSymbol(S.S),
+      stringifyNonTerminalSymbol: S => this.stringifyNonTerminalSymbol(S.S),
     })
   }
 
@@ -452,6 +486,32 @@ export class Grammar<TerminalSymbol=string, NonTerminalSymbol=TerminalSymbol> {
         }
   }
 
+  stringifyTree(tree: Tree<TerminalSymbol, NonTerminalSymbol, any, any>):string {
+    if(tree.ruleKind == 'terminal') {
+      if(this.isHidden(tree.head))
+        // Head symbol is hidden, just print body
+        return this.stringifyTerminalSymbol(tree.body);
+      else
+        return `[${
+          this.stringifyNonTerminalSymbol(tree.head)
+        } ${this.stringifyTerminalSymbol(tree.body)}]`;
+    } else if(tree.ruleKind == 'nonTerminal') {
+      if(this.isHidden(tree.head))
+        return `${this.stringifyTree(tree.body[0])} ${this.stringifyTree(tree.body[1])}`;
+      else
+        return `[${
+          this.stringifyNonTerminalSymbol(tree.head)
+        } ${this.stringifyTree(tree.body[0])} ${this.stringifyTree(tree.body[1])}]`
+    } else if(tree.ruleKind == 'alias') {
+      if(this.isHidden(tree.head))
+        return this.stringifyTree(tree.body);
+      else 
+        return `[${this.stringifyNonTerminalSymbol(tree.head)} ${this.stringifyTree(tree.body)}]`;
+    } else
+      // @ts-ignore
+      throw `Unexpected rule kind in tree: ${tree.ruleKind}`;
+  }
+
   /**
    * Test whether two trees are equal.
    */
@@ -548,6 +608,130 @@ export class Grammar<TerminalSymbol=string, NonTerminalSymbol=TerminalSymbol> {
     const list = this.listLooseNonTerminals();
     if(list.length)
       throw `Grammar has ${list.length} loose non-terminal symbols: ${list.join(', ')}`;
+  }
+
+  /**
+   * Throws an exception i the grammar contains two or more rules that are identical.
+   */
+  assertNoDuplicateRules() {
+    this.assertNoDuplicateTerminalRules();
+    this.assertNoDuplicateNonTerminalRules();
+    this.assertNoDuplicateAliasRules();
+  }
+
+  /**
+   * Throw an exception if the grammar contains two or more terminal rules that are identical.
+   */
+  assertNoDuplicateTerminalRules() {
+    // Assert no duplicate terminal rules
+    for(let i=0; i<this.terminalRules.length; ++i) {
+      const a = this.terminalRules[i];
+      for(let j=i+1; j<this.terminalRules.length; ++j) {
+        const b = this.terminalRules[j];
+
+        if(this.compareTerminalRules(a, b)) {
+          if(a.F == b.F)
+            throw `Grammar has duplicate TERMINAL rules with different evaluation functions. ${this.stringifyTerminalRule(a)}`;
+          else
+            throw `Grammar has duplicate TERMINAL rule: ${this.stringifyTerminalRule(a)}`;
+        }
+      }
+    }
+  }
+
+  /**
+   * Throws an exepction if the grammar contains two or more non-terminal rules that are identical.
+   */
+  assertNoDuplicateNonTerminalRules() {
+    for(let i=0; i<this.nonTerminalRules.length; ++i) {
+      const a = this.nonTerminalRules[i];
+      for(let j=i + 1; j < this.nonTerminalRules.length; ++j) {
+        const b = this.nonTerminalRules[j];
+
+        if(this.compareNonTerminalRules(a, b)) {
+          if(a.F == b.F)
+            throw `Grammar has duplicate NON-TERMINAL rules with different evaluation functions: ${this.stringifyNonTerminalRule(a)}`
+          else
+            throw `Grammar has duplicate NON-TERMINAL rules: ${this.stringifyNonTerminalRule(a)}`;
+        }
+        
+      }
+    }
+  }
+
+  /**
+   * Throws an exception if the grammar contains two or more alias rules that are identical
+   */
+  assertNoDuplicateAliasRules() {
+    for(let i=0; i<this.aliasRules.length; ++i) {
+      const a = this.aliasRules[i];
+      for(let j=i+1; j<this.aliasRules.length; ++j) {
+        const b = this.aliasRules[j];
+
+        if(this.compareAliasRules(a, b)) {
+          if(a.F == b.F)
+            throw `Grammar has duplicate ALIAS rules with different evaluation functions: ${this.stringifyAliasRule(a)} \n\n\tFirst function: ${a.F.toString()}\n\n\tSecondFunction: ${b.F.toString()}`;
+          else
+            throw `Grammar has duplicate ALIAS rules: ${this.stringifyAliasRule(a)}`;
+        }
+      }
+    }
+  }
+
+  /**
+   * Check if two terminal rules are the same.
+   */
+  compareTerminalRules(a:TerminalRule<TerminalSymbol, NonTerminalSymbol>, b:TerminalRule<TerminalSymbol, NonTerminalSymbol>):boolean {
+    return this.compareSymbol(a.head, b.head) && 
+      this.compareSymbol(a.body, b.body);
+    // SHould this also compare eval functions?
+  }
+
+  /**
+   * Check if two non-terminal rules are the same.
+   */
+  compareNonTerminalRules(
+    a:NonTerminalRule<TerminalSymbol, NonTerminalSymbol>, 
+    b:NonTerminalRule<TerminalSymbol, NonTerminalSymbol>
+  ) {
+    return this.compareSymbol(a.head, b.head) && 
+      this.compareSymbol(a.body[0], b.body[0]) && 
+      this.compareSymbol(a.body[1], b.body[1]);
+  }
+
+  /**
+   * Check if two alias rules are the same.
+   */
+  compareAliasRules(
+    a:AliasRule<TerminalSymbol, NonTerminalSymbol>,
+    b: AliasRule<TerminalSymbol, NonTerminalSymbol>
+  ) {
+    return this.compareSymbol(a.head, b.head) &&
+      this.compareSymbol(a.body, b.body);
+  }
+
+  stringifyTerminalRule(rule:TerminalRule<TerminalSymbol, NonTerminalSymbol>) {
+    return `${
+      this.stringifyNonTerminalSymbol(rule.head)
+    } -> ${this.stringifyTerminalSymbol(rule.body)}`;
+  }
+
+  stringifyNonTerminalRule(rule:NonTerminalRule<TerminalSymbol, NonTerminalSymbol>) {
+    return `${
+      this.stringifyNonTerminalSymbol(rule.head)
+    } -> ${
+      this.stringifyNonTerminalSymbol(rule.body[0])
+    } ${
+      this.stringifyNonTerminalSymbol(rule.body[1])
+    }`;
+  }
+
+  stringifyAliasRule(rule:AliasRule<TerminalSymbol, NonTerminalSymbol>) {
+    return `${
+      this.stringifyNonTerminalSymbol(rule.head)
+    } -> ${
+      this.stringifyNonTerminalSymbol(rule.body)
+    }`;
   }
 
   get numberOfRules() {

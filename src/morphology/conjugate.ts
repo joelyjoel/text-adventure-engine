@@ -180,6 +180,12 @@ const formNames = [
   'firstPersonPlural', 'secondPersonPlural', 'thirdPersonPlural',
   'gerund', 'pastParticiple', 'pastTense',
 ]
+
+const conjugationForms = [
+  'firstPersonSingular', 'secondPersonSingular', 'thirdPersonSingular',
+  'firstPersonPlural', 'secondPersonPlural', 'thirdPersonPlural',
+]
+
 export function * deconjugate(word: string) {
   // Check for irregular conjugation
   let irreg = deconjugateIrregular(word);
@@ -215,4 +221,12 @@ export function deconjugateConcise(word:string):{forms:VerbForm[], infinitive:st
       table[infinitive] = {forms: [form], infinitive}
   }
   return Object.values(table);
+}
+
+export interface Deconjugation {
+  infinitive: string;
+  conjugated: string;
+  couldBePlural: boolean;
+  couldBeSecondPerson: boolean;
+  couldBeThirdPerson: boolean;
 }

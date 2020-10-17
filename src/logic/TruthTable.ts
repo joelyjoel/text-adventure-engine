@@ -1,18 +1,16 @@
 import {Sentence, Predicate, Entity, stringifySentence, stringifyArgs, isEntity} from './basics'
 
-type TruthAssignment = {sentence:Sentence, truth:string};
-
 const INDIFFERENT = '?'
 
 /** A collection of sentences with corresponding truth assignments */
-export class TruthTable {
-  defaultTruthValue: string;
+export class TruthTable<TruthValue extends string ='T'|'F'|'?'> {
+  defaultTruthValue: '?'|TruthValue;
   /** 
    * Truth assignments indexed by predicate symbol and sub-indexed by the concatenation of the argument symbols.
    */
   private index: {
     [predicate_symbol:string]: {
-      [argsSymbol:string]: {sentence:Sentence, truth:string}
+      [argsSymbol:string]: {sentence:Sentence, truth:TruthValue}
     };
   };
   /** For redirecting identical entities to their main entity. */
@@ -27,7 +25,7 @@ export class TruthTable {
   /** 
    * Assign a truth value to a sentence 
    */
-  assign(sentence:Sentence, truth:string):this {
+  assign(sentence:Sentence, truth:TruthValue):this {
     sentence = this.idMapSentence(sentence);
 
     const predicateSymbol = sentence.predicate;
@@ -47,16 +45,20 @@ export class TruthTable {
 
   /** 
    * Assign the truth value 'T' (meaning true) to a sentence.
+   * @deprecated
    */
   T(predicate:Predicate, ...args:Entity[]) {
+    // @ts-ignore
     return this.assign({predicate, args}, 'T');
   }
 
   /** 
    * Assign the truth-value 'F' (meaning false) to a sentence.
+   * @deprecated
    */
   F(predicate:Predicate, ...args:Entity[]) {
-  return this.assign({predicate, args}, 'F');
+    // @ts-ignore
+    return this.assign({predicate, args}, 'F');
   }
 
   /** Remove a truth assignment from the table */
@@ -82,7 +84,7 @@ export class TruthTable {
   }
 
   /** Get a list of all truth-assignments in the table */
-  get facts():TruthAssignment[] {
+  get facts():{sentence:Sentence, truth:TruthValue}[] {
     return [...this.iterate()]
   }
 
@@ -96,8 +98,8 @@ export class TruthTable {
   /**
    * Creates a new truth table using only the truth-assignments that pass the test implemented by the provided function.
    */
-  filter(callback:(assignment:TruthAssignment) => boolean):TruthTable {
-    let table = new TruthTable();
+  filter(callback:(assignment:{sentence: Sentence, truth:TruthValue}) => boolean):TruthTable<TruthValue> {
+    let table = new TruthTable<TruthValue>();
     for(let statement of this.iterate())
       if(callback(statement))
         table.assign(statement.sentence, statement.truth)
@@ -148,9 +150,9 @@ export class TruthTable {
   }
 
   /** Create a copy of this truth table */
-  clone():TruthTable {
+  clone():TruthTable<TruthValue> {
     // Create a new, blank table.
-    let newTable = new TruthTable;
+    let newTable = new TruthTable<TruthValue>();
 
     // Loop through all entries in this table
     const facts = this.facts;
@@ -168,7 +170,7 @@ export class TruthTable {
   }
 
   /** Absorb another table into the table. */
-  merge(...tables:TruthTable[]):this {
+  merge(...tables:TruthTable<TruthValue>[]):this {
     for(let table of tables)
       for(let {sentence, truth} of table.iterate())
         this.assign(sentence, truth);

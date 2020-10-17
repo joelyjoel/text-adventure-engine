@@ -3,26 +3,26 @@ import {MorphologyRelation} from '../morphology';
 
 export const VerbTenseGrammar = Grammar.quick(
   {
-    '_conjugatedVerb -> _firstPersonSingular':
-      ({base}:MorphologyRelation) => ({verb:base, person:1, plural:false}),
+    //'_conjugatedVerb -> _firstPersonSingular':
+      //({base}:MorphologyRelation) => ({verb:base, person:1, plural:false}),
 
-    '_conjugatedVerb -> _secondPersonSingular':
-      ({base}:MorphologyRelation) => ({verb:base, person:2, plural:false}),
+    //'_conjugatedVerb -> _secondPersonSingular':
+      //({base}:MorphologyRelation) => ({verb:base, person:2, plural:false}),
 
-    '_conjugatedVerb -> _thirdPersonSingular':
-      ({base}:MorphologyRelation) => ({verb:base, person:3, plural:false}),
+    //'_conjugatedVerb -> _thirdPersonSingular':
+      //({base}:MorphologyRelation) => ({verb:base, person:3, plural:false}),
 
-    '_conjugatedVerb -> _firstPersonPlural':
-      ({base}:MorphologyRelation) => ({verb:base, person:1, plural:true}),
+    //'_conjugatedVerb -> _firstPersonPlural':
+      //({base}:MorphologyRelation) => ({verb:base, person:1, plural:true}),
 
-    '_conjugatedVerb -> _secondPersonPlural':
-      ({base}:MorphologyRelation) => ({verb:base, person:2, plural: true}),
+    //'_conjugatedVerb -> _secondPersonPlural':
+      //({base}:MorphologyRelation) => ({verb:base, person:2, plural: true}),
 
-    '_conjugatedVerb -> _thirdPersonPlural':
-      ({base}:MorphologyRelation) => ({verb:base, person:3, plural: true}),
+    //'_conjugatedVerb -> _thirdPersonPlural':
+      //({base}:MorphologyRelation) => ({verb:base, person:3, plural: true}),
 
     '_SimplePresent -> _conjugatedVerb': 
-      ({verb}) => ({verb, tense:'simplePresent'}),
+      ({base}) => ({verb:base, tense:'simplePresent'}),
 
     '_PresentContinuous -> _be _gerund': 
       (be, {base}:MorphologyRelation) => ({verb:base, tense:'_presentContinuous'}),
@@ -57,7 +57,7 @@ export const VerbTenseGrammar = Grammar.quick(
     '_FutureContinuous -> will be _gerund':
       (verb: MorphologyRelation) => ({verb: verb.base, tense: 'futureContinuous'}),
 
-    '_VerbTense -> _SimplePresent | _PresentContinuous | _SimplePast | _SimplePast | _PastContinuous  | _PresentPerfect | _PresentPerfectContinuous | _PastPerfect | _PastPerfectContinuous | _FuturePerfect | _FuturePerfectContinuous | _SimpleFuture | _FutureContinuous':
+    '_VerbTense -> _SimplePresent | _PresentContinuous | _SimplePast | _PastContinuous  | _PresentPerfect | _PresentPerfectContinuous | _PastPerfect | _PastPerfectContinuous | _FuturePerfect | _FuturePerfectContinuous | _SimpleFuture | _FutureContinuous':
       verbTense => verbTense,
   },
 

@@ -9,6 +9,7 @@ import {deepCompare, deepMatch} from '../util/deepCompare';
 describe("Testing NounPhraseGrammar with hard-coded strings", () => {
   const G = Grammar.merge(NounPhraseGrammar, ExamplePOSGrammar);
   G.assertNoLooseNonTerminals();
+  G.assertNoDuplicateRules();
   G.checkRules();
 
   test.each([
@@ -30,12 +31,18 @@ describe("Testing NounPhraseGrammar with hard-coded strings", () => {
 
     const forest = G.parse(split);
     let foundMatch = false;
+    let numberOfTrees = 0;
     for(let tree of forest.recursiveTrees({S: '_SimpleNounPhrase', from:0, to:split.length})) {
       const evaluation = evaluateTree(tree);
       if(deepCompare(evaluation, expectedEvaluation))
         foundMatch = true;
+
+      numberOfTrees++;
     }
     expect(foundMatch).toBe(true);
+
+    expect(numberOfTrees).toBeGreaterThanOrEqual(1);
+    expect(numberOfTrees).toBeLessThan(16);
   });
 });
 

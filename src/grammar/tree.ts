@@ -118,3 +118,4 @@ export function rewindParseTreeSymbols<T, NT, GT, GNT>(parseTree:ParseTree<T, NT
     S => S.S,
   );
 }
+

@@ -8,10 +8,7 @@ import {allTenses} from '../util/tense';
 import {evaluateTree, flattenTree, rewindParseTreeSymbols} from './Tree'
 import {IndexedGrammar} from './IndexedGrammar';
 
-describe.each([
-  ['Grammar', Grammar], 
-  ['IndexedGrammar', IndexedGrammar]]
-)('%s', () => {
+describe('Testing Grammar', () => {
   test("Parsing grammar rule strings", () => {
     expect(parseRule('_np -> the _noun')).toEqual({
       head: '_np',
@@ -160,8 +157,12 @@ describe.each([
 
     });
 
-    describe('Executing parse trees', () => {
-
+    test('Stringifying trees', () => {
+      const forest = GrAYmmer.recursiveTrees();
+      for(let tree of forest) {
+        GrAYmmer.stringifyTree(tree);
+      }
     });
+
   });
 });

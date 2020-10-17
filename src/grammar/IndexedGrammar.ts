@@ -181,5 +181,4 @@ export class IndexedGrammar extends Grammar<string, string> {
     })
 
   }
-
 }
