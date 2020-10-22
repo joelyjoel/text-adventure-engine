@@ -34,7 +34,7 @@ else
 /** A meaning is a predicate + a truth-value.
  * THIS TYPE MAY CHANGE IN THE FUTURE.
  */
-type Meaning = {predicate: Predicate, truth:string};
+type Meaning = {predicate: Predicate, truth:'T'|'F'|'?'};
 
 /** 
  * A class for associating syntaxs (nouns, adjectives and sentences) with logical meanings (predicate + truth-value). 

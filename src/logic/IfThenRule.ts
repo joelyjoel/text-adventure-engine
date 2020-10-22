@@ -3,12 +3,12 @@ import { TruthTable } from "./TruthTable";
 import { mapFromSingleSentence, findCompleteMappings } from "./mapping";
 import {Variable, Sentence} from './basics';
 
-export class IfThenRule {
+export class IfThenRule<TruthValue extends string = 'T'|'F'|'?'> {
   variables: Variable[];
-  antecedent: VariableTable;
-  consequent: VariableTable;
+  antecedent: VariableTable<TruthValue>;
+  consequent: VariableTable<TruthValue>;
 
-  constructor(antecedent:VariableTable, consequent:VariableTable) {
+  constructor(antecedent:VariableTable<TruthValue>, consequent:VariableTable<TruthValue>) {
     if(antecedent.numberOfVariables != consequent.numberOfVariables)
       throw new Error('Antecedent and consequent have different number of variables');
     for(let i in antecedent.variables)
@@ -21,10 +21,10 @@ export class IfThenRule {
     this.consequent = consequent;
   }
 
-  *additionMappings(addition:TruthTable|{sentence:Sentence, truth:string}, onto:TruthTable) {
+  *additionMappings(addition:TruthTable<TruthValue>|{sentence:Sentence, truth:TruthValue}, onto:TruthTable<TruthValue>) {
     let additionTable = addition instanceof TruthTable
       ? addition
-      : new TruthTable().assign(addition.sentence, addition.truth);
+      : new TruthTable<TruthValue>().assign(addition.sentence, addition.truth);
 
     // First check if any predicates in the addition match the antecedent.
     for(let statement of this.antecedent.iterate()) {
@@ -44,7 +44,7 @@ export class IfThenRule {
   }
 
   /** Generate the consequences of adding statements to the truth table. */
-  *additionConsequences(addition:TruthTable, onto:TruthTable) {
+  *additionConsequences(addition:TruthTable<TruthValue>, onto:TruthTable<TruthValue>) {
     for(let mapping of this.additionMappings(addition, onto))
       yield this.consequent.implement(...mapping)
         .filter(

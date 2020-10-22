@@ -9,9 +9,9 @@ export function blankPartialMapping(numberOfVariables:number) {
   return new Array(numberOfVariables).fill(null);
 }
 
-export function findMappings(
-  claim:VariableTable, 
-  onto:TruthTable|TruthTable[], 
+export function findMappings<TruthValue extends string>(
+  claim:VariableTable<TruthValue>, 
+  onto:TruthTable<TruthValue>|TruthTable<TruthValue>[], 
   given:PartialMapping[] = [blankPartialMapping(claim.numberOfVariables)]
 ):PartialMapping[]|null {
   // Start with the given list or a blank (completely indifferent partial mapping.)
@@ -47,9 +47,9 @@ export function filterCompleteMappings(mappings:PartialMapping[]) {
   return mappings.filter(isCompleteMapping);
 }
 
-export function findCompleteMappings(
-  claim:VariableTable, 
-  onto:TruthTable|TruthTable[], 
+export function findCompleteMappings<TruthValue extends string>(
+  claim:VariableTable<TruthValue>, 
+  onto:TruthTable<TruthValue>|TruthTable<TruthValue>[], 
   given?:PartialMapping[],
 ):CompleteMapping[]|null {
   let mappings = findMappings(claim, onto, given);
@@ -108,8 +108,8 @@ type ScoredMappings = {
 }
 
 
-export function findImperfectMappings(
-  claim:VariableTable, onto:TruthTable
+export function findImperfectMappings<TruthValue extends string>(
+  claim:VariableTable<TruthValue>, onto:TruthTable<TruthValue>
 ) {
   let accumulation:ScoredMappings = {};
 
@@ -160,7 +160,10 @@ export function findImperfectMappings(
 
 
 
-export function *generatePartialMappings(claim:VariableTable, onto:TruthTable) {
+export function *generatePartialMappings<TruthValue extends string>(
+  claim:VariableTable<TruthValue>,
+  onto:TruthTable<TruthValue>
+) {
   for(let statement of claim.iterate())
     yield [...mapFromSingleSentence(claim.variables, statement, onto)]
 }
@@ -168,10 +171,10 @@ export function *generatePartialMappings(claim:VariableTable, onto:TruthTable) {
 
 
 /** Generate the partial mappings from a single sentence (with variables) onto a truth table */
-export function *mapFromSingleSentence(
+export function *mapFromSingleSentence<TruthValue extends string>(
   variables: Variable[], 
   from: {sentence:Sentence, truth:string}, 
-  onto: TruthTable|TruthTable[]
+  onto: TruthTable<TruthValue>|TruthTable<TruthValue>[]
 ) {
   const {sentence, truth} = from
   

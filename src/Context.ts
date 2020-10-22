@@ -8,11 +8,11 @@ export interface ContextConstructorOptions {
   listener: Entity;
 }
 
-export class Context {
+export class Context<TruthValue extends string = 'T'|'F'|'?'> {
   dictionary: Dictionary;
   linkingMatrix: SyntaxLogicLinkingMatrix;
   
-  truthTable: TruthTable;
+  truthTable: TruthTable<TruthValue>;
   speaker: Entity;
   listener: Entity;
 
@@ -22,7 +22,7 @@ export class Context {
 
   constructor(
     dictionaryOrLinking:Dictionary|SyntaxLogicLinkingMatrix, 
-    truthTable:TruthTable = new TruthTable,
+    truthTable:TruthTable<TruthValue> = new TruthTable<TruthValue>(),
     options:Partial<ContextConstructorOptions> = {},
   ) {
     let dictionary:Dictionary, linkingMatrix:SyntaxLogicLinkingMatrix;

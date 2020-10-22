@@ -12,7 +12,7 @@ test('composeEntity', () => {
     .add(new Noun('box'))
     .add(new Adjective('green'))
 
-  let table = new TruthTable
+  let table = new TruthTable()
   let ctx = new Context(linkingMatrix, table);
 
   let interpretation = interpretNounPhrase('the green box', ctx);

@@ -1,4 +1,4 @@
-import {Grammar, TerminalRule, NonTerminalRule, AliasRule, GrammarConstructorOptions} from './Grammar';
+import {Grammar, TerminalRule, NonTerminalRule, AliasRule, GrammarConstructorOptions, TypeAssertions} from './Grammar';
 
 /** Parse a one-line grammar rule */
 export function parseRule(line:string) {
@@ -33,6 +33,7 @@ export function expandRule(
 ) {
   const defaultTerminalFunction = (terminal:string) => terminal;
   const defaultNTFunction = (...args:any[]) => [...args];
+  const defaultAliasFunction = (nonTerminalEvaluation:any) => nonTerminalEvaluation;
 
   if(body.length == 0)
     throw "Cannot expand rule with empty body";
@@ -59,7 +60,7 @@ export function expandRule(
         aliasRules: [{
           head, 
           body:body[0], 
-          F: (nonTerminalReturnValue: any) => (F || defaultNTFunction)(nonTerminalReturnValue),
+          F: F || defaultAliasFunction,
         }],
       }
 
@@ -168,6 +169,7 @@ export interface RuleFunctionMapping {
   [ruleSource:string]: (...args: any[]) => any;
 }
 
+
 export function expandRuleFunctionMapping(src:RuleFunctionMapping) {
   const terminalRules:TerminalRule<string>[] = [];
   const nonTerminalRules:NonTerminalRule<string>[] = [];
@@ -187,10 +189,13 @@ export function expandRuleFunctionMapping(src:RuleFunctionMapping) {
   return {terminalRules, nonTerminalRules, aliasRules};
 }
 
-export function quickGrammar(...sources:(string|RuleFunctionMapping|Grammar<string>)[]): GrammarConstructorOptions<string> {
+export function quickGrammar(
+  ...sources:(string|RuleFunctionMapping|Grammar<string>|{typeAssertions: TypeAssertions})[]
+): GrammarConstructorOptions<string> {
   const terminalRules:TerminalRule<string>[] = [],
     nonTerminalRules:NonTerminalRule<string>[] = [],
-    aliasRules:AliasRule<string>[] = [];
+    aliasRules:AliasRule<string>[] = [],
+    typeAssertions:TypeAssertions = {};
 
   for(let src of sources) {
     if(typeof src == 'string') {
@@ -202,8 +207,10 @@ export function quickGrammar(...sources:(string|RuleFunctionMapping|Grammar<stri
       terminalRules.push(...src.terminalRules);
       nonTerminalRules.push(...src.nonTerminalRules);
       aliasRules.push(...src.aliasRules);
+    } else if(src.typeAssertions) {
+      Object.assign(typeAssertions, src.typeAssertions);
     } else {
-      const expanded = expandRuleFunctionMapping(src);
+      const expanded = expandRuleFunctionMapping(src as RuleFunctionMapping);
       terminalRules.push(...expanded.terminalRules);
       nonTerminalRules.push(...expanded.nonTerminalRules);
       aliasRules.push(...expanded.aliasRules);
@@ -218,6 +225,7 @@ export function quickGrammar(...sources:(string|RuleFunctionMapping|Grammar<stri
     isTerminalSymbol: (o:any):o is string => typeof o == 'string' && !/^_/.test(o),
     isNonTerminalSymbol: (o:any):o is string => typeof o ==  'string' && /^_/.test(o),
     pleaseBeQuiet: true,
+    typeAssertions,
 
     stringifyNonTerminalSymbol: S => S,
   };

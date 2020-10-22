@@ -45,7 +45,7 @@ export function examineDeconjugation(
   const couldBeSingular = forms.some(form => /Singular$/.test(form));
 
   const couldBeFirstPerson = forms.some(form => /^firstPerson/.test(form));
-  const couldBeSecondPerson = forms.some(form => /^secondPerson/.test(form));
+const couldBeSecondPerson = forms.some(form => /^secondPerson/.test(form));
   const couldBeThirdPerson = forms.some(form => /^thirdPerson/.test(form));
 
   const isPastTense = forms.includes('pastTense');

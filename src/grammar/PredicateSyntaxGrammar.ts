@@ -1,6 +1,7 @@
 import {Grammar} from './Grammar';
 import {NounPhraseGrammar} from './NounPhraseGrammar';
 import {VerbTenseGrammar} from './VerbTenseGrammar';
+import {PredicateSyntaxParse, assertIsPredicateSyntaxParse} from './parseTypings';
 
 
 export const PredicateSyntaxGrammar = Grammar.quick(
@@ -18,7 +19,8 @@ export const PredicateSyntaxGrammar = Grammar.quick(
   },
   {
     '_PredicateSyntax -> _Subject _VerbTense': 
-      (subjectNp, {verb, tense}) => ({
+      (subjectNp, {verb, tense}):PredicateSyntaxParse => ({
+        kind: 'predicateSyntax',
         verb,
         params: ['subject'],
         args: [subjectNp], 
@@ -26,7 +28,8 @@ export const PredicateSyntaxGrammar = Grammar.quick(
       }),
 
     '_PredicateSyntax -> _Subject _VerbTense _Object':
-      (subjectNp, {verb, tense}, objectNp) => ({
+      (subjectNp, {verb, tense}, objectNp):PredicateSyntaxParse => ({
+        kind: 'predicateSyntax',
         verb,
         params: ['subject', 'object'],
         args: [subjectNp, objectNp],
@@ -34,7 +37,8 @@ export const PredicateSyntaxGrammar = Grammar.quick(
       }),
 
     '_PredicateSyntax -> _Subject _VerbTense _Pplist':
-      (subject, {verb, tense}, ppList) => ({
+      (subject, {verb, tense}, ppList):PredicateSyntaxParse => ({
+        kind: 'predicateSyntax',
         verb,
         params: ['subject', ...ppList.map((pp:any) => pp.preposition)],
         args: [subject, ...ppList.map((pp:any) => pp.nounPhrase)],
@@ -42,12 +46,17 @@ export const PredicateSyntaxGrammar = Grammar.quick(
       }),
 
     '_PredicateSyntax -> _Subject _VerbTense _Object _Pplist':
-      (subject, {verb, tense}, objectNP, ppList) => ({
+      (subject, {verb, tense}, objectNP, ppList):PredicateSyntaxParse => ({
+        kind: 'predicateSyntax',
         verb,
         params: ['subject', 'object', ...ppList.map((pp:any) => pp.preposition)],
         args: [subject, objectNP, ...ppList.map((pp:any) => pp.nounPhrase)],
         tense,
       }),
-  }
+  },
+
+  {typeAssertions: {
+    _PredicateSyntax: assertIsPredicateSyntaxParse,
+  }}
 );
 PredicateSyntaxGrammar.startingSymbol = '_PredicateSyntax';

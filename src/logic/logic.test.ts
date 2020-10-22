@@ -16,7 +16,7 @@ import {
 
 
 test('Truth assignments and look-up', () => {
-  const table = new TruthTable;
+  const table = new TruthTable<string>();
 
   let P = createPredicate(2);
   let a = createEntity();
@@ -33,7 +33,7 @@ test('Truth assignments and look-up', () => {
 })
 
 test('Truth table identity', () => {
-  let table = new TruthTable;
+  let table = new TruthTable<string>();
 
   let P = createPredicate(2);
 
@@ -78,7 +78,7 @@ test('Cloning a truth table', () => {
   const a = createEntity();
   const b = createEntity();
 
-  const table1 = new TruthTable;
+  const table1 = new TruthTable<string>();
   table1.assign({predicate: P, args:[a]}, 'true');
   table1.assign({predicate:Q, args:[a, b]}, 'true');
 
@@ -94,7 +94,7 @@ test('VariableTable', () => {
   const x = createVariable();;
   const y = createVariable();;
 
-  const varTable = new VariableTable;
+  const varTable = new VariableTable<string>();
   varTable.addVariables(x, y);
   varTable.assign({predicate:P, args:[x]}, 'true');
   varTable.assign({predicate:Q, args:[y]}, 'true');
@@ -125,11 +125,11 @@ test('VariableTable::findMappingErrors', () => {
   const a = createEntity();
   const b = createEntity();
 
-  let theTruth = new TruthTable;
+  let theTruth = new TruthTable<string>();
   theTruth.assign({predicate: P, args:[a]}, 'true');
   theTruth.assign({predicate: Q, args:[a, b]}, 'maybe');
 
-  let hypothesis = new VariableTable;
+  let hypothesis = new VariableTable<string>();
   hypothesis.addVariables(createVariable(), createVariable());
   const [x, y] = hypothesis.variables;
   hypothesis.assign({predicate: Q, args:[x, y]}, 'maybe');
@@ -161,9 +161,9 @@ test('Merging VariableTables', () => {
   // Create two variable tables
   let [x, y, z] = createVariables();
   let P = createPredicate(2);
-  let table1 = new VariableTable(x, y);
+  let table1 = new VariableTable<string>(x, y);
   table1.assign({predicate: P, args:[x, y]}, 'true');
-  let table2 = new VariableTable(y, z);
+  let table2 = new VariableTable<string>(y, z);
   table2.assign({predicate: P, args:[y, z]}, 'true');
 
   table1.merge(table2);
@@ -178,7 +178,7 @@ test('Implementing a VariableTable', () => {
   let P = createPredicate(2);
   let [a, b, c, d] = createEntities();
   let [x, y] = createVariables()
-  let vt = new VariableTable(x, y)
+  let vt = new VariableTable<string>(x, y)
     .assign({predicate: P, args:[a, x]}, 'true')
     .assign({predicate: P, args:[y, d]}, 'true')
 

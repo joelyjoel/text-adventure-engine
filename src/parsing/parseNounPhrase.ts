@@ -12,17 +12,44 @@ import { parsePronoun, PronounParse } from "./parsePronoun";
 
 export type NounPhraseParse = (SimpleNounPhraseParse|PredicateSyntaxParse<any>|ProperNounParse|PronounParse);
 
+/**
+ * A parse of a 'simple' noun phrase. This is a noun phrase in the form of article + adjectives + noun.
+ */
 export interface SimpleNounPhraseParse extends Parse {
   syntaxKind: 'simple_noun_phrase';
+
+  /**
+   * Part of speech, as opposed to `syntaxKind` this field represents the funcitional role of the phrase in a sentence rather than its internal structure. For noun-phrase parses, this is always 'NP'.
+   */
   pos: 'NP';
+
+  /**
+   * Details about the identifier in the noun phrase. This is usually an article (the cat), but it could be a possessive adjective (my cat, Henrietta's cat) or a number (2 cats).
+   */
   identifier: IdentifierParse;
+
+  /**
+   * Parse of the noun part of the phrase.
+   */
   noun: NounParse;
+
+  /**
+   * Parses of the adjectives in the phrase/
+   */
   adjectives: AdjectiveParse[];
+
+  /**
+   * Syntax field is always blank, for other `Parse` sub-interfaces this would link to the specific Syntax object used to parse the string.
+   */
   syntax:null,
 }
 
 
-
+/**
+ * Parse a noun-phrase using the given dictionary.
+ *
+ * NOTE: A problem with this function (vs Grammar.parse) is that it has no allowance for ambiguity. Admittedly, this is limited in noun-phrases, but not impossible as with multiple overlapping phrasal adjectives.
+ */
 export function parseNounPhrase(
   str:string, 
   dict:Dictionary
@@ -32,11 +59,12 @@ export function parseNounPhrase(
   if(properNounParse)
     return properNounParse;
 
+  // Parse as pronoun
   let pronounParse = parsePronoun(str);
   if(pronounParse)
     return pronounParse;
 
-  // Parse as complex (predicateSyntax) noun-phrase
+  // Parse as complex (PredicateSyntax) noun-phrase
   let complexParse = parseComplexNounPhrase(str, dict);
   if(complexParse)
     return complexParse;
@@ -50,6 +78,9 @@ export function parseNounPhrase(
   return null;
 }
 
+/**
+ * Parse a string as a simple-noun-phrase, i.e. in the form: identifier + adjectives + noun.
+ */
 export function parseSimpleNounPhrase(
   str:string, 
   dict:Dictionary
@@ -83,7 +114,11 @@ export function parseSimpleNounPhrase(
     return null; 
 }
 
-/** Parse a noun phrase using predicate syntaxs. Eg/ "the moose which is aloose" */
+/** 
+ * Parse a noun phrase using predicate syntaxs. I.e. one that has 'which'-preposition phrases attached.  * Eg/ "the moose which is aloose" 
+ *
+ * This is done by iterating through every PredicateSyntax in the dictionary.
+ */
 export function parseComplexNounPhrase(
   str:string, 
   dict:Dictionary

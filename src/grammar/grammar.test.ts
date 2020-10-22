@@ -155,6 +155,8 @@ describe('Testing Grammar', () => {
 
             }
 
+      test.todo("Returning null anuls the whole tree");
+      test.todo("nulled trees are ignored");
     });
 
     test('Stringifying trees', () => {

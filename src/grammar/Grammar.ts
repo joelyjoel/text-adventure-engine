@@ -96,7 +96,9 @@ export type ParseTable<TerminalSymbol, NonTerminalSymbol=TerminalSymbol> = [
 
 let uniqueNonTerminalCounter = 0;
 
-
+export interface TypeAssertions {
+  [stringifiedSymbol: string]: (parse:any) => boolean;
+}
 
 
 
@@ -144,6 +146,11 @@ export interface GrammarConstructorOptions<TerminalSymbol, NonTerminalSymbol=Ter
    * Function to convert non-terminal symbols to strings
    */
   stringifyNonTerminalSymbol?: (NT: NonTerminalSymbol) => string;
+
+  /**
+   * A set of functions that check the types of evaluated trees.
+   */
+  typeAssertions?: TypeAssertions
 }
 
 export class Grammar<TerminalSymbol=string, NonTerminalSymbol=TerminalSymbol> {
@@ -158,6 +165,7 @@ export class Grammar<TerminalSymbol=string, NonTerminalSymbol=TerminalSymbol> {
   isNonTerminalSymbol: (S: any) => S is NonTerminalSymbol;
   stringifyTerminalSymbol: (S: TerminalSymbol) => string
   stringifyNonTerminalSymbol: (S:NonTerminalSymbol) => string;
+  typeAssertions: TypeAssertions;
 
   constructor({
     terminalRules=[], 
@@ -177,6 +185,7 @@ export class Grammar<TerminalSymbol=string, NonTerminalSymbol=TerminalSymbol> {
     stringifySymbol = S => JSON.stringify(S),
     stringifyTerminalSymbol = stringifySymbol,
     stringifyNonTerminalSymbol = stringifySymbol,
+    typeAssertions = {},
 
   }:GrammarConstructorOptions<TerminalSymbol, NonTerminalSymbol>) {
     // Assign the rules
@@ -188,6 +197,7 @@ export class Grammar<TerminalSymbol=string, NonTerminalSymbol=TerminalSymbol> {
     this.beQuiet = pleaseBeQuiet
     this.isTerminalSymbol = isTerminalSymbol;
     this.isNonTerminalSymbol = isNonTerminalSymbol;
+    this.typeAssertions = typeAssertions
 
     this.stringifyTerminalSymbol = stringifyTerminalSymbol;
     this.stringifyNonTerminalSymbol = stringifyNonTerminalSymbol;
@@ -396,6 +406,11 @@ export class Grammar<TerminalSymbol=string, NonTerminalSymbol=TerminalSymbol> {
     for(let rule of this.terminalRules.filter(isRelevant))
       yield [rule.body];
 
+    // Recursively yield through alias substitutions
+    for(let {body} of this.aliasRules.filter(isRelevant))
+      for(let sub of this.recursiveSubstitutions(body))
+        yield sub;
+
     // Recursively yield through non-terminal substitutions
     for(let rule of this.nonTerminalRules.filter(isRelevant)) {
       let [B, C] = rule.body;
@@ -403,11 +418,6 @@ export class Grammar<TerminalSymbol=string, NonTerminalSymbol=TerminalSymbol> {
         for(let bSub of this.recursiveSubstitutions(B))
           yield [...bSub, ...cSub];
     }
-
-    // Recursively yield through alias substitutions
-    for(let {body} of this.aliasRules.filter(isRelevant))
-      for(let sub of this.recursiveSubstitutions(body))
-        yield sub;
   }
 
 
@@ -462,6 +472,16 @@ export class Grammar<TerminalSymbol=string, NonTerminalSymbol=TerminalSymbol> {
         body: rule.body,
       }
 
+    // Loop through the alias substitutions of S
+    for(let rule of this.aliasRules.filter(isRelevant))
+      for(let tree of this.recursiveTrees(rule.body))
+        yield {
+          ruleKind: 'alias',
+          rule,
+          head: rule.head,
+          body: tree,
+        }
+
     // Loop through the non-terminal substitutions of S
     for(let rule of this.nonTerminalRules.filter(isRelevant)) {
       const [B, C] = rule.body;
@@ -474,16 +494,6 @@ export class Grammar<TerminalSymbol=string, NonTerminalSymbol=TerminalSymbol> {
             body: [b, c],
           }
     }
-
-    // Loop through the alias substitutions of S
-    for(let rule of this.aliasRules.filter(isRelevant))
-      for(let tree of this.recursiveTrees(rule.body))
-        yield {
-          ruleKind: 'alias',
-          rule,
-          head: rule.head,
-          body: tree,
-        }
   }
 
   stringifyTree(tree: Tree<TerminalSymbol, NonTerminalSymbol, any, any>):string {
@@ -758,7 +768,7 @@ export class Grammar<TerminalSymbol=string, NonTerminalSymbol=TerminalSymbol> {
   // #### PARSING SOURCE CODE:::
 
   /** Quickly create a grammar from source code string. */
-  static quick(...srcs:(string|RuleFunctionMapping|Grammar)[]): Grammar<string> {
+  static quick(...srcs:(string|RuleFunctionMapping|Grammar|{typeAssertions:TypeAssertions})[]): Grammar<string> {
     return new Grammar(quickGrammar(...srcs));
   }
 
@@ -768,12 +778,18 @@ export class Grammar<TerminalSymbol=string, NonTerminalSymbol=TerminalSymbol> {
   static merge<T, NT>(...grammars:Grammar<T, NT>[]):Grammar<T, NT> {
     const terminalRules:TerminalRule<T, NT>[] = [],
       nonTerminalRules: NonTerminalRule<T, NT>[] = [],
-      aliasRules: AliasRule<T, NT>[] = [];
+      aliasRules: AliasRule<T, NT>[] = [],
+      typeAssertions: TypeAssertions = {}
 
     for(let g of grammars) {
       terminalRules.push(...g.terminalRules);
       nonTerminalRules.push(...g.nonTerminalRules);
       aliasRules.push(...g.aliasRules);
+      for(let S in g.typeAssertions) {
+        if(typeAssertions[S])
+          throw `Type assertion conflict for '${S}'`;
+        typeAssertions[S] = g.typeAssertions[S];
+      }
     }
 
     const {startingSymbol, compareSymbol, isHidden, isTerminalSymbol, isNonTerminalSymbol} = grammars[0];
@@ -786,6 +802,7 @@ export class Grammar<TerminalSymbol=string, NonTerminalSymbol=TerminalSymbol> {
       isHidden,
       isTerminalSymbol,
       isNonTerminalSymbol,
+      typeAssertions,
     });
 
   }

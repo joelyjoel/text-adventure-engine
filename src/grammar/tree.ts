@@ -41,16 +41,25 @@ export function evaluateTree<TerminalSymbol>(tree:Tree<TerminalSymbol>):any {
   if(tree.ruleKind == 'terminal')
     return tree.rule.F(tree.body);
   
-  else if(tree.ruleKind == 'nonTerminal')
-    return tree.rule.F(
-      evaluateTree(tree.body[0]),
-      evaluateTree(tree.body[1])
-    );
+  else if(tree.ruleKind == 'nonTerminal') {
 
-  else if(tree.ruleKind == 'alias')
-    return tree.rule.F(
-      evaluateTree(tree.body)
-    );
+    let a = evaluateTree(tree.body[0]);
+    if(a === null)
+      return null;
+    
+    let b = evaluateTree(tree.body[1]);
+    if(b === null)
+      return null;
+
+    return tree.rule.F(a, b);
+  }
+
+  else if(tree.ruleKind == 'alias') {
+    let a = evaluateTree(tree.body);
+    if(a == null)
+      return null;
+    return tree.rule.F(a);
+  }
 
   else
     throw "Could not evaluate tree: " + JSON.stringify(tree, null, 4);

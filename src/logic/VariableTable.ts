@@ -2,7 +2,7 @@ import {Variable, Entity, Sentence, stringifySentence, createEntity} from './bas
 import { TruthTable } from "./TruthTable";
 import { findMappings, PartialMapping } from "./mapping";
 
-export class VariableTable extends TruthTable {
+export class VariableTable<TruthValue extends string ='T'|'F'|'?'> extends TruthTable<TruthValue> {
   readonly variables: Variable[];
 
   constructor(...variables:Variable[]) {
@@ -39,7 +39,7 @@ export class VariableTable extends TruthTable {
   }
 
   /** Compare a this table (under a given variable mapping) to another table, listing the differences or returning null (if none exist). */
-  findMappingErrors(table:TruthTable, mapping:Entity[]) {
+  findMappingErrors(table:TruthTable<TruthValue>, mapping:Entity[]) {
     const mapped = this.substitute(...mapping).facts;
     let errors = [];
     for(let {sentence, truth} of mapped) {
@@ -54,7 +54,7 @@ export class VariableTable extends TruthTable {
   }
 
   /** Quickly determine whether a mapping fits a sentence. */
-  testMapping(table:TruthTable, mapping:Entity[]) {
+  testMapping(table:TruthTable<TruthValue>, mapping:Entity[]) {
     const mapped = this.substitute(...mapping).iterate();
     for(let {sentence, truth} of mapped)
       if(table.lookUp(sentence) != truth)
@@ -63,7 +63,7 @@ export class VariableTable extends TruthTable {
     return true;
   }
 
-  findMappings(onto:TruthTable) {
+  findMappings(onto:TruthTable<TruthValue>):PartialMapping[]|null {
     return findMappings(this, onto);
   }
 
@@ -82,11 +82,11 @@ export class VariableTable extends TruthTable {
     }}`
   }
 
-  merge(...tables:(TruthTable|VariableTable)[]) {
+  merge(...tables:(TruthTable<TruthValue>|VariableTable<TruthValue>)[]) {
     for(let table of tables)
       if(table instanceof VariableTable)
         this.addVariables(...table.variables);
-    
+
     TruthTable.prototype.merge.call(this, ...tables);
     return this;
   }
@@ -96,7 +96,7 @@ export class VariableTable extends TruthTable {
     if(mapping.length != this.numberOfVariables)
       throw `Expected ${this.numberOfVariables} substitutions.`;
 
-    let table = new TruthTable;
+    let table = new TruthTable<TruthValue>();
     for(let {sentence, truth} of this.iterate()) {
       let args = sentence.args.map(arg => {
         let i = this.variables.indexOf(arg);

@@ -18,7 +18,7 @@ test('Finding a partial mapping from a single sentence', () => {
   let P = createPredicate(2);
   let Q = createPredicate(4);
 
-  let table = new TruthTable()
+  let table = new TruthTable<string>()
     .assign({predicate:P, args:[a, b]}, 'true')
     .assign({predicate:P, args:[a, c]}, 'true')
     .assign({predicate:Q, args:[a, a, c,d]}, 'true')
@@ -69,19 +69,19 @@ test('Finding mappings from an existential table', () => {
   let P = createPredicate(2);
   let Q = createPredicate(4);
 
-  let table = new TruthTable()
+  let table = new TruthTable<string>()
     .assign({predicate:P, args:[a, b]}, 'true')
     .assign({predicate: P, args:[b, c]}, 'true')
     .assign({predicate: Q, args:[a,b, c, d]}, 'true')
 
-  let claim = new VariableTable(x, y)
+  let claim = new VariableTable<string>(x, y)
     .assign({predicate:P, args:[x, y]}, 'true')
     .assign({predicate:P, args:[y, c]}, 'true')
 
   expect(findMappings(claim, table))
     .toStrictEqual([[a, b]])
 
-  let claim2 = new VariableTable(x, y)
+  let claim2 = new VariableTable<string>(x, y)
     .assign({predicate:P, args:[x, y]}, 'true')
 
   
