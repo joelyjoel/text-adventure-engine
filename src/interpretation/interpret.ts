@@ -1,4 +1,4 @@
-import {NounPhraseParse, PronounParse, SimpleNounPhraseParse, PredicateSyntaxParse} from './parseTypings';
+import {NounPhraseParse, PronounParse, SimpleNounPhraseParse, PredicateSyntaxParse} from '../grammar/parseTypings';
 import {VariableTable, Entity, createVariable} from '../logic';
 import {createNounPredicate, createAdjectivePredicate, createPredicateSyntaxPredicate} from '../linking/linking';
 

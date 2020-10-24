@@ -1,4 +1,4 @@
-import { SyntaxLogicLinkingMatrix } from "./SyntaxLogicLinkingMatrix";
+import { SyntaxLogicLinkingMatrix, Meaning } from "./SyntaxLogicLinkingMatrix";
 import { Predicate, createPredicate } from "../logic";
 import { PredicateSyntax } from "../PredicateSyntax";
 import { Adjective } from "../Adjective";
@@ -10,8 +10,8 @@ test('SyntaxLogicLinkingMatrix', () => {
   let syntax = new PredicateSyntax('be a clown', ['subject']);
   let adj = new Adjective('clownly')
   let noun = new Noun('clown');
-  let matrix = new SyntaxLogicLinkingMatrix;
-  let meaning = {predicate, truth: 'T'}
+  let matrix = new SyntaxLogicLinkingMatrix<string>();
+  let meaning:Meaning<string> = {predicate, truth: 'T'}
   matrix.addLinkage({syntax, tense:'simple_present'}, meaning)
   matrix.addLinkage(adj, meaning)
   matrix.addLinkage(noun, meaning)

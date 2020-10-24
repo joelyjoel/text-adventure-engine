@@ -7,7 +7,6 @@ import {Predicate, createPredicate} from '../logic';
 import { Tense, isTense } from "../util/tense";
 import { Dictionary } from "../Dictionary";
 import { toCamelCase } from "../util/toCamelCase";
-import { StatementSyntax } from "../parsing/parseStatement";
 import { Template } from "../Template";
 
 /** There are 3 types of syntax (for now): Adjectives, nouns or sentences
@@ -34,12 +33,12 @@ else
 /** A meaning is a predicate + a truth-value.
  * THIS TYPE MAY CHANGE IN THE FUTURE.
  */
-type Meaning = {predicate: Predicate, truth:'T'|'F'|'?'};
+export type Meaning<TruthValue extends string = 'T'|'F'|'?'> = {predicate: Predicate, truth:TruthValue};
 
 /** 
  * A class for associating syntaxs (nouns, adjectives and sentences) with logical meanings (predicate + truth-value). 
  */
-export class SyntaxLogicLinkingMatrix {
+export class SyntaxLogicLinkingMatrix<TruthValue extends string = 'T'|'F'|'?'> {
   /** 
    * Index: syntaxs by meaning. 
    */
@@ -54,14 +53,14 @@ export class SyntaxLogicLinkingMatrix {
    */
   private s2mIndex: {
     adjectives: {
-      [adjective: string]: Meaning;
+      [adjective: string]: Meaning<TruthValue>;
     };
     nouns: {
-      [noun: string]: Meaning;
+      [noun: string]: Meaning<TruthValue>;
     };
     statements: {
       [syntaxSymbol:string]: {
-        [tense:string]: Meaning;
+        [tense:string]: Meaning<TruthValue>;
       }
     }
   }
@@ -89,7 +88,7 @@ export class SyntaxLogicLinkingMatrix {
   /** 
    * A flexible function for adding things to the matrix. 
    */
-  add(something:Noun|Adjective|Dictionary|StatementSyntax|Syntax[]):this {
+  add(something:Noun|Adjective|Dictionary|Syntax[]):this {
     // Passed a noun,
     if(something instanceof Noun) {
       let noun:Noun = something;
@@ -101,14 +100,14 @@ export class SyntaxLogicLinkingMatrix {
       })
       
       // If that doesn't work
-      if(!meaning) {
-        // Add the PredicateSyntax and try again
-        this.add(noun.predicateSyntax)
-        meaning = this.syntaxToMeaning({
-          syntax: noun.predicateSyntax,
-          tense: 'simple_present'
-        })
-      }
+      //if(!meaning) {
+        //// Add the PredicateSyntax and try again
+        //this.add(noun.predicateSyntax)
+        //meaning = this.syntaxToMeaning({
+          //syntax: noun.predicateSyntax,
+          //tense: 'simple_present'
+        //})
+      //}
 
       if(meaning)
         this.addLinkage(noun, meaning);
@@ -123,14 +122,14 @@ export class SyntaxLogicLinkingMatrix {
         syntax: adj.predicateSyntax, 
         tense:'simple_present'
       })
-      if(!meaning) {
-        // Add it and try again.
-        this.add(adj.predicateSyntax);
-        meaning = this.syntaxToMeaning({
-          syntax: adj.predicateSyntax, 
-          tense:'simple_present'
-        })
-      }
+      //if(!meaning) {
+        //// Add it and try again.
+        //this.add(adj.predicateSyntax);
+        //meaning = this.syntaxToMeaning({
+          //syntax: adj.predicateSyntax, 
+          //tense:'simple_present'
+        //})
+      //}
 
       if(meaning)
         this.addLinkage(adj, meaning)
@@ -160,6 +159,7 @@ export class SyntaxLogicLinkingMatrix {
             syntax.numberOfArgs, 
             //`${Predicate.getNextSymbol()}_${syntax.name}`
           ),
+          // @ts-ignore
           truth: 'T',
         }
       )
@@ -187,7 +187,7 @@ export class SyntaxLogicLinkingMatrix {
   }
 
   /** Associate a syntax with a meaning. */
-  addLinkage(syntax:Syntax, meaning:Meaning):void {
+  addLinkage(syntax:Syntax, meaning:Meaning<TruthValue>):void {
     // Update the syntax -> meaning index.
     if(syntax instanceof Adjective) {
       if(this.s2mIndex.adjectives[syntax.symbol])
@@ -238,7 +238,7 @@ export class SyntaxLogicLinkingMatrix {
   /** Given a meaning, get the corresponding syntaxs.
    * NOTE: meaning -> syntaxs is one to many.
    */
-  meaningToSyntaxs(meaning:Meaning):Syntax[] {
+  meaningToSyntaxs(meaning:Meaning<TruthValue>):Syntax[] {
     let predicateSymbol = meaning.predicate;
     let subIndex = this.m2sIndex[predicateSymbol];
     if(subIndex) {
@@ -254,7 +254,7 @@ export class SyntaxLogicLinkingMatrix {
   /** Given a syntax, get the corresponding meaining.
    * NOTE: syntax -> meaning is many to one.
    */
-  syntaxToMeaning(syntax:Syntax):Meaning|null {
+  syntaxToMeaning(syntax:Syntax):Meaning<TruthValue>|null {
     if(syntax instanceof Adjective) {
       return this.s2mIndex.adjectives[syntax.symbol] || null;
     } else if(syntax instanceof Noun) {
@@ -270,7 +270,7 @@ export class SyntaxLogicLinkingMatrix {
   }
 
   /** To make testing more concise. Finds a meaning for a syntax or throws an exception. Only use if you are sure a meaning should exist for the syntax. */
-  syntaxToMeaningOrCrash(syntax:Syntax):Meaning {
+  syntaxToMeaningOrCrash(syntax:Syntax):Meaning<TruthValue> {
     let meaning = this.syntaxToMeaning(syntax);
     if(meaning)
       return meaning;

@@ -20,6 +20,8 @@ export function getPosTags(word:string):Promise<string[]> {
       else {
         // @ts-ignore
         const tags = definitions.map(def => def.meta.synsetType)
+          // Get rid of those pesky 'adjective satellite' tags
+          .map((tag:string) => tag === 'adjective satellite' ? 'adjective' : tag);
         fulfil(tags);
         posTagCache[word] = tags;
       }

@@ -10,6 +10,10 @@ describe('getPosTags()', () => {
     ['seduce', ['verb']],
     ['seduces', []],
     ['lived', []],
+    ['hoover', ['noun', 'verb']],
+    ['love', ['verb', 'noun']],
+    ['orange', ['adjective', 'noun']],
+    ['melon', ['noun']],
   ])('%s has POS tags: %j', async (word:string, expectedTags) => {
     const tags = await getPosTags(word);
     for(let tag of expectedTags)

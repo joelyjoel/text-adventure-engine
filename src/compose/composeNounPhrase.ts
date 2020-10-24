@@ -1,4 +1,4 @@
-import { properNounRegex } from "../parsing/parseProperNoun";
+import { properNounRegex } from "../parsing";
 import { toPlural } from '../util/plural'
 import { Template } from "../Template";
 import { toPossessiveAdjective } from "../util";

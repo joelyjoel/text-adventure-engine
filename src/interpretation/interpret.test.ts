@@ -1,5 +1,5 @@
-import {wordnetParse} from './suggestSyntax';
-import {evaluateTree} from './tree';
+import {wordnetParse} from '../grammar/suggestSyntax';
+import {evaluateTree} from '../grammar/tree';
 import {interpretSimplePresent} from './interpret';
 
 async function * oneStepInterpretation(str:string) {
