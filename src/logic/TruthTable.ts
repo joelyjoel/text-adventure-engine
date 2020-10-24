@@ -128,7 +128,7 @@ export class TruthTable<TruthValue extends string ='T'|'F'|'?'> {
   get symbol() {
     return '{\n' +
     this.facts
-      .map(({sentence, truth}) => `\t(${stringifySentence(sentence)}=${truth})`)
+      .map(({sentence, truth}) => `\t${stringifySentence(sentence)}=${truth}`)
       .join('\t&\n') 
     + '\n}';
   }

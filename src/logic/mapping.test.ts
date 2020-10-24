@@ -1,7 +1,8 @@
 import { Entity, Variable, Sentence, Predicate, createEntity, createVariables, createPredicate, createEntities} from './basics';
-import { identifyVarPositions, mapFromSingleSentence, findMappings, combinePartialMappings, findCompleteMappings } from "./mapping";
+import { identifyVarPositions, mapFromSingleSentence, findMappings, combinePartialMappings, findCompleteMappings, findImperfectMappings } from "./mapping";
 import { TruthTable } from "./TruthTable";
 import { VariableTable } from "./VariableTable";
+import {quickTruthTable, quickVariableTable} from './parse';
 
 test('Identifying sentence variable positions', () => {
   let [x, y, z] = createVariables();
@@ -111,3 +112,45 @@ test('Finding mappings given a starting mapping', () => {
     [a,b,c,d]
   ]);
 })
+
+
+describe.only('Known/past faults', () => {
+  // "The table is in the room".
+  //table.assign({predicate: 'IsATable/1', args: ['a']}, 'T');
+  //table.assign({predicate: 'IsARoom/1', args:['b']}, 'T');
+  //table.assign({predicate: 'Be_Subject_In/2', args:['a', 'b']}, 'T');
+  const table = quickTruthTable(`{ 
+    IsATable/1(a) = T
+    IsARoom/1(b) = T
+    Be_Subject_In/2(a, b) = T 
+  }`);
+
+  // "The mug is on the table"
+  // ∃ (x,y) s.t. {(IsAMug/1(x)=T) & (IsATable/1(y)=T) & (Be_Subject_On/2(x,y)=T)}
+  const claim = quickVariableTable(`there exists x,y s.t. {
+    IsAMug/1(x) = T
+    IsATable/1(y) = T
+    Be_Subject_On/2(x,y) = T
+  }`);
+  //const claim = new VariableTable<string>('x', 'y');
+  //claim.assign({predicate: 'IsAMug/1', args:['x']}, 'T');
+  //claim.assign({predicate: 'IsATable/1', args:['y']}, 'T');
+  //claim.assign({predicate: 'Be_Subject_On/2', args:['x', 'y']}, 'T');
+  
+  
+
+  test('mapFromSingleSentence works as expected', () => {
+    let [...mappings] = mapFromSingleSentence(
+      ['x', 'y'], 
+      {sentence: {predicate:'IsATable/1', args:['y']}, truth:'T'},
+      table,
+    );
+    expect(mappings).toContainEqual([null, 'a']);
+  });
+
+  test('findMappings works as expected', () => {
+    let [...mappings] = findImperfectMappings(claim, table);
+    console.log(mappings);
+    expect(mappings.map(m => m.mapping)).toContainEqual([null, 'a']);
+  });
+});

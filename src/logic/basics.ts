@@ -8,17 +8,21 @@
  */
 export type Entity = string;
 
+export const EntityRegex = /^[abcxyz]/;
+
 /**
  * Check that an object is a valid entity string
  */
 export function isEntity(o:any):o is Entity {
-  return typeof o == 'string' && /^[abcxyz]/.test(o);
+  return typeof o == 'string' && EntityRegex.test(o);
 }
 
 
 let entityCounter = -1;
 
-/** Create a new unique entity string */
+/** 
+ * Create a new unique entity string 
+ */
 export function createEntity() {
   entityCounter++;
   return 'abc'[entityCounter % 3] + (Math.floor(entityCounter/3) || '');
@@ -34,12 +38,13 @@ export function * createEntities() {
  * Note that all variables are also entities.
  */
 export type Variable = string;
+export const VariableRegex = /^[xyz]/;
 
 /**
  * Check that an object is a valid variable string.
  */
 export function isVariable(o:any):o is Variable {
-  return typeof o == 'string' && /^[xyz]/.test(o);
+  return typeof o == 'string' && VariableRegex.test(o);
 }
 
 
@@ -62,13 +67,13 @@ export function * createVariables() {
  */
 export type Predicate = string;
 
-export const PredicateSymbolRegexp = /^[0-9\w_]*\/(\d+)/
+export const PredicateRegex = /^[0-9\w_]*\/(\d+)/
 
 /**
  * Check whether a given object is a valid predicate string
  */
 export function isPredicate(o: any):o is Predicate {
-  return typeof o == 'string' && PredicateSymbolRegexp.test(o);
+  return typeof o == 'string' && PredicateRegex.test(o);
 }
 
 let predicateCounter = -1;
@@ -78,7 +83,7 @@ export function createPredicate(numberOfArgs:number) {
 }
 
 export function getNumberOfArguments(predicate:Predicate) {
-  const parse = PredicateSymbolRegexp.exec(predicate);
+  const parse = PredicateRegex.exec(predicate);
   if(parse)
     return parseInt(parse[1]);
   else

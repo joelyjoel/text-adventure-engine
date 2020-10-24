@@ -1,6 +1,6 @@
 import {Variable, Entity, Sentence, stringifySentence, createEntity} from './basics';
 import { TruthTable } from "./TruthTable";
-import { findMappings, PartialMapping } from "./mapping";
+import { findMappings, PartialMapping, findImperfectMappings } from "./mapping";
 
 export class VariableTable<TruthValue extends string ='T'|'F'|'?'> extends TruthTable<TruthValue> {
   readonly variables: Variable[];
@@ -67,11 +67,12 @@ export class VariableTable<TruthValue extends string ='T'|'F'|'?'> extends Truth
     return findMappings(this, onto);
   }
 
+
   /** Represents the table as a string of logical symbols. */
   get symbol() {
-    return `∃ (${
+    return `∃ ${
       this.variables.join(',')
-    }) s.t. ${this.symbolBody}`;
+    } s.t. ${this.symbolBody}`;
   }
 
   get symbolBody() {

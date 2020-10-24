@@ -19,11 +19,13 @@ export function findMappings<TruthValue extends string>(
   let accumulatedMappings:PartialMapping[] = given
   // Get partial mappings for each sentence in the claim
   for(let statement of claim.iterate()) {
+    // Get mappings from each statement in claim onto table
     let partialMappings = mapFromSingleSentence(
       claim.variables, 
       statement, 
       onto
     );
+
 
     let combinedMappings:PartialMapping[] = []
     for(let a of partialMappings) {
@@ -109,7 +111,8 @@ type ScoredMappings = {
 
 
 export function findImperfectMappings<TruthValue extends string>(
-  claim:VariableTable<TruthValue>, onto:TruthTable<TruthValue>
+  claim:VariableTable<TruthValue>, 
+  onto:TruthTable<TruthValue>
 ) {
   let accumulation:ScoredMappings = {};
 
@@ -173,12 +176,12 @@ export function *generatePartialMappings<TruthValue extends string>(
 /** Generate the partial mappings from a single sentence (with variables) onto a truth table */
 export function *mapFromSingleSentence<TruthValue extends string>(
   variables: Variable[], 
-  from: {sentence:Sentence, truth:string}, 
+  claim: {sentence:Sentence, truth:string}, 
   onto: TruthTable<TruthValue>|TruthTable<TruthValue>[]
 ) {
-  const {sentence, truth} = from
+  const {sentence, truth} = claim
   
-  // Identify the position of variables in the sentence args
+  // Identify the position of constants & variables in the claim sentence args
   const constantPositions = sentence.args
     .map((e,i) => i)
     .filter(i => !variables.includes(sentence.args[i]))

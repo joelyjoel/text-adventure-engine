@@ -14,3 +14,11 @@ export async function * interpretSentence(str:string) {
   for await (let parse of parseSentence(str))
     yield interpretSimplePresent(parse);
 }
+
+export async function interpretSentenceOnce(str: string) {
+  const interpretation = (await interpretSentence(str).next()).value;
+  if(interpretation)
+    return interpretation;
+  else
+    throw "Interpretation failed: "+str;
+}
