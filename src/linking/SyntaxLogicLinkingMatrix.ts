@@ -88,7 +88,7 @@ export class SyntaxLogicLinkingMatrix<TruthValue extends string = 'T'|'F'|'?'> {
   /** 
    * A flexible function for adding things to the matrix. 
    */
-  add(something:Noun|Adjective|Dictionary|Syntax[]):this {
+  add(something:Noun|Adjective|Template|PredicateSyntax|Dictionary|Syntax[]):this {
     // Passed a noun,
     if(something instanceof Noun) {
       let noun:Noun = something;
