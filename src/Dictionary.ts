@@ -1,7 +1,8 @@
 import { Noun } from "./Noun";
 import { Adjective } from "./Adjective";
-import {StatementSyntax} from './parsing/parseStatement'
 import { PredicateSyntax } from "./PredicateSyntax";
+import {Template} from './Template';
+type StatementSyntax = Template|PredicateSyntax;
 
 export class Dictionary {
   /** List of all nouns in the dictionary. */
