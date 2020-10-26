@@ -28,6 +28,8 @@
     "typescript": "^3.6.4"
   },
   "dependencies": {
-    "regops": "^1.2.1"
+    "@types/node": "^14.14.2",
+    "regops": "^1.2.1",
+    "wordnet": "^0.1.2"
   }
 }
