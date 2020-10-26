@@ -207,6 +207,7 @@ export function quickGrammar(
       terminalRules.push(...src.terminalRules);
       nonTerminalRules.push(...src.nonTerminalRules);
       aliasRules.push(...src.aliasRules);
+      Object.assign(typeAssertions, src.typeAssertions);
     } else if(src.typeAssertions) {
       Object.assign(typeAssertions, src.typeAssertions);
     } else {
