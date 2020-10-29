@@ -1,5 +1,4 @@
 import { Entity, Predicate } from "../logic";
-import { Context } from "../Context";
 import { Noun } from "../Noun";
 import { Adjective } from "../Adjective";
 import { PredicateSyntax } from "../PredicateSyntax";
@@ -11,7 +10,7 @@ import { isPredicateSyntaxWithTense } from "../linking/SyntaxLogicLinkingMatrix"
 
 export function collectEntitySyntaxs(
   e:Entity, 
-  ctx:Context, 
+  ctx:any, 
   collectSentences=true
 ) {
   let table = ctx.truthTable
@@ -57,7 +56,7 @@ export interface composeEntityOptions {
 
 export function composeEntity(
   e:Entity, 
-  ctx:Context, 
+  ctx:any, 
   options:Partial<composeEntityOptions> = {}
 ) {
   const {

@@ -1,5 +1,4 @@
 import { Sentence } from "../logic";
-import { Context } from "../Context";
 import { isPredicateSyntaxWithTense } from "../linking/SyntaxLogicLinkingMatrix";
 import { composeEntity } from "./composeEntity";
 import { PredicateSyntax } from "../PredicateSyntax";
@@ -7,7 +6,7 @@ import { Tense } from "../util/tense";
 
 export function composeStatement(
   statement:{sentence:Sentence; truth:string}, 
-  ctx:Context
+  ctx:any
 ) {
   let syntaxs = ctx.linkingMatrix.meaningToSyntaxs({
     predicate: statement.sentence.predicate,
