@@ -2,7 +2,7 @@ import { Entity, Variable, Sentence, Predicate, createEntity, createVariables, c
 import { identifyVarPositions, mapFromSingleSentence, findMappings, combinePartialMappings, findCompleteMappings, findImperfectMappings } from "./mapping";
 import { TruthTable } from "./TruthTable";
 import { VariableTable } from "./VariableTable";
-import {quickTruthTable, quickVariableTable} from './parse';
+import {quickTruthTable, quickVariableTable} from './parseTable';
 
 test('Identifying sentence variable positions', () => {
   let [x, y, z] = createVariables();

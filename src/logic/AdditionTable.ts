@@ -1,17 +1,23 @@
 import {Entity, Sentence, stringifyArgs, Predicate} from './basics';
 import {TruthTable, INDIFFERENT} from './TruthTable';
+import {quickSentence} from './parse';
 
 export class AdditionTable<TruthValue extends string> extends TruthTable<TruthValue> {
   parent: TruthTable<TruthValue> | null;
-  constructor(parent?:TruthTable<TruthValue> | null) {
+  constructor(parent?:TruthTable<TruthValue> | null, addition?:TruthTable<TruthValue>) {
     super();
     this.parent = parent || null;
+    if(addition)
+      this.eat(addition);
   }
 
   /**
    * Look up the truth value of the given sentence. Checks this table frist, and then the parent(s) recursively. Priority on truth values is given to children.
    */
-  lookUp(sentence:Sentence):TruthValue|'?' {
+  lookUp(sentence:Sentence|string):TruthValue|'?' {
+    if(typeof sentence === 'string')
+      return this.lookUp(quickSentence(sentence));
+
     // Handle any entity equalities..
     const mapped = this.idMapSentence(sentence);
     const {predicate} = mapped;
@@ -30,7 +36,9 @@ export class AdditionTable<TruthValue extends string> extends TruthTable<TruthVa
   /**
    * Remove a truth assignment from a the table
    */
-  remove(sentence:Sentence, truth?:TruthValue) {
+  remove(sentence:Sentence|string, truth?:TruthValue): void {
+    if(typeof sentence === 'string')
+      return this.remove(quickSentence(sentence));
     if(truth && this.lookUp(sentence) != truth)
       throw 'Unexpected truth value when removing assignment from AdditionTable';
 
@@ -111,7 +119,7 @@ export class AdditionTable<TruthValue extends string> extends TruthTable<TruthVa
    * Get a list of all predicates involved in the table.
    */
   get predicates() {
-    let list = Object.keys(this);
+    let list = Object.keys(this.index);
     if(this.parent)
       return [
         ...list,
@@ -125,7 +133,7 @@ export class AdditionTable<TruthValue extends string> extends TruthTable<TruthVa
     while(true) {
       if(this.identityMap[e])
         e = this.identityMap[e];
-      else if(this.parent && e == (e = this.parent.idMapEntity(e)))
+      else if(this.parent && e != (e = this.parent.idMapEntity(e)))
         continue
       else
         return e;
@@ -134,7 +142,7 @@ export class AdditionTable<TruthValue extends string> extends TruthTable<TruthVa
 
 
   //~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~// 
-  //          *.*.*.*.*. NEW METHODS FOR THIS CLASS *.*.*.*.*.             //
+  // .*.*.*.*.*.*.*.*.*. NEW METHODS FOR THIS CLASS *.*.*.*.*.*.*.*.*.*.*. //
   //~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~// 
 
   /**
@@ -160,7 +168,7 @@ export class AdditionTable<TruthValue extends string> extends TruthTable<TruthVa
    */
   mergeToParent():void {
     if(this.parent)
-      for(let {sentence, truth} of this.iterateAddition)
+      for(let {sentence, truth} of this.iterateAddition())
         this.parent.assign(sentence, truth);
     else
       throw 'No Parent to merge into!';

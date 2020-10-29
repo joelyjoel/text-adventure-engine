@@ -1,26 +1,27 @@
-import {parseAssignment, parseSentence, parseArgs, SentenceRegex, wholeSentenceRegex, parseTable, parseVariableTable, logic} from './parse';
+import {parseAssignment, parseSentence, parseArgs, SentenceRegex, wholeSentenceRegex, } from './parse';
+import {parseTable, parseVariableTable} from './parseTable';
 import {TruthTable, VariableTable} from './';
 
 describe('Parsing logic-symbol strings', () => {
-  describe('quick logic() function', () => {
-    test.each([
-      [ '{ IsATable/1(a) = T & IsARoom/1(b) = T & Be_Subject_In/2(a, b)=T }',
-        new TruthTable<string>()
-          .assign({predicate: 'IsATable/1', args: ['a']}, 'T')
-          .assign({predicate: 'IsARoom/1', args:['b']}, 'T')
-          .assign({predicate: 'Be_Subject_In/2', args:['a', 'b']}, 'T')
-      ],
-      [
-        `there exists x, y s.t. { IsAMug/1(x)=T & IsATable/1(y)=T & Be_Subject_On/2(x, y) = T }`,
-        new VariableTable<string>('x', 'y')
-          .assign({predicate: 'IsAMug/1', args:['x']}, 'T')
-          .assign({predicate: 'IsATable/1', args:['y']}, 'T')
-          .assign({predicate: 'Be_Subject_On/2', args:['x', 'y']}, 'T')
-      ]
-    ])('logic(%j)', (str:string, expectation) => {
-      expect(logic(str)).toStrictEqual(expectation);
-    });
-  });
+  //describe('quick logic() function', () => {
+    //test.each([
+      //[ '{ IsATable/1(a) = T & IsARoom/1(b) = T & Be_Subject_In/2(a, b)=T }',
+        //new TruthTable<string>()
+          //.assign({predicate: 'IsATable/1', args: ['a']}, 'T')
+          //.assign({predicate: 'IsARoom/1', args:['b']}, 'T')
+          //.assign({predicate: 'Be_Subject_In/2', args:['a', 'b']}, 'T')
+      //],
+      //[
+        //`there exists x, y s.t. { IsAMug/1(x)=T & IsATable/1(y)=T & Be_Subject_On/2(x, y) = T }`,
+        //new VariableTable<string>('x', 'y')
+          //.assign({predicate: 'IsAMug/1', args:['x']}, 'T')
+          //.assign({predicate: 'IsATable/1', args:['y']}, 'T')
+          //.assign({predicate: 'Be_Subject_On/2', args:['x', 'y']}, 'T')
+      //]
+    //])('logic(%j)', (str:string, expectation) => {
+      //expect(logic(str)).toStrictEqual(expectation);
+    //});
+  //});
 
 
   describe('parseVariableTable', () => {

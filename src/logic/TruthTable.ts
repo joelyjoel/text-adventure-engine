@@ -1,4 +1,6 @@
 import {Sentence, Predicate, Entity, stringifySentence, stringifyArgs, isEntity} from './basics'
+import {quickSentence} from './parse';
+
 
 export const INDIFFERENT = '?'
 
@@ -29,7 +31,10 @@ export class TruthTable<TruthValue extends string ='T'|'F'|'?'> {
   /** 
    * Assign a truth value to a sentence 
    */
-  assign(sentence:Sentence, truth:TruthValue|'?'):this {
+  assign(sentence:Sentence|string, truth:TruthValue|'?'):this {
+    if(typeof sentence == 'string')
+      return this.assign(quickSentence(sentence), truth);
+
     sentence = this.idMapSentence(sentence);
 
     const predicateSymbol = sentence.predicate;
@@ -66,7 +71,10 @@ export class TruthTable<TruthValue extends string ='T'|'F'|'?'> {
   }
 
   /** Remove a truth assignment from the table */
-  remove(sentence: Sentence, truth?:TruthValue) {
+  remove(sentence: Sentence|string, truth?:TruthValue):void {
+    if(typeof sentence === 'string') 
+      return this.remove(quickSentence(sentence));
+    
     const mapped = this.idMapSentence(sentence);
     const predicate = mapped.predicate;
     const args = stringifyArgs(mapped);
@@ -80,7 +88,9 @@ export class TruthTable<TruthValue extends string ='T'|'F'|'?'> {
   }
 
   /** Look up the truth value of a sentence */
-  lookUp(sentence:Sentence) {
+  lookUp(sentence:Sentence|string):TruthValue|'?' {
+    if(typeof sentence === 'string')
+      return this.lookUp(quickSentence(sentence));
     const mapped = this.idMapSentence(sentence);
     const predicateSymbol = mapped.predicate;
     const argsSymbol = stringifyArgs(mapped);
@@ -203,6 +213,14 @@ export class TruthTable<TruthValue extends string ='T'|'F'|'?'> {
       
     // Chainable
     return this
+  }
+
+  /**
+   * Alias for merge method
+   * @alias merge
+   */
+  eat(...tables:TruthTable<TruthValue>[]):this {
+    return this.merge(...tables);
   }
 
   /**
