@@ -49,6 +49,7 @@ export function isVariable(o:any):o is Variable {
 
 
 let variableCounter = -1;
+
 /**
  * Create a new unique variable string.
  */

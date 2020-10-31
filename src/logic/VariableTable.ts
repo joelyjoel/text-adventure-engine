@@ -1,6 +1,6 @@
-import {Variable, Entity, Sentence, stringifySentence, createEntity} from './basics';
+import {Variable, Entity, stringifySentence, createEntity} from './basics';
 import { TruthTable } from "./TruthTable";
-import { findMappings, PartialMapping, findImperfectMappings } from "./mapping";
+import { findMappings, PartialMapping } from "./mapping";
 
 export class VariableTable<TruthValue extends string ='T'|'F'|'?'> extends TruthTable<TruthValue> {
   readonly variables: Variable[];
@@ -115,7 +115,7 @@ export class VariableTable<TruthValue extends string ='T'|'F'|'?'> extends Truth
 
   /** Replace the variables with new entities */
   spawn() {
-    let mapping = this.variables.map(x => createEntity())
+    let mapping = this.variables.map(() => createEntity())
     return this.implement(...mapping)
   }
 
@@ -125,6 +125,3 @@ export class VariableTable<TruthValue extends string ='T'|'F'|'?'> extends Truth
   }
 }
 
-export function completePartialMapping(mapping:PartialMapping) {
-  return mapping.map(x => x ? x : createEntity());
-}
