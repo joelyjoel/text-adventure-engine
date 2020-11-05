@@ -4,11 +4,17 @@
  */
 
 /**
- * A better name would have been "Object", but obviously that was already taken by js and would have led to confusion. Entities represent something in the world. Pretty much anything really, but usually the sort of thing that could be referred to using a noun-phrase. For example, "the dog", "the orange square" etc. But importantly there are no linguistic features contained within the `Entity` class. In fact it has no features at all except a unique identifier number (the `id` property). Using the `symbol` accessor you can get a slightly more readable string version of the id using the conventions of predicate logic notation (a, b, c, a1, b1, c1, etc).
+ * A unique string identifying a logical object.
+ *
+ * A better name would have been "Object", but obviously that was already taken
+ * by js and would have led to confusion. Entities represent something in the
+ * world. Pretty much anything really, but usually the sort of thing that could be
+ * referred to using a noun-phrase. For example, "the dog", "the orange square"
+etc.
  */
 export type Entity = string;
 
-export const EntityRegex = /^[abcxyz]/;
+export const EntityRegex = /^\w+$/;
 
 /**
  * Check that an object is a valid entity string
@@ -91,6 +97,9 @@ export function getNumberOfArguments(predicate:Predicate) {
     throw `Not a valid predicate: "${predicate}"`;
 }
 
+/**
+ * A `Predicate` accompanied by an ordered list of entity arguments.
+ */
 export interface Sentence {
   predicate: Predicate;
   args: (Entity|Variable)[];

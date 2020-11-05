@@ -26,7 +26,7 @@ describe('Testing basic logic typings, typeguards and creator functions', () => 
       test.each([
         89,
         {id: 10},
-        'poo',
+        'c a t',
       ])('"%s" is not a valid entity', e => {
         expect(isEntity(e)).toBe(false);
       });

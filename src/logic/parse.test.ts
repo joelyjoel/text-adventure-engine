@@ -1,29 +1,10 @@
+import {isEntity} from './basics';
 import {parseAssignment, parseSentence, parseArgs, SentenceRegex, wholeSentenceRegex, } from './parse';
-import {parseTable, parseVariableTable} from './parseTable';
-import {TruthTable, VariableTable} from './';
+import {parseTable, parseVariableTable, quickTruthTable, quickVariableTable} from './parseTable';
+import {TruthTable} from './TruthTable';
+import {VariableTable} from './VariableTable';
 
 describe('Parsing logic-symbol strings', () => {
-  //describe('quick logic() function', () => {
-    //test.each([
-      //[ '{ IsATable/1(a) = T & IsARoom/1(b) = T & Be_Subject_In/2(a, b)=T }',
-        //new TruthTable<string>()
-          //.assign({predicate: 'IsATable/1', args: ['a']}, 'T')
-          //.assign({predicate: 'IsARoom/1', args:['b']}, 'T')
-          //.assign({predicate: 'Be_Subject_In/2', args:['a', 'b']}, 'T')
-      //],
-      //[
-        //`there exists x, y s.t. { IsAMug/1(x)=T & IsATable/1(y)=T & Be_Subject_On/2(x, y) = T }`,
-        //new VariableTable<string>('x', 'y')
-          //.assign({predicate: 'IsAMug/1', args:['x']}, 'T')
-          //.assign({predicate: 'IsATable/1', args:['y']}, 'T')
-          //.assign({predicate: 'Be_Subject_On/2', args:['x', 'y']}, 'T')
-      //]
-    //])('logic(%j)', (str:string, expectation) => {
-      //expect(logic(str)).toStrictEqual(expectation);
-    //});
-  //});
-
-
   describe('parseVariableTable', () => {
     test.each([
       'there exists x s.t. {P/1(x)=T}',
@@ -37,7 +18,11 @@ describe('Parsing logic-symbol strings', () => {
         SitsUpon/2(y,  z)    = completelyfalse
       }`,
     ])('Can parse "%s"', str => {
-      expect(parseVariableTable(str)).toBeInstanceOf(VariableTable);
+      const table = parseVariableTable(str);
+      expect(table).not.toBe(null);
+      expect(table).toBeTruthy();
+      if(table)
+        expect(table).toBeInstanceOf(VariableTable);
     });
   });
   describe('parseTable', () => {
@@ -110,6 +95,37 @@ describe('Parsing logic-symbol strings', () => {
   describe('SentenceRegex matches valid sentences', () => {
     test.each(validSentences)('SentenceRegex matches %s', (str) => {
       expect(SentenceRegex.test(str)).toBe(true);
+    });
+  });
+
+  describe('Known/past bugs', () => {
+    test('Teenage dirtbag table', () => {
+      expect(isEntity('me')).toBe(true);
+      expect(parseAssignment('IsTeenage/1(me) = T')).toStrictEqual({
+        sentence: {
+          predicate: 'IsTeenage/1',
+          args: ['me'],
+        },
+        truth: 'T',
+      })
+
+
+      let standard = quickTruthTable(`{
+        IsTeenage/1(me) = T
+        Listen_Subject_To/2(me, b) = T
+        IsIron/1(b) = T
+        IsAMaiden/1(b) = T
+      }`);
+
+      expect(standard).toBeInstanceOf(TruthTable);
+
+      let claim1 = quickVariableTable(`there exists x s.t. {
+        IsTeenage/1(x) = T
+        IsADirtbag/1(x) = T
+      }`);
+
+      expect(claim1).toBeInstanceOf(VariableTable);
+
     });
   });
 });

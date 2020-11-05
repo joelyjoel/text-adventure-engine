@@ -1,4 +1,4 @@
-import { Entity, Sentence, Variable } from ".";
+import { Entity, Sentence, Variable, createEntity } from ".";
 import { TruthTable } from "./TruthTable";
 import { VariableTable } from "./VariableTable";
 
@@ -14,9 +14,10 @@ export function findMappings<TruthValue extends string>(
   onto:TruthTable<TruthValue>|TruthTable<TruthValue>[], 
   given:PartialMapping[] = [blankPartialMapping(claim.numberOfVariables)]
 ):PartialMapping[]|null {
-  // Start with the given list or a blank (completely indifferent partial mapping.)
 
+  // Start with the given list or a blank (completely indifferent partial mapping.)
   let accumulatedMappings:PartialMapping[] = given
+
   // Get partial mappings for each sentence in the claim
   for(let statement of claim.iterate()) {
     // Get mappings from each statement in claim onto table
@@ -65,7 +66,8 @@ export function findCompleteMappings<TruthValue extends string>(
     return null;
 }
 
-/** Combine two partial mappings, returns `null` if they are incompatible. Order of arguments doesn't matter. This operation is associative. */
+/** Combine two partial mappings, returns `null` if they are incompatible.
+* Order of arguments doesn't matter. This operation is associative. */
 export function combinePartialMappings(
   a:PartialMapping, 
   b:PartialMapping
@@ -110,35 +112,51 @@ type ScoredMappings = {
 }
 
 
+/**
+ * - Contradictory Mapping: A mapping which results in one or more statements 
+ *   which contradict the standard.
+ * - Introductory Mapping: A mapping which results in new statements which had 
+ *   indifferent (?) truth values in the standard.
+ * - Imperfect Mapping: A mapping which is contradictory, introductory, neither or both.
+ */
 export function findImperfectMappings<TruthValue extends string>(
   claim:VariableTable<TruthValue>, 
-  onto:TruthTable<TruthValue>
-) {
+  onto:TruthTable<TruthValue>,
+  given?: PartialMapping,
+): {mapping: PartialMapping, score: number}[] {
   let accumulation:ScoredMappings = {};
 
-  /** Update the score of a mapping in a scored mappings set if it is greater than the existing score */
+  /** 
+   * Update the score of a mapping in a scored mappings set if it is greater
+   * than the existing score */
   const update = (
+    /** The set of mappings to be updated */
     set:ScoredMappings, 
+    /** The mapping to add/update to the set */
     mapping:PartialMapping, 
     score = 1, 
     /** Use to avoid re-calculating the symbol  */
     symbol = mappingSymbol(mapping)
-  ) => {
+  ):void => {
     if(!set[symbol])
       set[symbol] = {mapping, score}
     else
-      set[symbol].score = score > set[symbol].score ? score : set[symbol].score
+      set[symbol].score = Math.max(score, set[symbol].score);
   }
 
   // For each statement in the claim
-  for(let statement_mappings of generatePartialMappings(claim, onto)) {
+  for(let statement of claim.iterate()) {
     let matches:ScoredMappings = {}
-    for(let statement_mapping of statement_mappings) {
-      update(matches, statement_mapping)
 
+    // For each mapping, `M`, from the statement onto the table (`onto`)
+    for(let M of mapFromSingleSentence(claim.variables, statement, onto, given)) {
+      update(matches, M)
+
+      // For each mapping in the accumulation
       for(let i in accumulation) {
+
         let combined_mapping = combinePartialMappings(
-          statement_mapping,
+          M,
           accumulation[i].mapping
         )
 
@@ -173,18 +191,29 @@ export function *generatePartialMappings<TruthValue extends string>(
 
 
 
-/** Generate the partial mappings from a single sentence (with variables) onto a truth table */
+/** 
+ * Generate the partial mappings from a single sentence (with variables) onto a truth table
+ */
 export function *mapFromSingleSentence<TruthValue extends string>(
   variables: Variable[], 
   claim: {sentence:Sentence, truth:string}, 
-  onto: TruthTable<TruthValue>|TruthTable<TruthValue>[]
-) {
+  onto: TruthTable<TruthValue>|TruthTable<TruthValue>[],
+  given: PartialMapping = blankPartialMapping(variables.length),
+):Generator<PartialMapping> {
   const {sentence, truth} = claim
   
-  // Identify the position of constants & variables in the claim sentence args
-  const constantPositions = sentence.args
-    .map((e,i) => i)
-    .filter(i => !variables.includes(sentence.args[i]))
+  // Identify the position of constants, variables e duplicates in the claim sentence args
+  const constants = sentence.args.map(arg => {
+    let variableIndex = variables.indexOf(arg);
+    if(variableIndex != -1) {
+      if(given[variableIndex])
+        return given[variableIndex]
+      else
+        return null;
+    } else
+      return arg;
+  });
+
   const varPositions = identifyVarPositions(variables, sentence);
   const duplicatePositions:number[][] = varPositions
     .filter(arr => arr !== null && arr.length > 1) as number[][]
@@ -195,23 +224,19 @@ export function *mapFromSingleSentence<TruthValue extends string>(
 
     // Filter candidate sentences for a fit
     for(let fact of candidates) {
-      if(fact.truth == truth
-      && constantPositions.every(i => sentence.args[i] == fact.sentence.args[i])
-      && duplicatePositions.every(indexs => {
-        for(let i=1; i<indexs.length; ++i)
-          if(fact.sentence.args[0] != fact.sentence.args[i])
-            return false;
-
-        return true;
-      })) {
+      if(fact.truth == truth &&
+        // For 
+        constants.every((c, i) => !c || fact.sentence.args[i] == c) &&
+        duplicatePositions.every(indexs => {
+          for(let i=1; i < indexs.length; ++i)
+            if(fact.sentence.args[0] != fact.sentence.args[i])
+              return false;
+          // Otherwise
+          return true; 
+        }) 
+      )
         // Yield a partial mapping
-        yield varPositions.map((indexs, i) => {
-          if(indexs)
-            return fact.sentence.args[indexs[0]]
-          else
-            return null;
-        })
-      }
+        yield varPositions.map( indexs => indexs ? fact.sentence.args[indexs[0]] : null );
     }
   }
   
@@ -219,14 +244,16 @@ export function *mapFromSingleSentence<TruthValue extends string>(
 
 
 
-/* Identify the position of variables in the sentence args. */
+/** 
+ * Identify the position of variables in the sentence args. 
+ */
 export function identifyVarPositions(
   variables:Variable[], 
   sentence:Sentence
 ):(number[]|null)[] {
   return variables.map(x => {
     let list = [];
-    for(let i=0; i<sentence.args.length; ++i)
+    for(let i=0; i < sentence.args.length; ++i)
       if(sentence.args[i] == x)
         list.push(i)
 
@@ -234,9 +261,15 @@ export function identifyVarPositions(
   })
 }
 
-/** Check whether a mapping is a complete mapping. */
+/** 
+  Check whether a mapping is a complete mapping. 
+  */
 export function isCompleteMapping(
   mapping:PartialMapping
 ): mapping is CompleteMapping {
   return !mapping.includes(null);
+}
+
+export function completePartialMapping(mapping:PartialMapping) {
+  return mapping.map(x => x ? x : createEntity());
 }

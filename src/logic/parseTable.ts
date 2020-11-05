@@ -4,13 +4,14 @@ import {AdditionTable} from './AdditionTable';
 import {parseAssignment, parseArgs} from './parse';
 
 export function parseTable(str:string) {
-
   if(str[0] != '{' || str[str.length-1] != '}')
     return null;
+
 
   const lines = str.slice(1, -1).split(/[\&\n]/)
     .map(nosehair => nosehair.trim())
     .filter(line => line.length)
+
   
   const assignments = lines.map(line => parseAssignment(line));
   

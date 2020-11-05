@@ -113,8 +113,28 @@ test('Finding mappings given a starting mapping', () => {
   ]);
 })
 
+// Test is unfinished
+test('findImperfectMappings()', () => {
+  let standard = quickTruthTable(`{
+    IsTeenage/1(me) = T
+    Listen_Subject_To/2(me, b) = T
+    IsIron/1(b) = T
+    IsAMaiden/1(b) = T
+  }`);
 
-describe.only('Known/past faults', () => {
+  let claim1 = quickVariableTable(`there exists x s.t. {
+    IsTeenage/1(x) = T
+    IsADirtbag/1(x) = T
+  }`);
+
+  let mappings = findImperfectMappings(claim1, standard);
+
+  expect(mappings).toContainEqual({mapping: ['me'], score: 1});
+
+});
+
+
+describe('Known/past faults', () => {
   // "The table is in the room".
   //table.assign({predicate: 'IsATable/1', args: ['a']}, 'T');
   //table.assign({predicate: 'IsARoom/1', args:['b']}, 'T');
@@ -148,9 +168,10 @@ describe.only('Known/past faults', () => {
     expect(mappings).toContainEqual([null, 'a']);
   });
 
-  test('findMappings works as expected', () => {
+  test('findImperfectMappings works as expected', () => {
     let [...mappings] = findImperfectMappings(claim, table);
-    console.log(mappings);
     expect(mappings.map(m => m.mapping)).toContainEqual([null, 'a']);
   });
+
+  test.todo('findImperfectMappings with `given` argument');
 });
