@@ -7,7 +7,7 @@
       "noImplicitAny": true,
       "downlevelIteration": true,
       "strictNullChecks": true,
-      "declaration": true
+      "jsx": "react"
   },
   "include": [
       "./src/**/*"

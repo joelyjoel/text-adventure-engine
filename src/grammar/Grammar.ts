@@ -100,7 +100,7 @@ export interface TypeAssertions {
   [stringifiedSymbol: string]: (parse:any) => boolean;
 }
 
-
+export const isHiddenDefault = (sym:string) => /^__/.test(sym);
 
 
 // ### START OF CLASS PROPER
@@ -174,7 +174,7 @@ export class Grammar<TerminalSymbol=string, NonTerminalSymbol=TerminalSymbol> {
     startingSymbol,
     compareSymbol = Object.is,
     // @ts-ignore
-    isHidden = (S:any) => /^__/.test(S),
+    isHidden = isHiddenDefault,
     pleaseBeQuiet=false,
     // @ts-ignore
     isTerminalSymbol = () => {throw "No type guard defined for terminal symbols."}, 
