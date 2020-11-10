@@ -1,7 +1,7 @@
 import {TruthTable} from './TruthTable';
 import {VariableTable} from './VariableTable';
 import {AdditionTable} from './AdditionTable';
-import {parseAssignment, parseArgs} from './parse';
+import {parseAssignment, parseArgs, parseSentence} from './parse';
 
 export function parseTable(str:string) {
   if(str[0] != '{' || str[str.length-1] != '}')
@@ -16,11 +16,21 @@ export function parseTable(str:string) {
   const assignments = lines.map(line => parseAssignment(line));
   
   const table = new TruthTable<string>();
-  for(let assignment of assignments) {
-    if(!assignment)
-      return null;
+  for(let line of lines) {
+    let assignment = parseAssignment(line);
+    if(assignment) {
+      table.assign(assignment.sentence, assignment.truth);
+      continue;
+    }
 
-    table.assign(assignment.sentence, assignment.truth);
+    let sentence = parseSentence(line);
+    if(sentence) {
+      table.assign(sentence, 'T')
+      continue;
+    }
+
+    // Otherwise,
+    return null;
   }
   return table;
 }

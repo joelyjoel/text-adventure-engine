@@ -33,15 +33,18 @@ describe('Parsing logic-symbol strings', () => {
           .assign({predicate: 'IsARoom/1', args:['b']}, 'T')
           .assign({predicate: 'Be_Subject_In/2', args:['a', 'b']}, 'T')
       ],
+      [ '{ IsTeenage/1(x) & IsADirtbag/1(x) }',
+        new TruthTable<string>()
+          .assign({predicate: 'IsTeenage/1', args: ['x']}, 'T')
+          .assign({predicate: 'IsADirtbag/1', args: ['x']}, 'T')
+      ],
     ])('parseTable(%j)', (str:string, table:TruthTable<string>) => {
       const parsed = parseTable(str);
       expect(parsed).toBeInstanceOf(TruthTable);
       if(parsed) {
-        for(let {sentence, truth} of table.iterate()) {
+        for(let {sentence, truth} of table.iterate())
           expect(parsed.lookUp(sentence)).toBe(truth);
-        }
       }
-
     });
     test('Testing a simple table', () =>{
       const table = new TruthTable()
