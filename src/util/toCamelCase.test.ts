@@ -3,6 +3,8 @@ import { toCamelCase, splitCamelCase } from "./toCamelCase";
 test('toCamelCase', () => {
   expect(toCamelCase('a big rhino', 'inA binBag'))
     .toBe('ABigRhinoInABinBag');
+
+  expect(toCamelCase('isA', 'physical_object')).toBe('IsAPhysicalObject');
 })
 
 describe('parseCamelCase', () => {

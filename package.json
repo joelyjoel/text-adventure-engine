@@ -44,10 +44,12 @@
     "@types/node": "^14.14.2",
     "@types/react": "^16.9.55",
     "@types/react-dom": "^16.9.9",
+    "node-wordnet": "^0.1.12",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "regops": "^1.2.1",
     "styled-components": "^5.2.1",
+    "wndb-with-exceptions": "^3.0.2",
     "wordnet": "^0.1.2"
   }
 }

@@ -10,7 +10,10 @@ export function parseAdjectivePredicate(P:Predicate):string {
 }
 
 export function createNounPredicate(noun:string):Predicate {
-  return `${toCamelCase(`is a ${noun}`)}/1`;
+  if(/^[aeiouh]/i.test(noun))
+    return `${toCamelCase(`is an ${noun}`)}/1`;
+  else
+    return `${toCamelCase(`is a ${noun}`)}/1`;
 }
 
 export function createPredicateSyntaxPredicate({verb, params}:{verb:string, params:string[]}):Predicate {
